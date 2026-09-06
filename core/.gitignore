@@ -1,0 +1,11 @@
+# Entorno virtual
+venv/
+
+# Base de datos local
+db.sqlite3
+
+# Caché
+__pycache__/
+*.py[cod]
+*.pyc
+*$spy.class
