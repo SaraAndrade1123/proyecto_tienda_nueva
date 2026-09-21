@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/home/adso/Documentos/OVIEDO/PROYECTO SARA/proyecto_tienda_nueva/venv/bin/python3" "$0" "$@"
-' '''
+#!/home/karen-l-pez/Documentos/tienda_nueva/proyecto_tienda_nueva/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
