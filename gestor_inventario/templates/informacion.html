@@ -1,0 +1,200 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Inicio - Tienda Nueva{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto animate-fade-in-up">
+
+    <!-- 1. INICIO / BIENVENIDA -->
+    <section class="text-center md:text-left mt-8 mb-20">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight mb-6 tracking-tight">
+            Bienvenido a <br class="hidden md:block"> <span class="text-brand-red">Tienda Nueva</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl">
+            Tu destino de confianza para alimentos, aseo y papelería. Calidad y servicio en un solo lugar.
+        </p>
+    </section>
+
+    <!-- 2. ¿QUÉ ENCUENTRAS AQUÍ? -->
+    <section class="mb-20">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
+            <span class="w-8 h-1 bg-brand-red inline-block"></span> ¿Qué encuentras aquí?
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            
+            <!-- Categoría: Alimentos -->
+            <div class="space-y-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-apple-whole text-brand-red"></i> Alimentos
+                </h3>
+                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
+                    <li>Lácteos</li>
+                    <li>Dulces</li>
+                    <li>Enlatados</li>
+                    <li>Granos</li>
+                    <li>Bebidas</li>
+                </ul>
+            </div>
+
+            <!-- Categoría: Aseo -->
+            <div class="space-y-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-spray-can-sparkles text-brand-red"></i> Aseo
+                </h3>
+                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
+                    <li>Jabones</li>
+                    <li>Detergentes</li>
+                    <li>Limpiadores</li>
+                    <li>Cuidado Personal</li>
+                </ul>
+            </div>
+
+            <!-- Categoría: Papelería -->
+            <div class="space-y-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-ruler text-brand-red"></i> Papelería
+                </h3>
+                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
+                    <li>Cuadernos</li>
+                    <li>Bolígrafos</li>
+                    <li>Colores</li>
+                    <li>Papel</li>
+                </ul>
+            </div>
+
+            <!-- Categoría: Varios -->
+            <div class="space-y-4">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-brand-red"></i> Varios
+                </h3>
+                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
+                    <li>Artículos de Hogar</li>
+                    <li>Accesorios</li>
+                    <li>Otros</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. MEDIOS DE PAGO -->
+    <section class="mb-0">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+            <span class="w-8 h-1 bg-brand-red inline-block"></span> Medios de Pago
+        </h2>
+        <ul class="space-y-4">
+            <!-- Efectivo -->
+            <li class="group flex items-center gap-4 p-5 bg-red-50 dark:bg-brand-darkcard rounded-2xl border border-red-100 dark:border-gray-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-brand-red/50 cursor-default">
+                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full transition-transform duration-300 group-hover:scale-110">
+                    <i class="fa-solid fa-money-bill-wave text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white">Efectivo</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pago en tienda física</p>
+                </div>
+            </li>
+            <!-- Nequi -->
+            <li class="group flex items-center gap-4 p-5 bg-red-50 dark:bg-brand-darkcard rounded-2xl border border-red-100 dark:border-gray-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-brand-red/50 cursor-default">
+                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full transition-transform duration-300 group-hover:scale-110">
+                    <i class="fa-solid fa-mobile-screen text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 dark:text-white">Nequi</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">316 318 0459</p>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- 4. LLAMADO A LA ACCIÓN (Iniciar Sesión) -->
+    <section class="mb-0">
+        <!-- Separador rojo centrado -->
+        <div class="w-full max-w-xs h-1 bg-brand-red mx-auto mt-16 mb-10"></div>
+        
+        <!-- Contenedor sólido -->
+        <div class="bg-brand-red rounded-3xl p-8 md:p-10 text-center shadow-xl">
+            <h3 class="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight">
+                Descubre todo lo que tenemos para ti
+            </h3>
+            <p class="text-white/90 text-lg mb-8 max-w-xl mx-auto">
+                Inicia sesión para ver el catálogo de los productos
+            </p>
+            <a href="#" class="inline-flex items-center justify-center gap-3 bg-white text-brand-red hover:bg-gray-100 font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:-translate-y-1 text-lg tracking-wide">
+                <i class="fa-regular fa-user"></i>
+                Iniciar Sesión
+            </a>
+        </div>
+    </section>
+
+    <!-- 5. SOBRE NOSOTROS -->
+    <section id="nosotros" class="scroll-mt-24 mb-20">
+        <!-- Separador rojo centrado -->
+        <div class="w-full max-w-xs h-1 bg-brand-red mx-auto mt-16 mb-16"></div>
+
+        <!-- Título llamativo -->
+        <div class="text-center md:text-left mb-10">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
+                Sobre <span class="text-brand-red">Nosotros</span>
+            </h2>
+        </div>
+
+        <div class="space-y-12">
+            <!-- Historia -->
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Historia
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
+                    Fundada el <strong class="text-gray-900 dark:text-white">19 de enero de 1998</strong> bajo el nombre de <strong class="text-gray-900 dark:text-white">Tienda FEMA</strong>, hoy en día somos conocidos como <strong class="text-gray-900 dark:text-white">Tienda Nueva</strong>. Desde nuestros inicios, hemos crecido y evolucionado, manteniendo siempre nuestro compromiso con la calidad y el buen servicio a nuestra comunidad.
+                </p>
+            </div>
+
+            <!-- Equipo -->
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestro Equipo
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                        <h4 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Fundadores</h4>
+                        <p class="text-lg font-medium text-gray-900 dark:text-white">Carlos Fernando Andrade & Luz Marina Rodríguez</p>
+                    </div>
+                    <div class="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                        <h4 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Dueño Actual</h4>
+                        <p class="text-lg font-medium text-gray-900 dark:text-white">Oscar Daniel Andrade</p>
+                    </div>
+                </div>
+                <p class="mt-6 text-gray-600 dark:text-gray-400 italic text-lg">
+                    "Agradecemos a cada persona que ha confiado en nosotros a lo largo de estos años. Su preferencia es nuestro mayor compromiso."
+                </p>
+            </div>
+
+            <!-- Misión / Visión -->
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Misión
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
+                    Proveer productos de calidad a precios justos, sirviendo a nuestra comunidad con la calidez de siempre.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+</style>
+{% endblock %}
