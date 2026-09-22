@@ -9,7 +9,7 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
-    path('', lambda request: redirect('login')),
+    #path('', lambda request: redirect('login')),
 
     path('', include('accounts.urls')),
 
