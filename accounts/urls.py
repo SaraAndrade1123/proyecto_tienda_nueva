@@ -5,22 +5,10 @@ from . import views
 
 urlpatterns = [
 
-    path(
-        'login/',
-        views.iniciar_sesion,
-        name='login'
-    ),
+    path('login/',views.iniciar_sesion,name='login'),
 
-    path(
-        'logout/',
-        auth_views.LogoutView.as_view(),
-        name='logout'
-    ),
+    #path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
-    path(
-        'home/',
-        views.home,
-        name='home'
-    ),
+    #path('home/', views.home, name='home'),
 
 ]
