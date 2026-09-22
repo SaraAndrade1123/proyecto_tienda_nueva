@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear producto</title>
-
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Iconos -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -18,21 +14,10 @@
     <header class="bg-red-600 w-full px-4 sm:px-6 lg:px-8 py-8 shadow-sm">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
             <div>
-                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                    Crear producto
-                </h1>
-                <p class="text-red-100 mt-2 text-sm sm:text-base">
-                    Agrega un nuevo producto a la tienda
-                </p>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">Crear producto</h1>
+                <p class="text-red-100 mt-2 text-sm sm:text-base">Agrega un nuevo producto a la tienda</p>
             </div>
-
-            <!-- BOTÓN VOLVER -->
-            <a
-                href="{% url 'lista_productos' %}"
-                class="shrink-0 inline-flex items-center gap-2 px-6 py-3
-                       bg-white text-red-600 rounded-full font-bold
-                       text-sm sm:text-base hover:bg-gray-50 transition-colors shadow-sm"
-            >
+            <a href="{% url 'lista_productos' %}" class="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-white text-red-600 rounded-full font-bold text-sm sm:text-base hover:bg-gray-50 transition-colors shadow-sm">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 <span>Volver al catálogo</span>
             </a>
@@ -41,360 +26,152 @@
 
     <!-- CONTENEDOR PRINCIPAL -->
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-
-        <!-- FORMULARIO -->
-        <form
-            method="POST"
-            enctype="multipart/form-data"
-            class="bg-white"
-        >
-
+        <form method="POST" enctype="multipart/form-data" class="bg-white">
             {% csrf_token %}
 
-            <!-- CABECERA DEL FORMULARIO -->
             <div class="pb-5 border-b border-gray-200">
                 <div class="flex items-center gap-3">
                     <span class="w-6 h-1 bg-red-600 shrink-0 rounded-full"></span>
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
-                        Información del producto
-                    </h2>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">Información del producto</h2>
                 </div>
-                <p class="text-sm text-gray-500 mt-2 ml-9">
-                    Completa todos los datos necesarios para registrar el artículo.
-                </p>
+                <p class="text-sm text-gray-500 mt-2 ml-9">Completa todos los datos necesarios para registrar el artículo.</p>
             </div>
-
 
             <!-- CAMPOS -->
             <div class="py-8">
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                     <!-- NOMBRE -->
                     <div>
-                        <label
-                            for="{{ formulario.nombre.id_for_label }}"
-                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-                        >
-                            Nombre del producto
-                        </label>
-
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all">
+                        <label for="{{ formulario.nombre.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Nombre del producto</label>
+                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
                             {{ formulario.nombre }}
                         </div>
-
-                        {% if formulario.nombre.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.nombre.errors.0 }}
-                            </p>
-                        {% endif %}
+                        {% if formulario.nombre.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.nombre.errors.0 }}</p>{% endif %}
                     </div>
 
-
-                    <!-- PRECIO -->
+                    <!-- PRECIOOOOO -->
                     <div>
-                        <label
-                            for="{{ formulario.precio_unitario.id_for_label }}"
-                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-                        >
-                            Precio por unidad
-                        </label>
-
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all">
+                        <label for="{{ formulario.precio_unitario.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Precio por unidad</label>
+                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
                             {{ formulario.precio_unitario }}
                         </div>
-
-                        {% if formulario.precio_unitario.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.precio_unitario.errors.0 }}
-                            </p>
-                        {% endif %}
+                        {% if formulario.precio_unitario.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.precio_unitario.errors.0 }}</p>{% endif %}
                     </div>
-
 
                     <!-- CANTIDAD -->
                     <div>
-                        <label
-                            for="{{ formulario.cantidad.id_for_label }}"
-                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-                        >
-                            Cantidad
-                        </label>
-
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all">
+                        <label for="{{ formulario.cantidad.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Cantidad</label>
+                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
                             {{ formulario.cantidad }}
                         </div>
-
-                        {% if formulario.cantidad.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.cantidad.errors.0 }}
-                            </p>
-                        {% endif %}
+                        {% if formulario.cantidad.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.cantidad.errors.0 }}</p>{% endif %}
                     </div>
 
-
-                    <!-- UNIDAD -->
+                    <!-- UNIDAD DE MEDIDA (Renderizada nativamente por Django) -->
                     <div>
-                        <label
-                            for="{{ formulario.unidad_medida.id_for_label }}"
-                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-                        >
-                            Unidad de medida
-                        </label>
-
-                        <div class="mt-1 [&>select]:block [&>select]:w-full [&>select]:bg-red-50 [&>select]:border [&>select]:border-red-100 [&>select]:rounded-xl [&>select]:p-3 [&>select]:text-gray-900 [&>select]:focus:outline-none [&>select]:focus:ring-2 [&>select]:focus:ring-red-300 [&>select]:transition-all">
-                            {{ formulario.unidad_medida }}
+                        <label for="{{ formulario.unidad_medida.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Unidad de medida</label>
+                        <div class="relative mt-1 group">
+                            <div class="[&>select]:appearance-none [&>select]:cursor-pointer [&>select]:block [&>select]:w-full [&>select]:bg-red-50 [&>select]:border [&>select]:border-red-100 [&>select]:rounded-xl [&>select]:py-3 [&>select]:pl-4 [&>select]:pr-10 [&>select]:text-gray-900 [&>select]:focus:outline-none [&>select]:focus:ring-2 [&>select]:focus:ring-red-300 [&>select]:transition-all group-hover:[&>select]:bg-red-100/50">
+                                {{ formulario.unidad_medida }}
+                            </div>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-red-400 group-hover:text-red-600 transition-colors">
+                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                            </div>
                         </div>
-
-                        {% if formulario.unidad_medida.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.unidad_medida.errors.0 }}
-                            </p>
-                        {% endif %}
+                        {% if formulario.unidad_medida.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.unidad_medida.errors.0 }}</p>{% endif %}
                     </div>
 
-
-                    <!-- CATEGORÍA -->
+                    <!-- CATEGORÍA (Renderizada nativamente por Django) -->
                     <div>
-                        <label
-                            for="{{ formulario.categoria.id_for_label }}"
-                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-                        >
-                            Categoría
-                        </label>
-
-                        <div class="mt-1 [&>select]:block [&>select]:w-full [&>select]:bg-red-50 [&>select]:border [&>select]:border-red-100 [&>select]:rounded-xl [&>select]:p-3 [&>select]:text-gray-900 [&>select]:focus:outline-none [&>select]:focus:ring-2 [&>select]:focus:ring-red-300 [&>select]:transition-all">
-                            {{ formulario.categoria }}
+                        <label for="{{ formulario.categoria.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Categoría</label>
+                        <div class="relative mt-1 group">
+                            <div class="[&>select]:appearance-none [&>select]:cursor-pointer [&>select]:block [&>select]:w-full [&>select]:bg-red-50 [&>select]:border [&>select]:border-red-100 [&>select]:rounded-xl [&>select]:py-3 [&>select]:pl-4 [&>select]:pr-10 [&>select]:text-gray-900 [&>select]:focus:outline-none [&>select]:focus:ring-2 [&>select]:focus:ring-red-300 [&>select]:transition-all group-hover:[&>select]:bg-red-100/50">
+                                {{ formulario.categoria }}
+                            </div>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-red-400 group-hover:text-red-600 transition-colors">
+                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                            </div>
                         </div>
-
-                        {% if formulario.categoria.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.categoria.errors.0 }}
-                            </p>
-                        {% endif %}
+                        {% if formulario.categoria.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.categoria.errors.0 }}</p>{% endif %}
                     </div>
-
 
                     <!-- EXISTENCIAS -->
                     <div>
-                        <label
-                            for="{{ formulario.existencias.id_for_label }}"
-                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2"
-                        >
-                            Existencias iniciales
-                        </label>
-
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all">
+                        <label for="{{ formulario.existencias.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Existencias iniciales</label>
+                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
                             {{ formulario.existencias }}
                         </div>
-
-                        {% if formulario.existencias.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.existencias.errors.0 }}
-                            </p>
-                        {% endif %}
+                        {% if formulario.existencias.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.existencias.errors.0 }}</p>{% endif %}
                     </div>
-
 
                     <!-- IMAGEN -->
                     <div class="md:col-span-2 mt-4">
-
-                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
-                            Fotografía del producto
-                        </label>
-
-                        <div class="border-2 border-dashed border-red-200 bg-red-50/50 rounded-2xl p-8 transition-colors hover:bg-red-50">
-
-                            <!-- INPUT REAL DE DJANGO -->
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Fotografía del producto</label>
+                        <div class="border-2 border-dashed border-red-200 bg-red-50/50 rounded-2xl p-8 transition-colors hover:bg-red-50 cursor-pointer" id="contenedorClickImagen">
                             <div class="hidden">
                                 {{ formulario.imagen }}
                             </div>
-
-                            <!-- ÁREA DE IMAGEN -->
-                            <div
-                                id="areaImagen"
-                                class="flex flex-col items-center justify-center text-center"
-                            >
-
-                                <div
-                                    id="iconoImagen"
-                                    class="w-16 h-16 rounded-full bg-red-100
-                                           flex items-center justify-center mb-4 shadow-sm"
-                                >
-                                    <i
-                                        data-lucide="image"
-                                        class="w-8 h-8 text-red-600"
-                                    ></i>
+                            <div id="areaImagen" class="flex flex-col items-center justify-center text-center">
+                                <div id="iconoImagen" class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 shadow-sm transition-transform hover:scale-110">
+                                    <i data-lucide="image" class="w-8 h-8 text-red-600"></i>
                                 </div>
-
-                                <p
-                                    id="textoImagen"
-                                    class="text-gray-800 font-bold"
-                                >
-                                    Selecciona una imagen
-                                </p>
-
-                                <p class="text-sm text-gray-500 mt-1 mb-6">
-                                    Formatos soportados: PNG, JPG o JPEG
-                                </p>
-
-                                <button
-                                    type="button"
-                                    id="btnSeleccionarImagen"
-                                    class="flex items-center gap-2 px-6 py-2.5
-                                           bg-red-600 text-white rounded-full font-medium
-                                           hover:bg-red-700 transition-all shadow-sm"
-                                >
-                                    <i
-                                        data-lucide="upload"
-                                        class="w-4 h-4"
-                                    ></i>
-                                    Subir archivo
+                                <p id="textoImagen" class="text-gray-800 font-bold">Selecciona una imagen</p>
+                                <p class="text-sm text-gray-500 mt-1 mb-6">Formatos soportados: PNG, JPG o JPEG</p>
+                                <button type="button" id="btnSeleccionarImagen" class="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-all shadow-sm">
+                                    <i data-lucide="upload" class="w-4 h-4"></i> Subir archivo
                                 </button>
-
                             </div>
-
-
-                            <!-- PREVISUALIZACIÓN -->
-                            <div
-                                id="previewContainer"
-                                class="hidden mt-6"
-                            >
-
+                            <div id="previewContainer" class="hidden mt-6">
                                 <div class="relative max-w-sm mx-auto">
-
-                                    <img
-                                        id="previewImagen"
-                                        src=""
-                                        alt="Vista previa"
-                                        class="w-full h-64 object-cover rounded-xl border-2 border-red-100 shadow-sm"
-                                    >
-
-                                    <!-- QUITAR IMAGEN -->
-                                    <button
-                                        type="button"
-                                        id="btnEliminarImagen"
-                                        class="absolute -top-3 -right-3 w-10 h-10
-                                               flex items-center justify-center
-                                               bg-white text-red-600 rounded-full
-                                               border border-red-100 shadow-md hover:bg-red-50 transition-colors"
-                                        title="Eliminar imagen"
-                                    >
-                                        <i
-                                            data-lucide="x"
-                                            class="w-5 h-5"
-                                        ></i>
+                                    <img id="previewImagen" src="" alt="Vista previa" class="w-full h-64 object-cover rounded-xl border-2 border-red-100 shadow-sm">
+                                    <button type="button" id="btnEliminarImagen" class="absolute -top-3 -right-3 w-10 h-10 flex items-center justify-center bg-white text-red-600 rounded-full border border-red-100 shadow-md hover:bg-red-50 transition-colors" title="Eliminar imagen">
+                                        <i data-lucide="x" class="w-5 h-5"></i>
                                     </button>
-
                                 </div>
-
-                                <p
-                                    id="nombreArchivo"
-                                    class="text-center text-sm font-medium text-gray-600 mt-4"
-                                ></p>
-
+                                <p id="nombreArchivo" class="text-center text-sm font-medium text-gray-600 mt-4"></p>
                             </div>
-
                         </div>
-
-                        {% if formulario.imagen.errors %}
-                            <p class="text-red-500 text-sm mt-2 font-medium">
-                                {{ formulario.imagen.errors.0 }}
-                            </p>
-                        {% endif %}
-
+                        {% if formulario.imagen.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.imagen.errors.0 }}</p>{% endif %}
                     </div>
-
                 </div>
-
             </div>
-
 
             <!-- BOTONES DE ACCIÓN -->
-            <div
-                class="pt-8 border-t border-gray-100
-                       flex flex-col-reverse sm:flex-row justify-end gap-4"
-            >
-
-                <a
-                    href="{% url 'lista_productos' %}"
-                    class="flex items-center justify-center gap-2 px-8 py-3
-                           bg-white border border-gray-200 text-gray-700 font-medium
-                           rounded-full hover:bg-gray-50 transition-colors"
-                >
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                    Cancelar
+            <div class="pt-8 border-t border-gray-100 flex flex-col-reverse sm:flex-row justify-end gap-4">
+                <a href="{% url 'lista_productos' %}" class="flex items-center justify-center gap-2 px-8 py-3 bg-white border border-gray-200 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i> Cancelar
                 </a>
-
-
-                <button
-                    type="submit"
-                    class="flex items-center justify-center gap-2 px-8 py-3
-                           bg-red-600 text-white font-bold rounded-full
-                           hover:bg-red-700 hover:shadow-md transition-all"
-                >
-                    <i data-lucide="save" class="w-5 h-5"></i>
-                    Guardar producto
+                <button type="submit" class="flex items-center justify-center gap-2 px-8 py-3 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 hover:shadow-md transition-all">
+                    <i data-lucide="save" class="w-5 h-5"></i> Guardar producto
                 </button>
-
             </div>
-
         </form>
-
     </main>
 
-
-    <!-- JAVASCRIPT -->
+    <!-- JS exclusivo para lectura de archivo de imagen -->
     <script>
         lucide.createIcons();
 
-        // 1. INYECTAR LOS PLACEHOLDERS (SUGERENCIAS) A LOS INPUTS DE DJANGO
-        document.addEventListener("DOMContentLoaded", function() {
-            const inputNombre = document.getElementById("{{ formulario.nombre.id_for_label }}");
-            if(inputNombre) inputNombre.placeholder = "Ej: Camiseta de algodón";
+        const inputImagen = document.getElementById("{{ formulario.imagen.id_for_label }}");
+        const btnSeleccionarImagen = document.getElementById("btnSeleccionarImagen");
+        const btnEliminarImagen = document.getElementById("btnEliminarImagen");
+        const previewContainer = document.getElementById("previewContainer");
+        const previewImagen = document.getElementById("previewImagen");
+        const nombreArchivo = document.getElementById("nombreArchivo");
+        const textoImagen = document.getElementById("textoImagen");
+        const contenedorClickImagen = document.getElementById("contenedorClickImagen");
 
-            const inputPrecio = document.getElementById("{{ formulario.precio_unitario.id_for_label }}");
-            if(inputPrecio) inputPrecio.placeholder = "Ej: 45000";
-
-            const inputCantidad = document.getElementById("{{ formulario.cantidad.id_for_label }}");
-            if(inputCantidad) inputCantidad.placeholder = "Ej: 1, 10, 500...";
-
-            const inputExistencias = document.getElementById("{{ formulario.existencias.id_for_label }}");
-            if(inputExistencias) inputExistencias.placeholder = "Ej: 20";
-        });
-
-        // 2. LÓGICA DE LA IMAGEN
-        const inputImagen = document.getElementById(
-            "{{ formulario.imagen.id_for_label }}"
-        );
-        const btnSeleccionarImagen = document.getElementById(
-            "btnSeleccionarImagen"
-        );
-        const btnEliminarImagen = document.getElementById(
-            "btnEliminarImagen"
-        );
-        const previewContainer = document.getElementById(
-            "previewContainer"
-        );
-        const previewImagen = document.getElementById(
-            "previewImagen"
-        );
-        const nombreArchivo = document.getElementById(
-            "nombreArchivo"
-        );
-        const textoImagen = document.getElementById(
-            "textoImagen"
-        );
-
-        btnSeleccionarImagen.addEventListener("click", function () {
-            inputImagen.click();
+        contenedorClickImagen.addEventListener("click", function(e) {
+            if (e.target !== btnEliminarImagen && !btnEliminarImagen.contains(e.target)) {
+                inputImagen.click();
+            }
         });
 
         inputImagen.addEventListener("change", function () {
             const archivo = this.files[0];
-            if (!archivo) {
-                return;
-            }
+            if (!archivo) return;
+            
             if (!archivo.type.startsWith("image/")) {
                 alert("Por favor selecciona una imagen válida.");
                 inputImagen.value = "";
@@ -405,20 +182,20 @@
             lector.onload = function (evento) {
                 previewImagen.src = evento.target.result;
                 previewContainer.classList.remove("hidden");
-                textoImagen.textContent = "Imagen seleccionada";
+                document.getElementById("areaImagen").classList.add("hidden");
                 nombreArchivo.textContent = archivo.name;
             };
             lector.readAsDataURL(archivo);
         });
 
-        btnEliminarImagen.addEventListener("click", function () {
+        btnEliminarImagen.addEventListener("click", function (e) {
+            e.stopPropagation(); 
             inputImagen.value = "";
             previewImagen.src = "";
             previewContainer.classList.add("hidden");
-            textoImagen.textContent = "Selecciona una imagen";
+            document.getElementById("areaImagen").classList.remove("hidden");
             nombreArchivo.textContent = "";
         });
     </script>
-
 </body>
 </html>
