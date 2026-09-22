@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Inicio</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff1f2;
+
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contenedor {
+            background: white;
+            padding: 40px;
+            border-radius: 18px;
+            text-align: center;
+
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            color: #b91c1c;
+        }
+
+        p {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .boton {
+            display: inline-block;
+            padding: 12px 25px;
+
+            background-color: #dc2626;
+            color: white;
+
+            text-decoration: none;
+            border-radius: 10px;
+
+            font-weight: bold;
+        }
+
+        .boton:hover {
+            background-color: #b91c1c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>¡Bienvenido!</h1>
+
+        <p>Has iniciado sesión correctamente.</p>
+        
+        <a href="{% url 'catalogo' %}" class="boton">
+            Ver catálogo
+        </a>
+
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+
+            <button type="submit" class="boton">
+                Cerrar sesión
+            </button>
+        </form>
+
+    </div>
+
+</body>
+</html>

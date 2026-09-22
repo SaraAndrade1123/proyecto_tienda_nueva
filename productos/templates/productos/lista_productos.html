@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="min-h-screen bg-white text-gray-900 font-sans">
+
+    <!-- ENCABEZADO (Pegado arriba sin espacios blancos) -->
+    <header class="bg-red-600 w-full px-4 sm:px-6 lg:px-8 py-8 shadow-sm">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div>
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
+                    Productos
+                </h1>
+                <p class="text-red-100 mt-2 text-sm sm:text-base">
+                    Gestión del catálogo registrado en la tienda
+                </p>
+            </div>
+
+            <!-- BOTÓN CREAR PRODUCTO -->
+            <a
+                href="{% url 'crear_producto' %}"
+                class="shrink-0 inline-flex items-center gap-2 px-6 py-3
+                       bg-white text-red-600 rounded-full font-bold
+                       text-sm sm:text-base hover:bg-gray-50 transition-colors shadow-sm"
+            >
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                <span>Crear producto</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL (Contenido) -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+        <!-- LISTA DE PRODUCTOS -->
+        {% if productos %}
+            <div class="max-w-4xl mx-auto">
+                
+                {% for producto in productos %}
+                    <!-- ÍTEM DE PRODUCTO -->
+                    <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 py-8 border-b border-gray-200 first:border-t group">
+
+                        <!-- IMAGEN -->
+                        <div class="shrink-0">
+                            {% if producto.imagen %}
+                                <img
+                                    src="{{ producto.imagen.url }}"
+                                    alt="{{ producto.nombre }}"
+                                    class="w-full sm:w-48 h-56 sm:h-36 object-cover rounded-lg"
+                                >
+                            {% else %}
+                                <div class="w-full sm:w-48 h-56 sm:h-36 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="image-off" class="w-10 h-10 text-gray-300"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- INFORMACIÓN DEL PRODUCTO -->
+                        <div class="flex-1 min-w-0 flex flex-col justify-between">
+                            
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                <div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-6 h-1 bg-red-600 shrink-0 rounded-full"></span>
+                                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
+                                            {{ producto.nombre }}
+                                        </h2>
+                                    </div>
+                                    <p class="text-gray-500 text-sm mt-1 ml-9">
+                                        {{ producto.categoria }}
+                                    </p>
+                                </div>
+
+                                <p class="text-2xl font-black text-red-600 shrink-0">
+                                    ${{ producto.precio_unitario|floatformat:2 }}
+                                </p>
+                            </div>
+
+                            <div class="mt-6 pt-5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                
+                                <div class="grid grid-cols-2 gap-8 text-sm">
+                                    <div>
+                                        <p class="text-gray-400 font-medium uppercase tracking-wider text-xs">Cantidad</p>
+                                        <p class="font-bold text-gray-800 mt-1">
+                                            {{ producto.cantidad }} <span class="font-normal text-gray-500">{{ producto.unidad_medida }}</span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-400 font-medium uppercase tracking-wider text-xs">Existencias</p>
+                                        <p class="font-bold text-gray-800 mt-1">{{ producto.existencias }}</p>
+                                    </div>
+                                </div>
+
+                                <a
+                                    href="{% url 'editar_producto' producto.id %}"
+                                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5
+                                           bg-red-600 text-white rounded-full font-medium text-sm
+                                           hover:bg-red-700 hover:shadow-md transition-all shrink-0"
+                                >
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    Editar producto
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- ESTADO VACÍO (Empty State) -->
+            <div class="max-w-2xl mx-auto text-center py-10 px-4">
+                
+                <div class="w-24 h-24 mx-auto bg-red-50 rounded-full flex items-center justify-center mb-8">
+                    <i data-lucide="package-open" class="w-12 h-12 text-red-600"></i>
+                </div>
+
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <span class="w-10 h-1 bg-red-600 rounded-full hidden sm:block"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">
+                        Catálogo vacío
+                    </h2>
+                    <span class="w-10 h-1 bg-red-600 rounded-full hidden sm:block"></span>
+                </div>
+
+                <p class="text-gray-500 text-lg mb-10 max-w-md mx-auto">
+                    Aún no hay productos registrados en tu tienda. Agrega el primero para comenzar a gestionar tu inventario.
+                </p>
+
+                <a
+                    href="{% url 'crear_producto' %}"
+                    class="inline-flex items-center gap-2 px-8 py-3.5
+                           bg-red-600 text-white rounded-full font-bold text-lg
+                           hover:bg-red-700 hover:shadow-lg transition-all"
+                >
+                    <i data-lucide="plus" class="w-6 h-6"></i>
+                    Crear mi primer producto
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+
+</body>
+</html>

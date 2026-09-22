@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     
     'accounts',
     'gestor_inventario',
+    'productos',
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,4 @@ LOGIN_URL = 'login'
 # Sesión de Django activa
 SESSION_COOKIE_AGE = 3600 # 15 minutos 
 SESSION_SAVE_EVERY_REQUEST = True
+
