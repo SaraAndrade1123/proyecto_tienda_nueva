@@ -25,7 +25,7 @@ def iniciar_sesion(request):
 
         if usuario_autenticado is not None:
             login(request, usuario_autenticado)
-            return redirect('home')
+            return redirect('lista_productos')
 
         return render(request, 'login.html', {
             'error': 'Correo o contraseña incorrectos'
