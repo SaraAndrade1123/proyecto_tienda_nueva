@@ -3,155 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Usuario</title>
-    <!-- Tailwind CSS -->
+    <title>Crear Cuenta</title>
+    <!-- Tailwind CSS con soporte para modo oscuro por clase -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Free CDN (6.5.1) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- Font Awesome Free CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <!-- Script previo para evitar parpadeo de tema -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-[#fdf2f4] dark:bg-[#090d16] min-h-screen py-10 px-4 flex flex-col items-center justify-center text-slate-800 dark:text-slate-200 transition-colors duration-200">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md my-8">
-        <!-- Encabezado -->
-        <div class="text-center mb-6">
-            <div class="inline-block p-3 bg-indigo-50 text-indigo-600 rounded-full mb-2">
-                <i class="fa-solid fa-user-plus fa-2x"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-800">Crear Cuenta</h2>
-            <p class="text-sm text-gray-500">Completa tus datos para registrarte</p>
+    <!-- CABECERA SUPERIOR -->
+    <div class="text-center mb-6">
+        <!-- Logo / Icono principal -->
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-[#be123c] dark:text-rose-400 mb-3 shadow-sm border border-rose-200/50 dark:border-rose-900/50">
+            <i class="fa-solid fa-store text-2xl"></i>
         </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Crear una cuenta
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Regístrate para comenzar a gestionar tu plataforma
+        </p>
 
-        <!-- Alerta de Errores -->
+        <!-- BOTÓN DE CAMBIO DE TEMA (MODO OSCURO / MODO CLARO) -->
+        <div class="mt-4">
+            <button
+                id="themeToggleBtn"
+                onclick="toggleTheme()"
+                type="button"
+                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border border-rose-200 dark:border-slate-700 bg-rose-50/80 dark:bg-slate-800/80 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-sm"
+            >
+                <i id="themeIcon" class="fa-solid fa-moon"></i>
+                <span id="themeText">Modo Oscuro</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- TARJETA PRINCIPAL -->
+    <div class="w-full max-w-xl bg-white dark:bg-[#151c2c] rounded-3xl p-6 sm:p-9 shadow-xl shadow-rose-950/5 dark:shadow-black/40 border border-rose-100/60 dark:border-slate-800 transition-colors duration-200">
+
+        <!-- MENSAJE DE ERROR -->
         {% if errors %}
-            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md">
-                <div class="flex items-center mb-1">
-                    <i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i>
-                    <h3 class="text-sm font-semibold text-red-800">Se encontraron errores:</h3>
-                </div>
-                <ul class="list-disc pl-5 text-sm text-red-700 space-y-1">
+        <div class="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 flex items-start gap-3">
+            <i class="fa-solid fa-circle-exclamation text-[#be123c] dark:text-rose-400 text-base mt-0.5"></i>
+            <div class="text-xs sm:text-sm text-rose-900 dark:text-rose-200">
+                <p class="font-bold mb-1">Por favor corrige los siguientes errores:</p>
+                <ul class="list-disc list-inside space-y-1 text-rose-800/90 dark:text-rose-300">
                     {% for error in errors %}
                         <li>{{ error }}</li>
                     {% endfor %}
                 </ul>
             </div>
+        </div>
         {% endif %}
 
-        <form action="" method="POST" class="space-y-4">
+        <form method="POST" action="{% url 'registro' %}" class="space-y-6">
             {% csrf_token %}
 
-            <!-- Usuario -->
-            <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Nombre de Usuario</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-at"></i>
-                    </span>
-                    <input type="text" id="username" name="username" value="{{ datos.username|default:'' }}" required
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                        placeholder="usuario123">
-                </div>
-            </div>
+            <!-- SECCIÓN 1: DATOS PERSONALES -->
+            <div class="space-y-3">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                    Información personal
+                </span>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Nombre -->
+                    <div>
+                        <label for="first_name" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Nombre
+                        </label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-user absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            <input
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                value="{{ datos.first_name|default:'' }}"
+                                placeholder="Juan"
+                                required
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            >
+                        </div>
+                    </div>
 
-            <!-- Nombre y Apellido (2 columnas) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-user"></i>
-                        </span>
-                        <input type="text" id="first_name" name="first_name" value="{{ datos.first_name|default:'' }}" required
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                            placeholder="Carlos">
+                    <!-- Apellido -->
+                    <div>
+                        <label for="last_name" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Apellido
+                        </label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-user absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            <input
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                value="{{ datos.last_name|default:'' }}"
+                                placeholder="Pérez"
+                                required
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            >
+                        </div>
                     </div>
                 </div>
 
+                <!-- Documento -->
                 <div>
-                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-user"></i>
-                        </span>
-                        <input type="text" id="last_name" name="last_name" value="{{ datos.last_name|default:'' }}" required
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                            placeholder="Pérez">
+                    <label for="document" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Documento de Identidad
+                    </label>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-address-card absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                        <input
+                            type="text"
+                            id="document"
+                            name="document"
+                            value="{{ datos.document|default:'' }}"
+                            placeholder="1020304050"
+                            required
+                            class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                        >
                     </div>
                 </div>
             </div>
 
-            <!-- Documento -->
-            <div>
-                <label for="document" class="block text-sm font-medium text-gray-700 mb-1">Documento de Identidad</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-id-card"></i>
-                    </span>
-                    <input type="text" id="document" name="document" value="{{ datos.document|default:'' }}" required
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                        placeholder="123456789">
+            <hr class="border-slate-100 dark:border-slate-800">
+
+            <!-- SECCIÓN 2: CUENTA Y CONTACTO -->
+            <div class="space-y-3">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                    Cuenta y contacto
+                </span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Usuario -->
+                    <div>
+                        <label for="username" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Nombre de Usuario
+                        </label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-at absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                value="{{ datos.username|default:'' }}"
+                                placeholder="juanperez"
+                                required
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label for="phone" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Teléfono
+                        </label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-phone absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                value="{{ datos.phone|default:'' }}"
+                                placeholder="3001234567"
+                                required
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correo -->
+                <div>
+                    <label for="email" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Correo electrónico
+                    </label>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-envelope absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ datos.email|default:'' }}"
+                            placeholder="correo@ejemplo.com"
+                            required
+                            class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                        >
+                    </div>
                 </div>
             </div>
 
-            <!-- Teléfono -->
-            <div>
-                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-phone"></i>
-                    </span>
-                    <input type="text" id="phone" name="phone" value="{{ datos.phone|default:'' }}" required
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                        placeholder="+57 300 000 0000">
+            <hr class="border-slate-100 dark:border-slate-800">
+
+            <!-- SECCIÓN 3: SEGURIDAD -->
+            <div class="space-y-3">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                    Seguridad
+                </span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Contraseña -->
+                    <div>
+                        <label for="password1" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Contraseña
+                        </label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-lock absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            <input
+                                type="password"
+                                id="password1"
+                                name="password1"
+                                placeholder="••••••••"
+                                required
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Confirmar Contraseña -->
+                    <div>
+                        <label for="password2" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Confirmar Contraseña
+                        </label>
+                        <div class="relative flex items-center">
+                            <i class="fa-solid fa-shield-halved absolute left-3.5 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            <input
+                                type="password"
+                                id="password2"
+                                name="password2"
+                                placeholder="••••••••"
+                                required
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            >
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Email -->
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-envelope"></i>
-                    </span>
-                    <input type="email" id="email" name="email" value="{{ datos.email|default:'' }}" required
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                        placeholder="correo@ejemplo.com">
-                </div>
-            </div>
-
-            <!-- Contraseña -->
-            <div>
-                <label for="password1" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-lock"></i>
-                    </span>
-                    <input type="password" id="password1" name="password1" required
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                        placeholder="••••••••">
-                </div>
-            </div>
-
-            <!-- Confirmar Contraseña -->
-            <div>
-                <label for="password2" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </span>
-                    <input type="password" id="password2" name="password2" required
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                        placeholder="••••••••">
-                </div>
-            </div>
-
-            <!-- Botón Submit -->
-            <button type="submit"
-                class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow transition duration-200 flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-user-check"></i>
-                <span>Registrar Cuenta</span>
+            <!-- BOTÓN DE ACCIÓN -->
+            <button
+                type="submit"
+                class="w-full h-12 mt-2 inline-flex items-center justify-center gap-2 bg-[#be123c] hover:bg-[#9f1239] text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-rose-900/10 active:scale-[0.99]"
+            >
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                Registrarse
             </button>
         </form>
+
+        <!-- ENLACE DE NAVEGACIÓN -->
+        <div class="mt-6 text-center pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                ¿Ya tienes una cuenta?
+                <a href="{% url 'login' %}" class="font-bold text-[#be123c] dark:text-rose-400 hover:underline ml-1">
+                    Iniciar Sesión
+                </a>
+            </p>
+            <div>
+                <a href="{% url 'informacion' %}" class="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-colors">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                    Volver
+                </a>
+            </div>
+        </div>
+
     </div>
+
+    <!-- SCRIPT DE INTERRUPTOR DE MODO OSCURO / MODO CLARO -->
+    <script>
+        function updateThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            
+            if (isDark) {
+                icon.className = 'fa-solid fa-sun';
+                text.textContent = 'Modo Claro';
+            } else {
+                icon.className = 'fa-solid fa-moon text-rose-600';
+                text.textContent = 'Modo Oscuro';
+            }
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeUI();
+        }
+
+        // Ejecutar al cargar la página
+        document.addEventListener('DOMContentLoaded', updateThemeUI);
+    </script>
 
 </body>
 </html>

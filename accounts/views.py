@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.models import User, Group, Permission
+from .models import User
 from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.urls import reverse
 
@@ -21,6 +22,7 @@ def registro(request):
 
         datos = request.POST
 
+        print(username)
         # Validacion basica
         if password1 != password2:
             errors.append('Las contraseñas no coinciden')
@@ -51,5 +53,5 @@ def registro(request):
                 last_name=last_name
             )
             login(request, user)
-            return redirect('home')
-    return render(request, 'usuario/registro.html', {'errors':errors, 'datos': datos})
+            return redirect('registro')
+    return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
