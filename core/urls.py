@@ -12,9 +12,6 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
-    path('', include('gestor_inventario.urls')),
-
-
     path('', lambda request: redirect('login')),
 
     path('', include('accounts.urls')),

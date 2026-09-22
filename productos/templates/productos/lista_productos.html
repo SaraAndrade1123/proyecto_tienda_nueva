@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-</head>
+{% extends 'layouts/base.html' %}
 
-<body class="min-h-screen bg-white text-gray-900 font-sans">
+{% block title %}Inicio - Tienda Nueva{% endblock %}
+
+{% block content %}
+
 
     <!-- ENCABEZADO (Pegado arriba sin espacios blancos) -->
     <header class="bg-red-600 w-full px-4 sm:px-6 lg:px-8 py-8 shadow-sm">
@@ -155,5 +150,4 @@
         lucide.createIcons();
     </script>
 
-</body>
-</html>
+{% endblock %}
