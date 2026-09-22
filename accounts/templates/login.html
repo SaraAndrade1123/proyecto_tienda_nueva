@@ -1,153 +1,255 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Iniciar Sesión</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-red': '#be123c',
+                        'brand-darkred': '#881337',
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        html, body {
+            overscroll-behavior: none;
+            overflow: hidden;
+            height: 100%;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #ffe4e6, #f8fafc);
-            min-height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
 
-            display: flex;
-            justify-content: center;
+        /* Botón de tema (texto + ícono) */
+        .theme-toggle {
+            display: inline-flex;
             align-items: center;
-        }
-
-        .login-container {
-            width: 380px;
-            background-color: white;
-            padding: 40px;
-            border-radius: 18px;
-
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .login-container h1 {
-            text-align: center;
-            color: #b91c1c;
-            margin-bottom: 10px;
-        }
-
-        .login-container p {
-            text-align: center;
-            color: #64748b;
-            margin-bottom: 30px;
-        }
-
-        .error {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            padding: 10px;
+            gap: 8px;
+            padding: 6px 12px;
             border-radius: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .campo {
-            margin-bottom: 20px;
-        }
-
-        .campo label {
-            display: block;
-            margin-bottom: 8px;
-            color: #334155;
-            font-weight: bold;
-        }
-
-        .campo input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            outline: none;
-            font-size: 15px;
-            transition: 0.3s;
-        }
-
-        .campo input:focus {
-            border-color: #dc2626;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
-        }
-
-        .boton {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 10px;
-
-            background-color: #dc2626;
-            color: white;
-
-            font-size: 16px;
-            font-weight: bold;
             cursor: pointer;
-
-            transition: 0.3s;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        .boton:hover {
-            background-color: #b91c1c;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+        /* Modo claro: texto rojo con luna */
+        html.light .theme-toggle {
+            color: #be123c;
+        }
+
+        html.light .theme-toggle:hover {
+            background: rgba(190, 18, 60, 0.1);
+        }
+
+        /* Modo oscuro: texto rojo con engranaje */
+        html.dark .theme-toggle {
+            color: #f43f5e;
+        }
+
+        html.dark .theme-toggle:hover {
+            background: rgba(244, 63, 94, 0.15);
+        }
+
+        .theme-toggle i {
+            font-size: 16px;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
+<body class="bg-rose-50 dark:bg-gray-950">
 
-<body>
+    <!-- Contenido del formulario -->
+    <div class="min-h-screen flex items-center justify-center py-10 px-4">
 
-    <div class="login-container">
+        <div class="w-full max-w-md">
 
-        <h1>Iniciar sesión</h1>
+            <!-- Encabezado con botón de tema -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-rose-100 dark:bg-gray-800 mb-4">
+                    <i class="fa-solid fa-store text-2xl text-rose-700"></i>
+                </div>
 
-        <p>Ingresa tus datos para acceder</p>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    Iniciar Sesión
+                </h1>
 
-        {% if error %}
-            <div class="error">
-                {{ error }}
-            </div>
-        {% endif %}
+                <p class="mt-2 text-gray-600 dark:text-gray-400">
+                    Ingresa tus datos para continuar
+                </p>
 
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="campo">
-                <label>Correo electrónico:</label>
-
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Ingresa tu correo electrónico"
-                    required
-                >
-            </div>
-
-            <div class="campo">
-                <label>Contraseña:</label>
-
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Ingresa tu contraseña"
-                    required
-                >
+                <!-- Botón de tema (texto + ícono) -->
+                <button class="theme-toggle mt-4" onclick="toggleTheme()" aria-label="Cambiar tema">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    <span id="theme-text">Modo Oscuro</span>
+                </button>
             </div>
 
-            <button type="submit" class="boton">
-                Iniciar sesión
-            </button>
+            <!-- Formulario -->
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-7 md:p-8">
 
-        </form>
+                {% if error %}
+                    <div class="mb-5 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-sm">
+                        <i class="fa-solid fa-circle-exclamation mr-2"></i>
+                        {{ error }}
+                    </div>
+                {% endif %}
 
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <!-- Correo -->
+                    <div class="mb-5">
+                        <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Correo electrónico
+                        </label>
+                        <div class="relative">
+                            <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="correo@ejemplo.com"
+                                required
+                                class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-700 focus:border-rose-700 transition"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Contraseña -->
+                    <div class="mb-2">
+                        <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Contraseña
+                        </label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Ingresa tu contraseña"
+                                required
+                                class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-700 focus:border-rose-700 transition"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Recuperar contraseña -->
+                    <div class="text-center mb-6">
+                        <a href="#" class="text-sm text-rose-700 hover:text-rose-900 dark:hover:text-rose-400 transition">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+
+                    <!-- Botón iniciar sesión -->
+                    <button
+                        type="submit"
+                        class="w-full flex items-center justify-center gap-2 bg-rose-700 hover:bg-rose-800 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
+                    >
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        Iniciar Sesión
+                    </button>
+                </form>
+
+                <!-- Registro -->
+                <div class="text-center mt-6 pt-5 border-t border-gray-200 dark:border-gray-700">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        ¿No tienes una cuenta?
+                    </p>
+                    <a href="#" class="inline-block mt-2 text-sm font-bold text-rose-700 hover:text-rose-900 dark:hover:text-rose-400 transition">
+                        Crear una cuenta
+                    </a>
+                </div>
+
+                <!-- Volver -->
+                <div class="text-center mt-5">
+                    <a href="/" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-rose-700 dark:hover:text-rose-700 transition">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Volver
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
+
+    <!-- JavaScript para el cambio de tema -->
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+
+            if (html.classList.contains('dark')) {
+                // Cambiar a modo claro
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.classList.remove('fa-gear');
+                icon.classList.add('fa-moon');
+                text.textContent = 'Modo Oscuro';
+                localStorage.setItem('theme', 'light');
+            } else {
+                // Cambiar a modo oscuro
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-gear');
+                text.textContent = 'Modo Claro';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Al cargar la página, recuperar el tema guardado
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+
+            if (savedTheme === 'dark') {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-gear');
+                text.textContent = 'Modo Claro';
+            } else if (savedTheme === 'light') {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.classList.remove('fa-gear');
+                icon.classList.add('fa-moon');
+                text.textContent = 'Modo Oscuro';
+            } else {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    html.classList.remove('light');
+                    html.classList.add('dark');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-gear');
+                    text.textContent = 'Modo Claro';
+                }
+            }
+        })();
+    </script>
 
 </body>
 </html>
