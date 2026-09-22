@@ -1,45 +1,74 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q
 
 from .models import Producto
 from .forms import ProductoForm
 
 
 def lista_productos(request):
-    busqueda = request.GET.get('buscar', '')
+
+    busqueda = request.GET.get('buscar', '').strip()
+    categoria_seleccionada = request.GET.get('categoria', '').strip()
+
+    productos = Producto.objects.all()
 
     if busqueda:
-        productos = Producto.objects.filter(
-            Q(nombre__icontains=busqueda)
+        productos = productos.filter(
+            nombre__icontains=busqueda
         )
-    else:
-        productos = Producto.objects.all()
 
-    return render(request, 'productos/lista_productos.html', {
-        'productos': productos,
-        'busqueda': busqueda,
-    })
+    if categoria_seleccionada:
+        productos = productos.filter(
+            categoria=categoria_seleccionada
+        )
 
+    categorias = Producto.CATEGORIAS_CHOICES
+
+    return render(
+        request,
+        'productos/lista_productos.html',
+        {
+            'productos': productos,
+            'busqueda': busqueda,
+            'categoria_seleccionada': categoria_seleccionada,
+            'categorias': categorias,
+        }
+    )
 
 def crear_producto(request):
     if request.method == 'POST':
-        formulario = ProductoForm(request.POST, request.FILES)
+        formulario = ProductoForm(
+            request.POST,
+            request.FILES
+        )
 
         if formulario.is_valid():
             formulario.save()
-            messages.success(request, 'Producto creado correctamente.')
+
+            messages.success(
+                request,
+                'Producto creado correctamente.'
+            )
+
             return redirect('lista_productos')
+
     else:
         formulario = ProductoForm()
 
-    return render(request, 'productos/crear_producto.html', {
-        'formulario': formulario
-    })
+    return render(
+        request,
+        'productos/crear_producto.html',
+        {
+            'formulario': formulario
+        }
+    )
 
 
 def editar_producto(request, id):
-    producto = get_object_or_404(Producto, id=id)
+    producto = get_object_or_404(
+        Producto,
+        id=id
+    )
 
     if request.method == 'POST':
         formulario = ProductoForm(
@@ -50,33 +79,56 @@ def editar_producto(request, id):
 
         if formulario.is_valid():
             formulario.save()
-            messages.success(request, 'Producto actualizado correctamente.')
-            return redirect('lista_productos')
-    else:
-        formulario = ProductoForm(instance=producto)
 
-    return render(request, 'productos/editar_producto.html', {
-        'formulario': formulario,
-        'producto': producto
-    })
+            messages.success(
+                request,
+                'Producto actualizado correctamente.'
+            )
+
+            return redirect('lista_productos')
+
+    else:
+        formulario = ProductoForm(
+            instance=producto
+        )
+
+    return render(
+        request,
+        'productos/editar_producto.html',
+        {
+            'formulario': formulario,
+            'producto': producto
+        }
+    )
 
 
 def eliminar_producto(request, id):
-    producto = get_object_or_404(Producto, id=id)
+    producto = get_object_or_404(
+        Producto,
+        id=id
+    )
 
     if request.method == 'POST':
         producto.delete()
-        messages.success(request, 'Producto eliminado correctamente.')
+
+        messages.success(
+            request,
+            'Producto eliminado correctamente.'
+        )
 
     return redirect('lista_productos')
 
 
 def aumentar_stock(request, id):
-    producto = get_object_or_404(Producto, id=id)
+    producto = get_object_or_404(
+        Producto,
+        id=id
+    )
 
     if request.method == 'POST':
         producto.existencias += 1
         producto.save()
+
         messages.success(
             request,
             f'Se aumentó el stock de {producto.nombre}.'
@@ -86,7 +138,10 @@ def aumentar_stock(request, id):
 
 
 def disminuir_stock(request, id):
-    producto = get_object_or_404(Producto, id=id)
+    producto = get_object_or_404(
+        Producto,
+        id=id
+    )
 
     if request.method == 'POST':
         if producto.existencias > 0:
@@ -97,6 +152,7 @@ def disminuir_stock(request, id):
                 request,
                 f'Se disminuyó el stock de {producto.nombre}.'
             )
+
         else:
             messages.warning(
                 request,

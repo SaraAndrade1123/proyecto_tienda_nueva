@@ -20,7 +20,7 @@ class Producto(models.Model):
         ('Embutidos','Embutidos'),
         ('Granos','Granos'),
         ('Legumbres','Legumbres'),
-        ('',''),
+      
     ]
 
     nombre = models.CharField(max_length=200)
@@ -33,13 +33,13 @@ class Producto(models.Model):
     unidad_medida = models.CharField(
         max_length=20,
         choices=UNIDADES_CHOICES,
-        default='Kg'
+        default=''
     )
     
     categoria = models.CharField(
         max_length=50,
         choices=CATEGORIAS_CHOICES,
-        default='Lacteos'
+        default=''
     )
 
     def __str__(self):

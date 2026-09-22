@@ -1,195 +1,976 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Inicio - Tienda Nueva{% endblock %}
+{% block title %}Crear Producto - Tienda Nueva{% endblock %}
 
 {% block content %}
 
+<div class="min-h-screen w-full bg-zinc-950 py-6 px-4 sm:px-6 lg:px-8">
 
+
+<div class="w-full max-w-6xl mx-auto">
+
+    <!-- ===================================================== -->
     <!-- ENCABEZADO -->
-    <header class="bg-red-600 w-full px-4 sm:px-6 lg:px-8 py-8 shadow-sm">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+    <!-- ===================================================== -->
+
+    <section class="relative overflow-hidden bg-red-600 rounded-3xl p-6 sm:p-8 mb-6 shadow-xl shadow-red-950/20">
+
+        <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-6 -bottom-20 w-40 h-40 bg-black/10 rounded-full"></div>
+
+        <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+
             <div>
-                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">Crear producto</h1>
-                <p class="text-red-100 mt-2 text-sm sm:text-base">Agrega un nuevo producto a la tienda</p>
+
+                <div class="flex items-center gap-2 mb-3">
+
+                    <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15">
+                        <i class="fa-solid fa-box-open text-white"></i>
+                    </div>
+
+                    <span class="text-xs font-bold uppercase tracking-[0.18em] text-red-100">
+                        Gestión de inventario
+                    </span>
+
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                    Crear producto
+                </h1>
+
+                <p class="mt-2 text-sm text-red-100 max-w-xl">
+                    Registra un nuevo artículo en el catálogo de Tienda Nueva.
+                </p>
+
             </div>
-            <a href="{% url 'lista_productos' %}" class="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-white text-red-600 rounded-full font-bold text-sm sm:text-base hover:bg-gray-50 transition-colors shadow-sm">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                <span>Volver al catálogo</span>
+
+
+            <a
+                href="{% url 'lista_productos' %}"
+                class="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-red-600 rounded-xl font-bold text-sm hover:bg-red-50 transition-all shadow-lg active:scale-95"
+            >
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Volver al catálogo
+
             </a>
+
         </div>
-    </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <form method="POST" enctype="multipart/form-data" class="bg-white">
-            {% csrf_token %}
+    </section>
 
-            <div class="pb-5 border-b border-gray-200">
-                <div class="flex items-center gap-3">
-                    <span class="w-6 h-1 bg-red-600 shrink-0 rounded-full"></span>
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">Información del producto</h2>
+
+    <!-- ===================================================== -->
+    <!-- FORMULARIO -->
+    <!-- ===================================================== -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        class="bg-zinc-900 border border-zinc-800 rounded-3xl shadow-xl overflow-hidden"
+    >
+
+        {% csrf_token %}
+
+
+        <!-- ================================================= -->
+        <!-- CABECERA -->
+        <!-- ================================================= -->
+
+        <div class="px-6 sm:px-8 py-5 border-b border-zinc-800">
+
+            <div class="flex items-center gap-3">
+
+                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-950/40 border border-red-900/50">
+
+                    <i class="fa-solid fa-clipboard-list text-red-500"></i>
+
                 </div>
-                <p class="text-sm text-gray-500 mt-2 ml-9">Completa todos los datos necesarios para registrar el artículo.</p>
+
+                <div>
+
+                    <h2 class="text-lg sm:text-xl font-bold text-zinc-100">
+                        Información del producto
+                    </h2>
+
+                    <p class="text-xs text-zinc-500 mt-0.5">
+                        Completa los datos necesarios para registrar el artículo.
+                    </p>
+
+                </div>
+
             </div>
 
-            <!-- CAMPOS -->
-            <div class="py-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        </div>
 
-                    <!-- NOMBRE -->
-                    <div>
-                        <label for="{{ formulario.nombre.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Nombre del producto</label>
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
-                            {{ formulario.nombre }}
-                        </div>
-                        {% if formulario.nombre.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.nombre.errors.0 }}</p>{% endif %}
+
+        <!-- ================================================= -->
+        <!-- CAMPOS -->
+        <!-- ================================================= -->
+
+        <div class="p-6 sm:p-8">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
+
+                <!-- ================================================= -->
+                <!-- NOMBRE -->
+                <!-- ================================================= -->
+
+                <div class="md:col-span-2">
+
+                    <label
+                        for="{{ formulario.nombre.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                    >
+
+                        Nombre del producto
+
+                        <span class="text-red-500">*</span>
+
+                    </label>
+
+
+                    <div
+                        class="
+                        [&>input]:w-full
+                        [&>input]:h-11
+                        [&>input]:px-4
+                        [&>input]:rounded-xl
+                        [&>input]:border
+                        [&>input]:border-zinc-700
+                        [&>input]:bg-zinc-800
+                        [&>input]:text-zinc-100
+                        [&>input]:placeholder-zinc-500
+                        [&>input]:outline-none
+                        [&>input]:transition-all
+                        [&>input]:focus:border-red-500
+                        [&>input]:focus:ring-2
+                        [&>input]:focus:ring-red-500/20
+                        "
+                    >
+
+                        {{ formulario.nombre }}
+
                     </div>
 
-                    <!-- PRECIOOOOO -->
-                    <div>
-                        <label for="{{ formulario.precio_unitario.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Precio por unidad</label>
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
+
+                    {% if formulario.nombre.errors %}
+
+                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                            {{ formulario.nombre.errors.0 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- PRECIO -->
+                <!-- ================================================= -->
+
+                <div>
+
+                    <label
+                        for="{{ formulario.precio_unitario.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                    >
+
+                        Precio por unidad
+
+                        <span class="text-red-500">*</span>
+
+                    </label>
+
+
+                    <div class="relative">
+
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold pointer-events-none">
+                            $
+                        </span>
+
+
+                        <div
+                            class="
+                            [&>input]:w-full
+                            [&>input]:h-11
+                            [&>input]:pl-9
+                            [&>input]:pr-4
+                            [&>input]:rounded-xl
+                            [&>input]:border
+                            [&>input]:border-zinc-700
+                            [&>input]:bg-zinc-800
+                            [&>input]:text-zinc-100
+                            [&>input]:outline-none
+                            [&>input]:transition-all
+                            [&>input]:focus:border-red-500
+                            [&>input]:focus:ring-2
+                            [&>input]:focus:ring-red-500/20
+                            "
+                        >
+
                             {{ formulario.precio_unitario }}
+
                         </div>
-                        {% if formulario.precio_unitario.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.precio_unitario.errors.0 }}</p>{% endif %}
+
                     </div>
 
-                    <!-- CANTIDAD -->
-                    <div>
-                        <label for="{{ formulario.cantidad.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Cantidad</label>
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
-                            {{ formulario.cantidad }}
-                        </div>
-                        {% if formulario.cantidad.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.cantidad.errors.0 }}</p>{% endif %}
-                    </div>
 
-                    <!-- UNIDAD DE MEDIDA (Renderizada nativamente por Django) -->
-                    <div>
-                        <label for="{{ formulario.unidad_medida.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Unidad de medida</label>
-                        <div class="relative mt-1 group">
-                            <div class="[&>select]:appearance-none [&>select]:cursor-pointer [&>select]:block [&>select]:w-full [&>select]:bg-red-50 [&>select]:border [&>select]:border-red-100 [&>select]:rounded-xl [&>select]:py-3 [&>select]:pl-4 [&>select]:pr-10 [&>select]:text-gray-900 [&>select]:focus:outline-none [&>select]:focus:ring-2 [&>select]:focus:ring-red-300 [&>select]:transition-all group-hover:[&>select]:bg-red-100/50">
-                                {{ formulario.unidad_medida }}
-                            </div>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-red-400 group-hover:text-red-600 transition-colors">
-                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                            </div>
-                        </div>
-                        {% if formulario.unidad_medida.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.unidad_medida.errors.0 }}</p>{% endif %}
-                    </div>
+                    {% if formulario.precio_unitario.errors %}
 
-                    <!-- CATEGORÍA (Renderizada nativamente por Django) -->
-                    <div>
-                        <label for="{{ formulario.categoria.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Categoría</label>
-                        <div class="relative mt-1 group">
-                            <div class="[&>select]:appearance-none [&>select]:cursor-pointer [&>select]:block [&>select]:w-full [&>select]:bg-red-50 [&>select]:border [&>select]:border-red-100 [&>select]:rounded-xl [&>select]:py-3 [&>select]:pl-4 [&>select]:pr-10 [&>select]:text-gray-900 [&>select]:focus:outline-none [&>select]:focus:ring-2 [&>select]:focus:ring-red-300 [&>select]:transition-all group-hover:[&>select]:bg-red-100/50">
-                                {{ formulario.categoria }}
-                            </div>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-red-400 group-hover:text-red-600 transition-colors">
-                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                            </div>
-                        </div>
-                        {% if formulario.categoria.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.categoria.errors.0 }}</p>{% endif %}
-                    </div>
+                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                            {{ formulario.precio_unitario.errors.0 }}
+                        </p>
 
-                    <!-- EXISTENCIAS -->
-                    <div>
-                        <label for="{{ formulario.existencias.id_for_label }}" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Existencias iniciales</label>
-                        <div class="mt-1 [&>input]:block [&>input]:w-full [&>input]:bg-red-50 [&>input]:border [&>input]:border-red-100 [&>input]:rounded-xl [&>input]:p-3 [&>input]:text-gray-900 [&>input::placeholder]:text-gray-400 [&>input]:focus:outline-none [&>input]:focus:ring-2 [&>input]:focus:ring-red-300 [&>input]:transition-all hover:[&>input]:bg-red-100/50">
-                            {{ formulario.existencias }}
-                        </div>
-                        {% if formulario.existencias.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.existencias.errors.0 }}</p>{% endif %}
-                    </div>
+                    {% endif %}
 
-                    <!-- IMAGEN -->
-                    <div class="md:col-span-2 mt-4">
-                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Fotografía del producto</label>
-                        <div class="border-2 border-dashed border-red-200 bg-red-50/50 rounded-2xl p-8 transition-colors hover:bg-red-50 cursor-pointer" id="contenedorClickImagen">
-                            <div class="hidden">
-                                {{ formulario.imagen }}
-                            </div>
-                            <div id="areaImagen" class="flex flex-col items-center justify-center text-center">
-                                <div id="iconoImagen" class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 shadow-sm transition-transform hover:scale-110">
-                                    <i data-lucide="image" class="w-8 h-8 text-red-600"></i>
-                                </div>
-                                <p id="textoImagen" class="text-gray-800 font-bold">Selecciona una imagen</p>
-                                <p class="text-sm text-gray-500 mt-1 mb-6">Formatos soportados: PNG, JPG o JPEG</p>
-                                <button type="button" id="btnSeleccionarImagen" class="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-all shadow-sm">
-                                    <i data-lucide="upload" class="w-4 h-4"></i> Subir archivo
-                                </button>
-                            </div>
-                            <div id="previewContainer" class="hidden mt-6">
-                                <div class="relative max-w-sm mx-auto">
-                                    <img id="previewImagen" src="" alt="Vista previa" class="w-full h-64 object-cover rounded-xl border-2 border-red-100 shadow-sm">
-                                    <button type="button" id="btnEliminarImagen" class="absolute -top-3 -right-3 w-10 h-10 flex items-center justify-center bg-white text-red-600 rounded-full border border-red-100 shadow-md hover:bg-red-50 transition-colors" title="Eliminar imagen">
-                                        <i data-lucide="x" class="w-5 h-5"></i>
-                                    </button>
-                                </div>
-                                <p id="nombreArchivo" class="text-center text-sm font-medium text-gray-600 mt-4"></p>
-                            </div>
-                        </div>
-                        {% if formulario.imagen.errors %}<p class="text-red-500 text-sm mt-2 font-medium">{{ formulario.imagen.errors.0 }}</p>{% endif %}
-                    </div>
                 </div>
+
+
+                <!-- ================================================= -->
+                <!-- EXISTENCIAS -->
+                <!-- ================================================= -->
+
+                <div>
+
+                    <label
+                        for="{{ formulario.existencias.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                    >
+
+                        Existencias iniciales
+
+                        <span class="text-red-500">*</span>
+
+                    </label>
+
+
+                    <div
+                        class="
+                        [&>input]:w-full
+                        [&>input]:h-11
+                        [&>input]:px-4
+                        [&>input]:rounded-xl
+                        [&>input]:border
+                        [&>input]:border-zinc-700
+                        [&>input]:bg-zinc-800
+                        [&>input]:text-zinc-100
+                        [&>input]:outline-none
+                        [&>input]:transition-all
+                        [&>input]:focus:border-red-500
+                        [&>input]:focus:ring-2
+                        [&>input]:focus:ring-red-500/20
+                        "
+                    >
+
+                        {{ formulario.existencias }}
+
+                    </div>
+
+
+                    {% if formulario.existencias.errors %}
+
+                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                            {{ formulario.existencias.errors.0 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- CANTIDAD -->
+                <!-- ================================================= -->
+
+                <div>
+
+                    <label
+                        for="{{ formulario.cantidad.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                    >
+
+                        Cantidad por presentación
+
+                        <span class="text-red-500">*</span>
+
+                    </label>
+
+
+                    <div
+                        class="
+                        [&>input]:w-full
+                        [&>input]:h-11
+                        [&>input]:px-4
+                        [&>input]:rounded-xl
+                        [&>input]:border
+                        [&>input]:border-zinc-700
+                        [&>input]:bg-zinc-800
+                        [&>input]:text-zinc-100
+                        [&>input]:outline-none
+                        [&>input]:transition-all
+                        [&>input]:focus:border-red-500
+                        [&>input]:focus:ring-2
+                        [&>input]:focus:ring-red-500/20
+                        "
+                    >
+
+                        {{ formulario.cantidad }}
+
+                    </div>
+
+
+                    {% if formulario.cantidad.errors %}
+
+                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                            {{ formulario.cantidad.errors.0 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- UNIDAD -->
+                <!-- ================================================= -->
+
+                <div>
+
+                    <label
+                        for="{{ formulario.unidad_medida.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                    >
+
+                        Unidad de medida
+
+                        <span class="text-red-500">*</span>
+
+                    </label>
+
+
+                    <div class="relative">
+
+                        <div
+                            class="
+                            [&>select]:appearance-none
+                            [&>select]:w-full
+                            [&>select]:h-11
+                            [&>select]:px-4
+                            [&>select]:pr-10
+                            [&>select]:rounded-xl
+                            [&>select]:border
+                            [&>select]:border-zinc-700
+                            [&>select]:bg-zinc-800
+                            [&>select]:text-zinc-100
+                            [&>select]:outline-none
+                            [&>select]:cursor-pointer
+                            [&>select]:focus:border-red-500
+                            [&>select]:focus:ring-2
+                            [&>select]:focus:ring-red-500/20
+                            "
+                        >
+
+                            {{ formulario.unidad_medida }}
+
+                        </div>
+
+
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none"></i>
+
+                    </div>
+
+
+                    {% if formulario.unidad_medida.errors %}
+
+                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                            {{ formulario.unidad_medida.errors.0 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- CATEGORÍA -->
+                <!-- ================================================= -->
+
+                <div class="md:col-span-2">
+
+                    <label
+                        for="{{ formulario.categoria.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                    >
+
+                        Categoría
+
+                        <span class="text-red-500">*</span>
+
+                    </label>
+
+
+                    <div class="relative">
+
+                        <div
+                            class="
+                            [&>select]:appearance-none
+                            [&>select]:w-full
+                            [&>select]:h-11
+                            [&>select]:px-4
+                            [&>select]:pr-10
+                            [&>select]:rounded-xl
+                            [&>select]:border
+                            [&>select]:border-zinc-700
+                            [&>select]:bg-zinc-800
+                            [&>select]:text-zinc-100
+                            [&>select]:outline-none
+                            [&>select]:cursor-pointer
+                            [&>select]:transition-all
+                            [&>select]:focus:border-red-500
+                            [&>select]:focus:ring-2
+                            [&>select]:focus:ring-red-500/20
+                            "
+                        >
+
+                            {{ formulario.categoria }}
+
+                        </div>
+
+
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none"></i>
+
+                    </div>
+
+
+                    {% if formulario.categoria.errors %}
+
+                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                            {{ formulario.categoria.errors.0 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- IMAGEN -->
+                <!-- ================================================= -->
+
+                <div class="md:col-span-2 mt-2">
+
+                    <div class="flex items-center justify-between mb-3">
+
+                        <div>
+
+                            <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                                Fotografía del producto
+                            </label>
+
+                            <p class="text-xs text-zinc-600 mt-1">
+                                PNG, JPG o JPEG. Tamaño máximo: 5 MB.
+                            </p>
+
+                        </div>
+
+                        <i class="fa-solid fa-image text-zinc-600"></i>
+
+                    </div>
+
+
+                    <!-- DROPZONE -->
+
+                    <div
+                        id="contenedorClickImagen"
+                        class="relative overflow-hidden border-2 border-dashed border-zinc-700 bg-zinc-800/40 rounded-2xl transition-all duration-200 cursor-pointer hover:border-red-500/70 hover:bg-red-950/10"
+                    >
+
+                        <!-- INPUT REAL DE DJANGO -->
+
+                        <div class="absolute w-px h-px overflow-hidden opacity-0 pointer-events-none">
+
+                            {{ formulario.imagen }}
+
+                        </div>
+
+
+                        <!-- ÁREA INICIAL -->
+
+                        <div
+                            id="areaImagen"
+                            class="flex flex-col items-center justify-center text-center px-6 py-10"
+                        >
+
+                            <div class="w-14 h-14 flex items-center justify-center rounded-2xl bg-red-950/40 border border-red-900/40 mb-4">
+
+                                <i class="fa-solid fa-cloud-arrow-up text-xl text-red-500"></i>
+
+                            </div>
+
+
+                            <h3 class="text-sm font-bold text-zinc-200">
+                                Selecciona una imagen
+                            </h3>
+
+
+                            <p class="text-xs text-zinc-500 mt-1">
+                                Haz clic aquí o arrastra una imagen hasta esta zona
+                            </p>
+
+
+                            <button
+                                type="button"
+                                id="btnSeleccionarImagen"
+                                class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95"
+                            >
+
+                                <i class="fa-solid fa-upload"></i>
+
+                                Seleccionar imagen
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- PREVIEW -->
+
+                        <div
+                            id="previewContainer"
+                            class="hidden p-5"
+                        >
+
+                            <div class="relative max-w-md mx-auto">
+
+                                <img
+                                    id="previewImagen"
+                                    src=""
+                                    alt="Vista previa"
+                                    class="w-full h-64 object-cover rounded-xl border border-zinc-700 shadow-xl"
+                                >
+
+
+                                <button
+                                    type="button"
+                                    id="btnEliminarImagen"
+                                    title="Eliminar imagen"
+                                    class="absolute -top-3 -right-3 w-9 h-9 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-700 text-red-500 hover:bg-red-950 hover:border-red-700 transition-all active:scale-90"
+                                >
+
+                                    <i class="fa-solid fa-xmark"></i>
+
+                                </button>
+
+                            </div>
+
+
+                            <div class="flex items-center justify-center gap-2 mt-3 text-xs text-zinc-500">
+
+                                <i class="fa-solid fa-file-image"></i>
+
+                                <span
+                                    id="nombreArchivo"
+                                    class="font-medium truncate max-w-xs"
+                                ></span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if formulario.imagen.errors %}
+
+                        <p class="mt-2 text-xs font-medium text-red-400">
+                            {{ formulario.imagen.errors.0 }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
             </div>
 
-            <!-- BOTONES DE ACCIÓN -->
-            <div class="pt-8 border-t border-gray-100 flex flex-col-reverse sm:flex-row justify-end gap-4">
-                <a href="{% url 'lista_productos' %}" class="flex items-center justify-center gap-2 px-8 py-3 bg-white border border-gray-200 text-gray-700 font-medium rounded-full hover:bg-gray-50 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i> Cancelar
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- FOOTER -->
+        <!-- ================================================= -->
+
+        <div class="px-6 sm:px-8 py-5 bg-zinc-950/40 border-t border-zinc-800">
+
+            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
+
+                <a
+                    href="{% url 'lista_productos' %}"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-sm transition-all active:scale-95"
+                >
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                    Cancelar
+
                 </a>
-                <button type="submit" class="flex items-center justify-center gap-2 px-8 py-3 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 hover:shadow-md transition-all">
-                    <i data-lucide="save" class="w-5 h-5"></i> Guardar producto
+
+
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-sm hover:shadow-lg hover:shadow-red-600/20 transition-all active:scale-95"
+                >
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Guardar producto
+
                 </button>
+
             </div>
-        </form>
-    </main>
 
-    <!-- JS exclusivo para lectura de archivo de imagen -->
-    <script>
-        lucide.createIcons();
+        </div>
 
-        const inputImagen = document.getElementById("{{ formulario.imagen.id_for_label }}");
-        const btnSeleccionarImagen = document.getElementById("btnSeleccionarImagen");
-        const btnEliminarImagen = document.getElementById("btnEliminarImagen");
-        const previewContainer = document.getElementById("previewContainer");
-        const previewImagen = document.getElementById("previewImagen");
-        const nombreArchivo = document.getElementById("nombreArchivo");
-        const textoImagen = document.getElementById("textoImagen");
-        const contenedorClickImagen = document.getElementById("contenedorClickImagen");
+    </form>
 
-        contenedorClickImagen.addEventListener("click", function(e) {
-            if (e.target !== btnEliminarImagen && !btnEliminarImagen.contains(e.target)) {
-                inputImagen.click();
-            }
-        });
+</div>
 
-        inputImagen.addEventListener("change", function () {
-            const archivo = this.files[0];
-            if (!archivo) return;
-            
-            if (!archivo.type.startsWith("image/")) {
-                alert("Por favor selecciona una imagen válida.");
-                inputImagen.value = "";
+
+</div>
+
+<!-- ============================================================= -->
+
+<!-- JAVASCRIPT DE IMAGEN -->
+
+<!-- ============================================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const inputImagen =
+        document.querySelector('input[type="file"]');
+
+    const btnSeleccionarImagen =
+        document.getElementById("btnSeleccionarImagen");
+
+    const btnEliminarImagen =
+        document.getElementById("btnEliminarImagen");
+
+    const contenedorDropzone =
+        document.getElementById("contenedorClickImagen");
+
+    const areaImagen =
+        document.getElementById("areaImagen");
+
+    const previewContainer =
+        document.getElementById("previewContainer");
+
+    const previewImagen =
+        document.getElementById("previewImagen");
+
+    const nombreArchivo =
+        document.getElementById("nombreArchivo");
+
+
+    if (!inputImagen) {
+
+        console.error(
+            "No se encontró el campo de imagen."
+        );
+
+        return;
+
+    }
+
+
+    /* ========================================================= */
+    /* BOTÓN SELECCIONAR */
+    /* ========================================================= */
+
+    btnSeleccionarImagen.addEventListener(
+        "click",
+        function (e) {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            inputImagen.click();
+
+        }
+    );
+
+
+    /* ========================================================= */
+    /* CLICK EN DROPZONE */
+    /* ========================================================= */
+
+    contenedorDropzone.addEventListener(
+        "click",
+        function (e) {
+
+            if (
+                e.target.closest("#btnSeleccionarImagen") ||
+                e.target.closest("#btnEliminarImagen")
+            ) {
+
                 return;
+
             }
 
-            const lector = new FileReader();
-            lector.onload = function (evento) {
-                previewImagen.src = evento.target.result;
-                previewContainer.classList.remove("hidden");
-                document.getElementById("areaImagen").classList.add("hidden");
-                nombreArchivo.textContent = archivo.name;
-            };
-            lector.readAsDataURL(archivo);
-        });
+            inputImagen.click();
 
-        btnEliminarImagen.addEventListener("click", function (e) {
-            e.stopPropagation(); 
+        }
+    );
+
+
+    /* ========================================================= */
+    /* MOSTRAR IMAGEN */
+    /* ========================================================= */
+
+    function mostrarImagen(archivo) {
+
+        if (!archivo) {
+
+            return;
+
+        }
+
+
+        const tiposPermitidos = [
+            "image/png",
+            "image/jpeg"
+        ];
+
+
+        const maximo =
+            5 * 1024 * 1024;
+
+
+        if (!tiposPermitidos.includes(archivo.type)) {
+
+            alert(
+                "Solo se permiten imágenes PNG, JPG o JPEG."
+            );
+
             inputImagen.value = "";
+
+            return;
+
+        }
+
+
+        if (archivo.size > maximo) {
+
+            alert(
+                "La imagen no puede superar los 5 MB."
+            );
+
+            inputImagen.value = "";
+
+            return;
+
+        }
+
+
+        const lector =
+            new FileReader();
+
+
+        lector.onload =
+            function (evento) {
+
+                previewImagen.src =
+                    evento.target.result;
+
+                nombreArchivo.textContent =
+                    archivo.name;
+
+                areaImagen.classList.add(
+                    "hidden"
+                );
+
+                previewContainer.classList.remove(
+                    "hidden"
+                );
+
+            };
+
+
+        lector.readAsDataURL(archivo);
+
+    }
+
+
+    /* ========================================================= */
+    /* CAMBIO DE ARCHIVO */
+    /* ========================================================= */
+
+    inputImagen.addEventListener(
+        "change",
+        function () {
+
+            if (this.files.length > 0) {
+
+                mostrarImagen(
+                    this.files[0]
+                );
+
+            }
+
+        }
+    );
+
+
+    /* ========================================================= */
+    /* ELIMINAR IMAGEN */
+    /* ========================================================= */
+
+    btnEliminarImagen.addEventListener(
+        "click",
+        function (e) {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            inputImagen.value = "";
+
             previewImagen.src = "";
-            previewContainer.classList.add("hidden");
-            document.getElementById("areaImagen").classList.remove("hidden");
+
             nombreArchivo.textContent = "";
-        });
-    </script>
+
+            previewContainer.classList.add(
+                "hidden"
+            );
+
+            areaImagen.classList.remove(
+                "hidden"
+            );
+
+        }
+    );
+
+
+    /* ========================================================= */
+    /* DRAG */
+    /* ========================================================= */
+
+    [
+        "dragenter",
+        "dragover"
+    ].forEach(function (evento) {
+
+        contenedorDropzone.addEventListener(
+            evento,
+            function (e) {
+
+                e.preventDefault();
+
+                e.stopPropagation();
+
+                contenedorDropzone.classList.add(
+                    "border-red-500",
+                    "bg-red-950/20"
+                );
+
+            }
+        );
+
+    });
+
+
+    /* ========================================================= */
+    /* DRAG LEAVE */
+    /* ========================================================= */
+
+    contenedorDropzone.addEventListener(
+        "dragleave",
+        function (e) {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            contenedorDropzone.classList.remove(
+                "border-red-500",
+                "bg-red-950/20"
+            );
+
+        }
+    );
+
+
+    /* ========================================================= */
+    /* DROP */
+    /* ========================================================= */
+
+    contenedorDropzone.addEventListener(
+        "drop",
+        function (e) {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            contenedorDropzone.classList.remove(
+                "border-red-500",
+                "bg-red-950/20"
+            );
+
+
+            const archivos =
+                e.dataTransfer.files;
+
+
+            if (
+                !archivos ||
+                archivos.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            const archivo =
+                archivos[0];
+
+
+            try {
+
+                const dataTransfer =
+                    new DataTransfer();
+
+                dataTransfer.items.add(
+                    archivo
+                );
+
+                inputImagen.files =
+                    dataTransfer.files;
+
+            } catch (error) {
+
+                console.error(
+                    "No se pudo asignar el archivo:",
+                    error
+                );
+
+            }
+
+
+            mostrarImagen(
+                archivo
+            );
+
+        }
+    );
+
+});
+
+</script>
+
 {% endblock %}

@@ -1,153 +1,773 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Inicio - Tienda Nueva{% endblock %}
+{% block title %}Productos - Tienda Nueva{% endblock %}
 
 {% block content %}
 
+<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
 
-    <!-- ENCABEZADO (Pegado arriba sin espacios blancos) -->
-    <header class="bg-red-600 w-full px-4 sm:px-6 lg:px-8 py-8 shadow-sm">
-        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-            <div>
-                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
-                    Productos
-                </h1>
-                <p class="text-red-100 mt-2 text-sm sm:text-base">
-                    Gestión del catálogo registrado en la tienda
-                </p>
-            </div>
+    <div class="w-full max-w-7xl mx-auto space-y-8">
 
-            <!-- BOTÓN CREAR PRODUCTO -->
-            <a
-                href="{% url 'crear_producto' %}"
-                class="shrink-0 inline-flex items-center gap-2 px-6 py-3
-                       bg-white text-red-600 rounded-full font-bold
-                       text-sm sm:text-base hover:bg-gray-50 transition-colors shadow-sm"
-            >
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                <span>Crear producto</span>
-            </a>
-        </div>
-    </header>
+        <!-- ===================================================== -->
+        <!-- ENCABEZADO -->
+        <!-- ===================================================== -->
 
-    <!-- CONTENEDOR PRINCIPAL (Contenido) -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <section class="w-full bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8">
 
-        <!-- LISTA DE PRODUCTOS -->
-        {% if productos %}
-            <div class="max-w-4xl mx-auto">
-                
-                {% for producto in productos %}
-                    <!-- ÍTEM DE PRODUCTO -->
-                    <div class="flex flex-col sm:flex-row gap-6 sm:gap-8 py-8 border-b border-gray-200 first:border-t group">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
-                        <!-- IMAGEN -->
-                        <div class="shrink-0">
-                            {% if producto.imagen %}
-                                <img
-                                    src="{{ producto.imagen.url }}"
-                                    alt="{{ producto.nombre }}"
-                                    class="w-full sm:w-48 h-56 sm:h-36 object-cover rounded-lg"
-                                >
-                            {% else %}
-                                <div class="w-full sm:w-48 h-56 sm:h-36 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center">
-                                    <i data-lucide="image-off" class="w-10 h-10 text-gray-300"></i>
-                                </div>
-                            {% endif %}
-                        </div>
+                <div>
 
-                        <!-- INFORMACIÓN DEL PRODUCTO -->
-                        <div class="flex-1 min-w-0 flex flex-col justify-between">
-                            
-                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                <div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-6 h-1 bg-red-600 shrink-0 rounded-full"></span>
-                                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
-                                            {{ producto.nombre }}
-                                        </h2>
-                                    </div>
-                                    <p class="text-gray-500 text-sm mt-1 ml-9">
-                                        {{ producto.categoria }}
-                                    </p>
-                                </div>
+                    <div class="flex items-center gap-2 text-red-100">
 
-                                <p class="text-2xl font-black text-red-600 shrink-0">
-                                    ${{ producto.precio_unitario|floatformat:2 }}
-                                </p>
-                            </div>
+                        <i class="fa-solid fa-boxes-stacked text-sm"></i>
 
-                            <div class="mt-6 pt-5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                                
-                                <div class="grid grid-cols-2 gap-8 text-sm">
-                                    <div>
-                                        <p class="text-gray-400 font-medium uppercase tracking-wider text-xs">Cantidad</p>
-                                        <p class="font-bold text-gray-800 mt-1">
-                                            {{ producto.cantidad }} <span class="font-normal text-gray-500">{{ producto.unidad_medida }}</span>
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-gray-400 font-medium uppercase tracking-wider text-xs">Existencias</p>
-                                        <p class="font-bold text-gray-800 mt-1">{{ producto.existencias }}</p>
-                                    </div>
-                                </div>
+                        <span class="text-xs font-bold uppercase tracking-wider">
+                            Gestión de inventario
+                        </span>
 
-                                <a
-                                    href="{% url 'editar_producto' producto.id %}"
-                                    class="inline-flex items-center justify-center gap-2 px-6 py-2.5
-                                           bg-red-600 text-white rounded-full font-medium text-sm
-                                           hover:bg-red-700 hover:shadow-md transition-all shrink-0"
-                                >
-                                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    Editar producto
-                                </a>
-                            </div>
-
-                        </div>
                     </div>
-                {% endfor %}
 
-            </div>
+                    <h1 class="text-3xl sm:text-4xl font-black text-white mt-1 tracking-tight">
+                        Productos
+                    </h1>
 
-        {% else %}
+                    <p class="text-red-100 text-sm mt-1 max-w-xl">
+                        Administra el catálogo, precios, categorías y existencias en tiempo real.
+                    </p>
 
-            <!-- ESTADO VACÍO (Empty State) -->
-            <div class="max-w-2xl mx-auto text-center py-10 px-4">
-                
-                <div class="w-24 h-24 mx-auto bg-red-50 rounded-full flex items-center justify-center mb-8">
-                    <i data-lucide="package-open" class="w-12 h-12 text-red-600"></i>
                 </div>
 
-                <div class="flex items-center justify-center gap-4 mb-4">
-                    <span class="w-10 h-1 bg-red-600 rounded-full hidden sm:block"></span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">
-                        Catálogo vacío
-                    </h2>
-                    <span class="w-10 h-1 bg-red-600 rounded-full hidden sm:block"></span>
-                </div>
-
-                <p class="text-gray-500 text-lg mb-10 max-w-md mx-auto">
-                    Aún no hay productos registrados en tu tienda. Agrega el primero para comenzar a gestionar tu inventario.
-                </p>
 
                 <a
                     href="{% url 'crear_producto' %}"
-                    class="inline-flex items-center gap-2 px-8 py-3.5
-                           bg-red-600 text-white rounded-full font-bold text-lg
-                           hover:bg-red-700 hover:shadow-lg transition-all"
+                    class="shrink-0 h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95"
                 >
-                    <i data-lucide="plus" class="w-6 h-6"></i>
-                    Crear mi primer producto
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    <span>Nuevo producto</span>
+
                 </a>
 
             </div>
 
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- MENSAJES DJANGO -->
+        <!-- ===================================================== -->
+
+        {% if messages %}
+
+            <section class="space-y-3">
+
+                {% for message in messages %}
+
+                    <div
+                        class="flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm font-medium
+                        {% if message.tags == 'success' %}
+                            bg-green-50 border-green-200 text-green-700
+                            dark:bg-green-950/40 dark:border-green-900/60 dark:text-green-400
+                        {% elif message.tags == 'warning' %}
+                            bg-yellow-50 border-yellow-200 text-yellow-700
+                            dark:bg-yellow-950/40 dark:border-yellow-900/60 dark:text-yellow-400
+                        {% else %}
+                            bg-red-50 border-red-200 text-red-700
+                            dark:bg-red-950/40 dark:border-red-900/60 dark:text-red-400
+                        {% endif %}"
+                    >
+
+                        <i
+                            class="fa-solid
+                            {% if message.tags == 'success' %}
+                                fa-circle-check
+                            {% elif message.tags == 'warning' %}
+                                fa-triangle-exclamation
+                            {% else %}
+                                fa-circle-exclamation
+                            {% endif %}"
+                        ></i>
+
+                        <span>{{ message }}</span>
+
+                    </div>
+
+                {% endfor %}
+
+            </section>
+
         {% endif %}
 
-    </main>
 
-    <script>
-        lucide.createIcons();
-    </script>
+        <!-- ===================================================== -->
+        <!-- BUSCADOR Y FILTROS -->
+        <!-- ===================================================== -->
+
+        <section class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
+
+            <form method="GET" action="{% url 'lista_productos' %}">
+
+                <div class="grid grid-cols-1 md:grid-cols-[1fr_280px_auto] gap-4 items-end">
+
+
+                    <!-- BUSCAR -->
+
+                    <div>
+
+                        <label
+                            for="buscar"
+                            class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                        >
+                            Buscar producto
+                        </label>
+
+                        <div class="relative">
+
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-sm"></i>
+
+                            <input
+                                type="text"
+                                id="buscar"
+                                name="buscar"
+                                value="{{ busqueda }}"
+                                placeholder="Escribe el nombre del producto..."
+                                class="w-full h-12 pl-11 pr-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CATEGORÍA -->
+
+                    <div>
+
+                        <label
+                            for="categoria"
+                            class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                        >
+                            Categoría
+                        </label>
+
+                        <div class="relative">
+
+                            <select
+                                id="categoria"
+                                name="categoria"
+                                class="appearance-none w-full h-12 px-4 pr-10 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-200 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 cursor-pointer transition-all"
+                            >
+
+                                <option value="">
+                                    Todas las categorías
+                                </option>
+
+                                {% for valor, nombre in categorias %}
+
+                                    {% if valor %}
+
+                                        <option
+                                            value="{{ valor }}"
+                                            {% if categoria_seleccionada == valor %}selected{% endif %}
+                                        >
+                                            {{ nombre }}
+                                        </option>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BOTONES -->
+
+                    <div class="flex items-center gap-2">
+
+                        <button
+                            type="submit"
+                            class="h-12 px-6 flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-md shadow-red-600/20"
+                        >
+
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+
+                            <span>Buscar</span>
+
+                        </button>
+
+
+                        {% if busqueda or categoria_seleccionada %}
+
+                            <a
+                                href="{% url 'lista_productos' %}"
+                                title="Limpiar filtros"
+                                class="w-12 h-12 inline-flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-2xl transition-all active:scale-95"
+                            >
+
+                                <i class="fa-solid fa-xmark"></i>
+
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- CATÁLOGO -->
+        <!-- ===================================================== -->
+
+        <section class="space-y-5">
+
+
+            <!-- CABECERA CATÁLOGO -->
+
+            <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+
+                <div>
+
+                    <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                        Catálogo general
+                    </h2>
+
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+
+                        {% if productos %}
+
+                            Mostrando {{ productos|length }}
+                            producto{{ productos|length|pluralize }}
+
+                        {% else %}
+
+                            0 productos registrados
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+
+                {% if busqueda or categoria_seleccionada %}
+
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs font-semibold">
+
+                        <i class="fa-solid fa-filter text-[10px]"></i>
+
+                        Filtros activos
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- PRODUCTOS -->
+            <!-- ================================================= -->
+
+            {% if productos %}
+
+                <div class="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-6">
+
+                    {% for producto in productos %}
+
+                        <article
+                            class="flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xl hover:shadow-zinc-200/60 dark:hover:shadow-black/30 transition-all duration-300 group"
+                        >
+
+
+                            <!-- ================================= -->
+                            <!-- IMAGEN -->
+                            <!-- ================================= -->
+
+                            <div class="relative w-full h-56 bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center overflow-hidden border-b border-zinc-200 dark:border-zinc-800 p-4">
+
+                                {% if producto.imagen %}
+
+                                    <img
+                                        src="{{ producto.imagen.url }}"
+                                        alt="{{ producto.nombre }}"
+                                        class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                    >
+
+                                {% else %}
+
+                                    <div class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 gap-2">
+
+                                        <div class="w-14 h-14 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
+
+                                            <i class="fa-solid fa-image text-2xl text-zinc-400 dark:text-zinc-600"></i>
+
+                                        </div>
+
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">
+                                            Sin imagen
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- CATEGORÍA -->
+
+                                {% if producto.categoria %}
+
+                                    <span class="absolute top-3 left-3 px-3 py-1 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 rounded-full text-[10px] font-bold text-zinc-700 dark:text-zinc-200 shadow-sm">
+
+                                        {{ producto.get_categoria_display }}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- ================================= -->
+                            <!-- CONTENIDO -->
+                            <!-- ================================= -->
+
+                            <div class="p-5 flex-1 flex flex-col justify-between gap-5">
+
+
+                                <!-- NOMBRE Y PRECIO -->
+
+                                <div>
+
+                                    <h3
+                                        class="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate"
+                                        title="{{ producto.nombre }}"
+                                    >
+                                        {{ producto.nombre }}
+                                    </h3>
+
+                                    <p class="text-2xl font-black text-red-600 dark:text-red-500 mt-1">
+
+                                        ${{ producto.precio_unitario|floatformat:2 }}
+
+                                    </p>
+
+                                </div>
+
+
+                                <!-- ================================= -->
+                                <!-- PRESENTACIÓN / STOCK -->
+                                <!-- ================================= -->
+
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+
+
+                                    <!-- PRESENTACIÓN -->
+
+                                    <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3">
+
+                                        <span class="block text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500">
+                                            Presentación
+                                        </span>
+
+                                        <p
+                                            class="font-semibold text-zinc-800 dark:text-zinc-200 truncate mt-0.5"
+                                            title="{{ producto.cantidad }} {{ producto.unidad_medida }}"
+                                        >
+                                            {{ producto.cantidad }}
+                                            {{ producto.unidad_medida }}
+                                        </p>
+
+                                    </div>
+
+
+                                    <!-- EXISTENCIAS -->
+
+                                    <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3">
+
+                                        <span class="block text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500">
+                                            Existencias
+                                        </span>
+
+                                        <p
+                                            class="font-bold truncate mt-0.5 {% if producto.existencias > 0 %}text-zinc-800 dark:text-zinc-200{% else %}text-red-600 dark:text-red-500{% endif %}"
+                                        >
+                                            {{ producto.existencias }} un.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ================================= -->
+                                <!-- AJUSTAR STOCK -->
+                                <!-- ================================= -->
+
+                                <div class="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 flex items-center justify-between">
+
+                                    <span class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 pl-1">
+                                        Ajustar stock
+                                    </span>
+
+
+                                    <div class="flex items-center gap-1.5">
+
+
+                                        <!-- DISMINUIR -->
+
+                                        <form
+                                            method="POST"
+                                            action="{% url 'disminuir_stock' producto.id %}"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                title="Disminuir stock"
+                                                class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-950 border border-zinc-200 dark:border-zinc-700 hover:border-red-300 dark:hover:border-red-900 text-zinc-500 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 inline-flex items-center justify-center transition-all active:scale-90"
+                                            >
+
+                                                <i class="fa-solid fa-minus text-xs"></i>
+
+                                            </button>
+
+                                        </form>
+
+
+                                        <!-- CANTIDAD -->
+
+                                        <span class="min-w-8 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100">
+
+                                            {{ producto.existencias }}
+
+                                        </span>
+
+
+                                        <!-- AUMENTAR -->
+
+                                        <form
+                                            method="POST"
+                                            action="{% url 'aumentar_stock' producto.id %}"
+                                        >
+
+                                            {% csrf_token %}
+
+                                            <button
+                                                type="submit"
+                                                title="Aumentar stock"
+                                                class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 hover:bg-red-600 border border-zinc-200 dark:border-zinc-700 hover:border-red-600 text-zinc-500 dark:text-zinc-300 hover:text-white inline-flex items-center justify-center transition-all active:scale-90"
+                                            >
+
+                                                <i class="fa-solid fa-plus text-xs"></i>
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ================================= -->
+                                <!-- ACCIONES -->
+                                <!-- ================================= -->
+
+                                <div class="flex items-center gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+
+
+                                    <!-- EDITAR -->
+
+                                    <a
+                                        href="{% url 'editar_producto' producto.id %}"
+                                        title="Editar producto"
+                                        aria-label="Editar producto"
+                                        class="flex-1 h-10 inline-flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl transition-all active:scale-95"
+                                    >
+
+                                        <i class="fa-solid fa-pen text-sm"></i>
+
+                                    </a>
+
+
+                                    <!-- ELIMINAR -->
+
+                                    <button
+                                        type="button"
+                                        onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')"
+                                        title="Eliminar producto"
+                                        aria-label="Eliminar producto"
+                                        class="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400 transition-all active:scale-90 shrink-0"
+                                    >
+
+                                        <i class="fa-solid fa-trash text-sm"></i>
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+
+            <!-- ================================================= -->
+            <!-- SIN PRODUCTOS -->
+            <!-- ================================================= -->
+
+            {% else %}
+
+                <div class="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl py-16 px-6 text-center">
+
+
+                    <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-red-600 dark:text-red-500 flex items-center justify-center">
+
+                        <i class="fa-solid fa-box-open text-2xl"></i>
+
+                    </div>
+
+
+                    {% if busqueda or categoria_seleccionada %}
+
+                        <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-5">
+                            No se encontraron productos
+                        </h3>
+
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
+                            No hay resultados para los criterios de búsqueda actuales.
+                        </p>
+
+
+                        <a
+                            href="{% url 'lista_productos' %}"
+                            class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-all active:scale-95"
+                        >
+
+                            <i class="fa-solid fa-rotate-left"></i>
+
+                            <span>Restablecer filtros</span>
+
+                        </a>
+
+
+                    {% else %}
+
+                        <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-5">
+                            No hay productos registrados
+                        </h3>
+
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
+                            Comienza agregando el primer producto a la tienda.
+                        </p>
+
+
+                        <a
+                            href="{% url 'crear_producto' %}"
+                            class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-xs shadow-md shadow-red-600/20 transition-all active:scale-95"
+                        >
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            <span>Crear producto</span>
+
+                        </a>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================= -->
+<!-- MODAL ELIMINAR -->
+<!-- ============================================================= -->
+
+<div
+    id="modalEliminar"
+    class="hidden fixed inset-0 z-50 items-center justify-center p-4"
+>
+
+    <!-- FONDO -->
+
+    <div
+        class="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onclick="cerrarModalEliminar()"
+    ></div>
+
+
+    <!-- MODAL -->
+
+    <div class="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-7">
+
+
+        <!-- ICONO -->
+
+        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-500">
+
+            <i class="fa-solid fa-trash text-xl"></i>
+
+        </div>
+
+
+        <!-- TITULO -->
+
+        <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-4">
+            ¿Eliminar producto?
+        </h2>
+
+
+        <!-- DESCRIPCIÓN -->
+
+        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">
+
+            Estás a punto de eliminar
+
+            <span
+                id="nombreProductoEliminar"
+                class="font-bold text-zinc-900 dark:text-zinc-200"
+            ></span>.
+
+            Esta acción no se puede deshacer.
+
+        </p>
+
+
+        <!-- FORMULARIO -->
+
+        <form
+            id="formEliminar"
+            method="POST"
+            class="flex flex-col-reverse sm:flex-row gap-3 mt-6"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- CANCELAR -->
+
+            <button
+                type="button"
+                onclick="cerrarModalEliminar()"
+                class="flex-1 h-11 inline-flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl font-bold text-xs transition-all active:scale-95"
+            >
+
+                <i class="fa-solid fa-xmark"></i>
+
+                <span>Cancelar</span>
+
+            </button>
+
+
+            <!-- ELIMINAR -->
+
+            <button
+                type="submit"
+                class="flex-1 h-11 inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs transition-all active:scale-95 shadow-md shadow-red-600/20"
+            >
+
+                <i class="fa-solid fa-trash"></i>
+
+                <span>Eliminar</span>
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================= -->
+
+<script>
+
+    function abrirModalEliminar(id, nombre) {
+
+        const modal =
+            document.getElementById("modalEliminar");
+
+        const nombreProducto =
+            document.getElementById("nombreProductoEliminar");
+
+        const formulario =
+            document.getElementById("formEliminar");
+
+
+        nombreProducto.textContent =
+            '"' + nombre + '"';
+
+
+        formulario.action =
+            "{% url 'eliminar_producto' 0 %}"
+            .replace("/0/", "/" + id + "/");
+
+
+        modal.classList.remove("hidden");
+
+        modal.classList.add("flex");
+
+        document.body.classList.add("overflow-hidden");
+
+    }
+
+
+    function cerrarModalEliminar() {
+
+        const modal =
+            document.getElementById("modalEliminar");
+
+
+        modal.classList.add("hidden");
+
+        modal.classList.remove("flex");
+
+        document.body.classList.remove("overflow-hidden");
+
+    }
+
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Escape") {
+
+                cerrarModalEliminar();
+
+            }
+
+        }
+    );
+
+</script>
 
 {% endblock %}
+```
