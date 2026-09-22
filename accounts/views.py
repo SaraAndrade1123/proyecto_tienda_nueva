@@ -3,7 +3,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
-
 def iniciar_sesion(request):
 
     if request.method == 'POST':
@@ -34,8 +33,7 @@ def iniciar_sesion(request):
 
     return render(request, 'login.html')
 
-
-@login_required
+'''
 def home(request):
 
     if request.user.groups.filter(name='Cliente').exists():
@@ -44,3 +42,4 @@ def home(request):
     return render(request, 'home.html', {
         'error': 'No tienes permisos para acceder a estas funciones.'
     })
+'''
