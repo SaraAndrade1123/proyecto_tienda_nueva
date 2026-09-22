@@ -52,6 +52,7 @@ def registro(request):
                 first_name=first_name,
                 last_name=last_name
             )
+            
             login(request, user)
             return redirect('registro')
     return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
