@@ -139,6 +139,7 @@ LOGIN_URL = 'login'
 
 AUTH_USER_MODEL = "accounts.User"
 # Sesión de Django activa
-SESSION_COOKIE_AGE = 3600 # 15 minutos 
-SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 7200 # 2 horas
+SESSION_SAVE_EVERY_REQUEST = True # renueva la expiración con cada request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegador
 
