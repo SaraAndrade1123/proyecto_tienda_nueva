@@ -4,8 +4,7 @@
 
 {% block content %}
 
-<div class="min-h-screen w-full bg-zinc-950 py-6 px-4 sm:px-6 lg:px-8">
-
+<div class="min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 py-6 px-4 sm:px-6 lg:px-8">
 
 <div class="w-full max-w-6xl mx-auto">
 
@@ -13,7 +12,7 @@
     <!-- ENCABEZADO -->
     <!-- ===================================================== -->
 
-    <section class="relative overflow-hidden bg-red-600 rounded-3xl p-6 sm:p-8 mb-6 shadow-xl shadow-red-950/20">
+    <section class="relative overflow-hidden bg-red-600 rounded-3xl p-6 sm:p-8 mb-6 shadow-xl shadow-red-600/10 dark:shadow-red-950/20">
 
         <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full"></div>
         <div class="absolute -right-6 -bottom-20 w-40 h-40 bg-black/10 rounded-full"></div>
@@ -44,16 +43,12 @@
 
             </div>
 
-
             <a
                 href="{% url 'lista_productos' %}"
                 class="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-red-600 rounded-xl font-bold text-sm hover:bg-red-50 transition-all shadow-lg active:scale-95"
             >
-
                 <i class="fa-solid fa-arrow-left"></i>
-
                 Volver al catálogo
-
             </a>
 
         </div>
@@ -68,36 +63,29 @@
     <form
         method="POST"
         enctype="multipart/form-data"
-        class="bg-zinc-900 border border-zinc-800 rounded-3xl shadow-xl overflow-hidden"
+        class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm dark:shadow-xl overflow-hidden"
     >
 
         {% csrf_token %}
 
-
-        <!-- ================================================= -->
         <!-- CABECERA -->
-        <!-- ================================================= -->
 
-        <div class="px-6 sm:px-8 py-5 border-b border-zinc-800">
+        <div class="px-6 sm:px-8 py-5 border-b border-zinc-200 dark:border-zinc-800">
 
             <div class="flex items-center gap-3">
 
-                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-950/40 border border-red-900/50">
-
-                    <i class="fa-solid fa-clipboard-list text-red-500"></i>
-
+                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50">
+                    <i class="fa-solid fa-clipboard-list text-red-600 dark:text-red-400"></i>
                 </div>
 
                 <div>
-
-                    <h2 class="text-lg sm:text-xl font-bold text-zinc-100">
+                    <h2 class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
                         Información del producto
                     </h2>
 
-                    <p class="text-xs text-zinc-500 mt-0.5">
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                         Completa los datos necesarios para registrar el artículo.
                     </p>
-
                 </div>
 
             </div>
@@ -105,32 +93,24 @@
         </div>
 
 
-        <!-- ================================================= -->
         <!-- CAMPOS -->
-        <!-- ================================================= -->
 
         <div class="p-6 sm:p-8">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
 
-                <!-- ================================================= -->
                 <!-- NOMBRE -->
-                <!-- ================================================= -->
 
                 <div class="md:col-span-2">
 
                     <label
                         for="{{ formulario.nombre.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
                     >
-
                         Nombre del producto
-
                         <span class="text-red-500">*</span>
-
                     </label>
-
 
                     <div
                         class="
@@ -139,10 +119,14 @@
                         [&>input]:px-4
                         [&>input]:rounded-xl
                         [&>input]:border
-                        [&>input]:border-zinc-700
-                        [&>input]:bg-zinc-800
-                        [&>input]:text-zinc-100
-                        [&>input]:placeholder-zinc-500
+                        [&>input]:border-zinc-200
+                        dark:[&>input]:border-zinc-700
+                        [&>input]:bg-zinc-50
+                        dark:[&>input]:bg-zinc-800
+                        [&>input]:text-zinc-900
+                        dark:[&>input]:text-zinc-100
+                        [&>input]:placeholder-zinc-400
+                        dark:[&>input]:placeholder-zinc-500
                         [&>input]:outline-none
                         [&>input]:transition-all
                         [&>input]:focus:border-red-500
@@ -150,47 +134,81 @@
                         [&>input]:focus:ring-red-500/20
                         "
                     >
-
                         {{ formulario.nombre }}
-
                     </div>
 
-
                     {% if formulario.nombre.errors %}
-
-                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
                             {{ formulario.nombre.errors.0 }}
                         </p>
-
                     {% endif %}
 
                 </div>
 
 
-                <!-- ================================================= -->
+                <!-- DESCRIPCIÓN -->
+
+                <div class="md:col-span-2">
+
+                    <label
+                        for="{{ formulario.descripcion.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                    >
+                        Descripción del producto
+                    </label>
+
+                    <div
+                        class="
+                        [&>textarea]:w-full
+                        [&>textarea]:min-h-[100px]
+                        [&>textarea]:p-4
+                        [&>textarea]:rounded-xl
+                        [&>textarea]:border
+                        [&>textarea]:border-zinc-200
+                        dark:[&>textarea]:border-zinc-700
+                        [&>textarea]:bg-zinc-50
+                        dark:[&>textarea]:bg-zinc-800
+                        [&>textarea]:text-zinc-900
+                        dark:[&>textarea]:text-zinc-100
+                        [&>textarea]:placeholder-zinc-400
+                        dark:[&>textarea]:placeholder-zinc-500
+                        [&>textarea]:outline-none
+                        [&>textarea]:transition-all
+                        [&>textarea]:focus:border-red-500
+                        [&>textarea]:focus:ring-2
+                        [&>textarea]:focus:ring-red-500/20
+                        [&>textarea]:resize-y
+                        "
+                    >
+                        {{ formulario.descripcion }}
+                    </div>
+
+                    {% if formulario.descripcion.errors %}
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                            {{ formulario.descripcion.errors.0 }}
+                        </p>
+                    {% endif %}
+
+                </div>
+
+
                 <!-- PRECIO -->
-                <!-- ================================================= -->
 
                 <div>
 
                     <label
                         for="{{ formulario.precio_unitario.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
                     >
-
                         Precio por unidad
-
                         <span class="text-red-500">*</span>
-
                     </label>
-
 
                     <div class="relative">
 
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold pointer-events-none">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 font-bold pointer-events-none z-10">
                             $
                         </span>
-
 
                         <div
                             class="
@@ -200,9 +218,14 @@
                             [&>input]:pr-4
                             [&>input]:rounded-xl
                             [&>input]:border
-                            [&>input]:border-zinc-700
-                            [&>input]:bg-zinc-800
-                            [&>input]:text-zinc-100
+                            [&>input]:border-zinc-200
+                            dark:[&>input]:border-zinc-700
+                            [&>input]:bg-zinc-50
+                            dark:[&>input]:bg-zinc-800
+                            [&>input]:text-zinc-900
+                            dark:[&>input]:text-zinc-100
+                            [&>input]:placeholder-zinc-400
+                            dark:[&>input]:placeholder-zinc-500
                             [&>input]:outline-none
                             [&>input]:transition-all
                             [&>input]:focus:border-red-500
@@ -210,42 +233,31 @@
                             [&>input]:focus:ring-red-500/20
                             "
                         >
-
                             {{ formulario.precio_unitario }}
-
                         </div>
 
                     </div>
 
-
                     {% if formulario.precio_unitario.errors %}
-
-                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
                             {{ formulario.precio_unitario.errors.0 }}
                         </p>
-
                     {% endif %}
 
                 </div>
 
 
-                <!-- ================================================= -->
                 <!-- EXISTENCIAS -->
-                <!-- ================================================= -->
 
                 <div>
 
                     <label
                         for="{{ formulario.existencias.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
                     >
-
                         Existencias iniciales
-
                         <span class="text-red-500">*</span>
-
                     </label>
-
 
                     <div
                         class="
@@ -254,9 +266,14 @@
                         [&>input]:px-4
                         [&>input]:rounded-xl
                         [&>input]:border
-                        [&>input]:border-zinc-700
-                        [&>input]:bg-zinc-800
-                        [&>input]:text-zinc-100
+                        [&>input]:border-zinc-200
+                        dark:[&>input]:border-zinc-700
+                        [&>input]:bg-zinc-50
+                        dark:[&>input]:bg-zinc-800
+                        [&>input]:text-zinc-900
+                        dark:[&>input]:text-zinc-100
+                        [&>input]:placeholder-zinc-400
+                        dark:[&>input]:placeholder-zinc-500
                         [&>input]:outline-none
                         [&>input]:transition-all
                         [&>input]:focus:border-red-500
@@ -264,40 +281,29 @@
                         [&>input]:focus:ring-red-500/20
                         "
                     >
-
                         {{ formulario.existencias }}
-
                     </div>
 
-
                     {% if formulario.existencias.errors %}
-
-                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
                             {{ formulario.existencias.errors.0 }}
                         </p>
-
                     {% endif %}
 
                 </div>
 
 
-                <!-- ================================================= -->
                 <!-- CANTIDAD -->
-                <!-- ================================================= -->
 
                 <div>
 
                     <label
                         for="{{ formulario.cantidad.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
                     >
-
                         Cantidad por presentación
-
                         <span class="text-red-500">*</span>
-
                     </label>
-
 
                     <div
                         class="
@@ -306,9 +312,14 @@
                         [&>input]:px-4
                         [&>input]:rounded-xl
                         [&>input]:border
-                        [&>input]:border-zinc-700
-                        [&>input]:bg-zinc-800
-                        [&>input]:text-zinc-100
+                        [&>input]:border-zinc-200
+                        dark:[&>input]:border-zinc-700
+                        [&>input]:bg-zinc-50
+                        dark:[&>input]:bg-zinc-800
+                        [&>input]:text-zinc-900
+                        dark:[&>input]:text-zinc-100
+                        [&>input]:placeholder-zinc-400
+                        dark:[&>input]:placeholder-zinc-500
                         [&>input]:outline-none
                         [&>input]:transition-all
                         [&>input]:focus:border-red-500
@@ -316,40 +327,29 @@
                         [&>input]:focus:ring-red-500/20
                         "
                     >
-
                         {{ formulario.cantidad }}
-
                     </div>
 
-
                     {% if formulario.cantidad.errors %}
-
-                        <p class="mt-1.5 text-xs font-medium text-red-400">
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
                             {{ formulario.cantidad.errors.0 }}
                         </p>
-
                     {% endif %}
 
                 </div>
 
 
-                <!-- ================================================= -->
                 <!-- UNIDAD -->
-                <!-- ================================================= -->
 
                 <div>
 
                     <label
                         for="{{ formulario.unidad_medida.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
                     >
-
                         Unidad de medida
-
                         <span class="text-red-500">*</span>
-
                     </label>
-
 
                     <div class="relative">
 
@@ -362,70 +362,12 @@
                             [&>select]:pr-10
                             [&>select]:rounded-xl
                             [&>select]:border
-                            [&>select]:border-zinc-700
-                            [&>select]:bg-zinc-800
-                            [&>select]:text-zinc-100
-                            [&>select]:outline-none
-                            [&>select]:cursor-pointer
-                            [&>select]:focus:border-red-500
-                            [&>select]:focus:ring-2
-                            [&>select]:focus:ring-red-500/20
-                            "
-                        >
-
-                            {{ formulario.unidad_medida }}
-
-                        </div>
-
-
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none"></i>
-
-                    </div>
-
-
-                    {% if formulario.unidad_medida.errors %}
-
-                        <p class="mt-1.5 text-xs font-medium text-red-400">
-                            {{ formulario.unidad_medida.errors.0 }}
-                        </p>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- ================================================= -->
-                <!-- CATEGORÍA -->
-                <!-- ================================================= -->
-
-                <div class="md:col-span-2">
-
-                    <label
-                        for="{{ formulario.categoria.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2"
-                    >
-
-                        Categoría
-
-                        <span class="text-red-500">*</span>
-
-                    </label>
-
-
-                    <div class="relative">
-
-                        <div
-                            class="
-                            [&>select]:appearance-none
-                            [&>select]:w-full
-                            [&>select]:h-11
-                            [&>select]:px-4
-                            [&>select]:pr-10
-                            [&>select]:rounded-xl
-                            [&>select]:border
-                            [&>select]:border-zinc-700
-                            [&>select]:bg-zinc-800
-                            [&>select]:text-zinc-100
+                            [&>select]:border-zinc-200
+                            dark:[&>select]:border-zinc-700
+                            [&>select]:bg-zinc-50
+                            dark:[&>select]:bg-zinc-800
+                            [&>select]:text-zinc-900
+                            dark:[&>select]:text-zinc-100
                             [&>select]:outline-none
                             [&>select]:cursor-pointer
                             [&>select]:transition-all
@@ -434,49 +376,92 @@
                             [&>select]:focus:ring-red-500/20
                             "
                         >
-
-                            {{ formulario.categoria }}
-
+                            {{ formulario.unidad_medida }}
                         </div>
 
-
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xs pointer-events-none"></i>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
 
                     </div>
 
-
-                    {% if formulario.categoria.errors %}
-
-                        <p class="mt-1.5 text-xs font-medium text-red-400">
-                            {{ formulario.categoria.errors.0 }}
+                    {% if formulario.unidad_medida.errors %}
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                            {{ formulario.unidad_medida.errors.0 }}
                         </p>
-
                     {% endif %}
 
                 </div>
 
 
-                <!-- ================================================= -->
+                <!-- CATEGORÍA -->
+
+                <div class="md:col-span-2">
+
+                    <label
+                        for="{{ formulario.categoria.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                    >
+                        Categoría
+                        <span class="text-red-500">*</span>
+                    </label>
+
+                    <div class="relative">
+
+                        <div
+                            class="
+                            [&>select]:appearance-none
+                            [&>select]:w-full
+                            [&>select]:h-11
+                            [&>select]:px-4
+                            [&>select]:pr-10
+                            [&>select]:rounded-xl
+                            [&>select]:border
+                            [&>select]:border-zinc-200
+                            dark:[&>select]:border-zinc-700
+                            [&>select]:bg-zinc-50
+                            dark:[&>select]:bg-zinc-800
+                            [&>select]:text-zinc-900
+                            dark:[&>select]:text-zinc-100
+                            [&>select]:outline-none
+                            [&>select]:cursor-pointer
+                            [&>select]:transition-all
+                            [&>select]:focus:border-red-500
+                            [&>select]:focus:ring-2
+                            [&>select]:focus:ring-red-500/20
+                            "
+                        >
+                            {{ formulario.categoria }}
+                        </div>
+
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
+
+                    </div>
+
+                    {% if formulario.categoria.errors %}
+                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                            {{ formulario.categoria.errors.0 }}
+                        </p>
+                    {% endif %}
+
+                </div>
+
+
                 <!-- IMAGEN -->
-                <!-- ================================================= -->
 
                 <div class="md:col-span-2 mt-2">
 
                     <div class="flex items-center justify-between mb-3">
 
                         <div>
-
-                            <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 Fotografía del producto
                             </label>
 
-                            <p class="text-xs text-zinc-600 mt-1">
+                            <p class="text-xs text-zinc-500 dark:text-zinc-600 mt-1">
                                 PNG, JPG o JPEG. Tamaño máximo: 5 MB.
                             </p>
-
                         </div>
 
-                        <i class="fa-solid fa-image text-zinc-600"></i>
+                        <i class="fa-solid fa-image text-zinc-400 dark:text-zinc-600"></i>
 
                     </div>
 
@@ -485,15 +470,13 @@
 
                     <div
                         id="contenedorClickImagen"
-                        class="relative overflow-hidden border-2 border-dashed border-zinc-700 bg-zinc-800/40 rounded-2xl transition-all duration-200 cursor-pointer hover:border-red-500/70 hover:bg-red-950/10"
+                        class="relative overflow-hidden border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl transition-all duration-200 cursor-pointer hover:border-red-500/70 hover:bg-red-50 dark:hover:bg-red-950/10"
                     >
 
                         <!-- INPUT REAL DE DJANGO -->
 
                         <div class="absolute w-px h-px overflow-hidden opacity-0 pointer-events-none">
-
                             {{ formulario.imagen }}
-
                         </div>
 
 
@@ -504,33 +487,25 @@
                             class="flex flex-col items-center justify-center text-center px-6 py-10"
                         >
 
-                            <div class="w-14 h-14 flex items-center justify-center rounded-2xl bg-red-950/40 border border-red-900/40 mb-4">
-
-                                <i class="fa-solid fa-cloud-arrow-up text-xl text-red-500"></i>
-
+                            <div class="w-14 h-14 flex items-center justify-center rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 mb-4">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl text-red-600 dark:text-red-500"></i>
                             </div>
 
-
-                            <h3 class="text-sm font-bold text-zinc-200">
+                            <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-200">
                                 Selecciona una imagen
                             </h3>
-
 
                             <p class="text-xs text-zinc-500 mt-1">
                                 Haz clic aquí o arrastra una imagen hasta esta zona
                             </p>
-
 
                             <button
                                 type="button"
                                 id="btnSeleccionarImagen"
                                 class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95"
                             >
-
                                 <i class="fa-solid fa-upload"></i>
-
                                 Seleccionar imagen
-
                             </button>
 
                         </div>
@@ -549,23 +524,19 @@
                                     id="previewImagen"
                                     src=""
                                     alt="Vista previa"
-                                    class="w-full h-64 object-cover rounded-xl border border-zinc-700 shadow-xl"
+                                    class="w-full h-64 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl"
                                 >
-
 
                                 <button
                                     type="button"
                                     id="btnEliminarImagen"
                                     title="Eliminar imagen"
-                                    class="absolute -top-3 -right-3 w-9 h-9 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-700 text-red-500 hover:bg-red-950 hover:border-red-700 transition-all active:scale-90"
+                                    class="absolute -top-3 -right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 transition-all active:scale-90"
                                 >
-
                                     <i class="fa-solid fa-xmark"></i>
-
                                 </button>
 
                             </div>
-
 
                             <div class="flex items-center justify-center gap-2 mt-3 text-xs text-zinc-500">
 
@@ -584,11 +555,9 @@
 
 
                     {% if formulario.imagen.errors %}
-
-                        <p class="mt-2 text-xs font-medium text-red-400">
+                        <p class="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
                             {{ formulario.imagen.errors.0 }}
                         </p>
-
                     {% endif %}
 
                 </div>
@@ -598,35 +567,26 @@
         </div>
 
 
-        <!-- ================================================= -->
         <!-- FOOTER -->
-        <!-- ================================================= -->
 
-        <div class="px-6 sm:px-8 py-5 bg-zinc-950/40 border-t border-zinc-800">
+        <div class="px-6 sm:px-8 py-5 bg-zinc-50/70 dark:bg-zinc-950/40 border-t border-zinc-200 dark:border-zinc-800">
 
             <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
 
                 <a
                     href="{% url 'lista_productos' %}"
-                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-sm transition-all active:scale-95"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-sm transition-all active:scale-95"
                 >
-
                     <i class="fa-solid fa-xmark"></i>
-
                     Cancelar
-
                 </a>
-
 
                 <button
                     type="submit"
                     class="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-sm hover:shadow-lg hover:shadow-red-600/20 transition-all active:scale-95"
                 >
-
                     <i class="fa-solid fa-floppy-disk"></i>
-
                     Guardar producto
-
                 </button>
 
             </div>
@@ -637,337 +597,162 @@
 
 </div>
 
-
 </div>
 
 <!-- ============================================================= -->
-
 <!-- JAVASCRIPT DE IMAGEN -->
-
 <!-- ============================================================= -->
 
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const inputImagen =
-        document.querySelector('input[type="file"]');
-
-    const btnSeleccionarImagen =
-        document.getElementById("btnSeleccionarImagen");
-
-    const btnEliminarImagen =
-        document.getElementById("btnEliminarImagen");
-
-    const contenedorDropzone =
-        document.getElementById("contenedorClickImagen");
-
-    const areaImagen =
-        document.getElementById("areaImagen");
-
-    const previewContainer =
-        document.getElementById("previewContainer");
-
-    const previewImagen =
-        document.getElementById("previewImagen");
-
-    const nombreArchivo =
-        document.getElementById("nombreArchivo");
-
+    const inputImagen = document.querySelector('input[type="file"]');
+    const btnSeleccionarImagen = document.getElementById("btnSeleccionarImagen");
+    const btnEliminarImagen = document.getElementById("btnEliminarImagen");
+    const contenedorDropzone = document.getElementById("contenedorClickImagen");
+    const areaImagen = document.getElementById("areaImagen");
+    const previewContainer = document.getElementById("previewContainer");
+    const previewImagen = document.getElementById("previewImagen");
+    const nombreArchivo = document.getElementById("nombreArchivo");
 
     if (!inputImagen) {
-
-        console.error(
-            "No se encontró el campo de imagen."
-        );
-
+        console.error("No se encontró el campo de imagen.");
         return;
-
     }
 
+    /* Clases de resaltado al arrastrar (claro y oscuro) */
+    const clasesDrag = ["border-red-500", "bg-red-50", "dark:bg-red-950/20"];
 
-    /* ========================================================= */
+
     /* BOTÓN SELECCIONAR */
-    /* ========================================================= */
 
-    btnSeleccionarImagen.addEventListener(
-        "click",
-        function (e) {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            inputImagen.click();
-
-        }
-    );
+    btnSeleccionarImagen.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        inputImagen.click();
+    });
 
 
-    /* ========================================================= */
     /* CLICK EN DROPZONE */
-    /* ========================================================= */
 
-    contenedorDropzone.addEventListener(
-        "click",
-        function (e) {
-
-            if (
-                e.target.closest("#btnSeleccionarImagen") ||
-                e.target.closest("#btnEliminarImagen")
-            ) {
-
-                return;
-
-            }
-
-            inputImagen.click();
-
+    contenedorDropzone.addEventListener("click", function (e) {
+        if (
+            e.target.closest("#btnSeleccionarImagen") ||
+            e.target.closest("#btnEliminarImagen")
+        ) {
+            return;
         }
-    );
+        inputImagen.click();
+    });
 
 
-    /* ========================================================= */
     /* MOSTRAR IMAGEN */
-    /* ========================================================= */
 
     function mostrarImagen(archivo) {
 
         if (!archivo) {
-
             return;
-
         }
 
-
-        const tiposPermitidos = [
-            "image/png",
-            "image/jpeg"
-        ];
-
-
-        const maximo =
-            5 * 1024 * 1024;
-
+        const tiposPermitidos = ["image/png", "image/jpeg"];
+        const maximo = 5 * 1024 * 1024;
 
         if (!tiposPermitidos.includes(archivo.type)) {
-
-            alert(
-                "Solo se permiten imágenes PNG, JPG o JPEG."
-            );
-
+            alert("Solo se permiten imágenes PNG, JPG o JPEG.");
             inputImagen.value = "";
-
             return;
-
         }
-
 
         if (archivo.size > maximo) {
-
-            alert(
-                "La imagen no puede superar los 5 MB."
-            );
-
+            alert("La imagen no puede superar los 5 MB.");
             inputImagen.value = "";
-
             return;
-
         }
 
+        const lector = new FileReader();
 
-        const lector =
-            new FileReader();
-
-
-        lector.onload =
-            function (evento) {
-
-                previewImagen.src =
-                    evento.target.result;
-
-                nombreArchivo.textContent =
-                    archivo.name;
-
-                areaImagen.classList.add(
-                    "hidden"
-                );
-
-                previewContainer.classList.remove(
-                    "hidden"
-                );
-
-            };
-
+        lector.onload = function (evento) {
+            previewImagen.src = evento.target.result;
+            nombreArchivo.textContent = archivo.name;
+            areaImagen.classList.add("hidden");
+            previewContainer.classList.remove("hidden");
+        };
 
         lector.readAsDataURL(archivo);
-
     }
 
 
-    /* ========================================================= */
     /* CAMBIO DE ARCHIVO */
-    /* ========================================================= */
 
-    inputImagen.addEventListener(
-        "change",
-        function () {
-
-            if (this.files.length > 0) {
-
-                mostrarImagen(
-                    this.files[0]
-                );
-
-            }
-
+    inputImagen.addEventListener("change", function () {
+        if (this.files.length > 0) {
+            mostrarImagen(this.files[0]);
         }
-    );
-
-
-    /* ========================================================= */
-    /* ELIMINAR IMAGEN */
-    /* ========================================================= */
-
-    btnEliminarImagen.addEventListener(
-        "click",
-        function (e) {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            inputImagen.value = "";
-
-            previewImagen.src = "";
-
-            nombreArchivo.textContent = "";
-
-            previewContainer.classList.add(
-                "hidden"
-            );
-
-            areaImagen.classList.remove(
-                "hidden"
-            );
-
-        }
-    );
-
-
-    /* ========================================================= */
-    /* DRAG */
-    /* ========================================================= */
-
-    [
-        "dragenter",
-        "dragover"
-    ].forEach(function (evento) {
-
-        contenedorDropzone.addEventListener(
-            evento,
-            function (e) {
-
-                e.preventDefault();
-
-                e.stopPropagation();
-
-                contenedorDropzone.classList.add(
-                    "border-red-500",
-                    "bg-red-950/20"
-                );
-
-            }
-        );
-
     });
 
 
-    /* ========================================================= */
+    /* ELIMINAR IMAGEN */
+
+    btnEliminarImagen.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        inputImagen.value = "";
+        previewImagen.src = "";
+        nombreArchivo.textContent = "";
+
+        previewContainer.classList.add("hidden");
+        areaImagen.classList.remove("hidden");
+    });
+
+
+    /* DRAG */
+
+    ["dragenter", "dragover"].forEach(function (evento) {
+        contenedorDropzone.addEventListener(evento, function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            contenedorDropzone.classList.add(...clasesDrag);
+        });
+    });
+
+
     /* DRAG LEAVE */
-    /* ========================================================= */
 
-    contenedorDropzone.addEventListener(
-        "dragleave",
-        function (e) {
-
-            e.preventDefault();
-
-            e.stopPropagation();
-
-            contenedorDropzone.classList.remove(
-                "border-red-500",
-                "bg-red-950/20"
-            );
-
-        }
-    );
+    contenedorDropzone.addEventListener("dragleave", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        contenedorDropzone.classList.remove(...clasesDrag);
+    });
 
 
-    /* ========================================================= */
     /* DROP */
-    /* ========================================================= */
 
-    contenedorDropzone.addEventListener(
-        "drop",
-        function (e) {
+    contenedorDropzone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
 
-            e.preventDefault();
+        contenedorDropzone.classList.remove(...clasesDrag);
 
-            e.stopPropagation();
+        const archivos = e.dataTransfer.files;
 
-            contenedorDropzone.classList.remove(
-                "border-red-500",
-                "bg-red-950/20"
-            );
-
-
-            const archivos =
-                e.dataTransfer.files;
-
-
-            if (
-                !archivos ||
-                archivos.length === 0
-            ) {
-
-                return;
-
-            }
-
-
-            const archivo =
-                archivos[0];
-
-
-            try {
-
-                const dataTransfer =
-                    new DataTransfer();
-
-                dataTransfer.items.add(
-                    archivo
-                );
-
-                inputImagen.files =
-                    dataTransfer.files;
-
-            } catch (error) {
-
-                console.error(
-                    "No se pudo asignar el archivo:",
-                    error
-                );
-
-            }
-
-
-            mostrarImagen(
-                archivo
-            );
-
+        if (!archivos || archivos.length === 0) {
+            return;
         }
-    );
+
+        const archivo = archivos[0];
+
+        try {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(archivo);
+            inputImagen.files = dataTransfer.files;
+        } catch (error) {
+            console.error("No se pudo asignar el archivo:", error);
+        }
+
+        mostrarImagen(archivo);
+    });
 
 });
 
