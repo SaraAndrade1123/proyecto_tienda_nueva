@@ -7,6 +7,7 @@ class Producto(models.Model):
         ('Kg', 'Kilogramos (kg)'),
         ('Litros', 'Litros (L)'),
         ('Gramos', 'Gramos (g)'),
+        ('Mililitros', 'Mililitros (ml)')
         
     ]
 
@@ -20,6 +21,7 @@ class Producto(models.Model):
         ('Embutidos','Embutidos'),
         ('Granos','Granos'),
         ('Legumbres','Legumbres'),
+        ('Paqueteria', 'Paqueteria'),
       
     ]
 
@@ -28,6 +30,7 @@ class Producto(models.Model):
     cantidad = models.IntegerField()
     existencias = models.IntegerField()
     imagen = models.ImageField(upload_to='productos/', null=True, blank=True)
+    descripcion = models.TextField(blank=True)
 
   
     unidad_medida = models.CharField(

@@ -23,7 +23,7 @@
                         <i class="fa-solid fa-boxes-stacked text-sm"></i>
 
                         <span class="text-xs font-bold uppercase tracking-wider">
-                            Gestión de inventario
+                            {% if user.is_superuser %}Gestión de inventario{% else %}Catálogo{% endif %}
                         </span>
 
                     </div>
@@ -33,22 +33,30 @@
                     </h1>
 
                     <p class="text-red-100 text-sm mt-1 max-w-xl">
-                        Administra el catálogo, precios, categorías y existencias en tiempo real.
+                        {% if user.is_superuser %}
+                            Administra el catálogo, precios, categorías y existencias en tiempo real.
+                        {% else %}
+                            Consulta los productos disponibles, sus precios y existencias.
+                        {% endif %}
                     </p>
 
                 </div>
 
 
-                <a
-                    href="{% url 'crear_producto' %}"
-                    class="shrink-0 h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95"
-                >
+                {% if user.is_superuser %}
 
-                    <i class="fa-solid fa-plus"></i>
+                    <a
+                        href="{% url 'crear_producto' %}"
+                        class="shrink-0 h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95"
+                    >
 
-                    <span>Nuevo producto</span>
+                        <i class="fa-solid fa-plus"></i>
 
-                </a>
+                        <span>Nuevo producto</span>
+
+                    </a>
+
+                {% endif %}
 
             </div>
 
@@ -296,6 +304,12 @@
                             <!-- IMAGEN -->
                             <!-- ================================= -->
 
+                            <a
+                                href="{% url 'detalle_producto' producto.id %}"
+                                class="block"
+                                aria-label="Ver detalle de {{ producto.nombre }}"
+                            >
+
                             <div class="relative w-full h-56 bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center overflow-hidden border-b border-zinc-200 dark:border-zinc-800 p-4">
 
                                 {% if producto.imagen %}
@@ -339,6 +353,8 @@
 
                             </div>
 
+                            </a>
+
 
                             <!-- ================================= -->
                             <!-- CONTENIDO -->
@@ -355,7 +371,12 @@
                                         class="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate"
                                         title="{{ producto.nombre }}"
                                     >
-                                        {{ producto.nombre }}
+                                        <a
+                                            href="{% url 'detalle_producto' producto.id %}"
+                                            class="hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                        >
+                                            {{ producto.nombre }}
+                                        </a>
                                     </h3>
 
                                     <p class="text-2xl font-black text-red-600 dark:text-red-500 mt-1">
@@ -413,46 +434,45 @@
 
 
                                 <!-- ================================= -->
-                                <!-- AJUSTAR STOCK -->
+                                <!-- ACCIONES (SOLO SUPERUSUARIO) -->
                                 <!-- ================================= -->
 
-                               
-                                <!-- ================================= -->
-                                <!-- ACCIONES -->
-                                <!-- ================================= -->
+                                {% if user.is_superuser %}
 
-                                <div class="flex items-center gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                                    <div class="flex items-center gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
 
 
-                                    <!-- EDITAR -->
+                                        <!-- EDITAR -->
 
-                                    <a
-                                        href="{% url 'editar_producto' producto.id %}"
-                                        title="Editar producto"
-                                        aria-label="Editar producto"
-                                        class="flex-1 h-10 inline-flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl transition-all active:scale-95"
-                                    >
+                                        <a
+                                            href="{% url 'editar_producto' producto.id %}"
+                                            title="Editar producto"
+                                            aria-label="Editar producto"
+                                            class="flex-1 h-10 inline-flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl transition-all active:scale-95"
+                                        >
 
-                                        <i class="fa-solid fa-pen text-sm"></i>
+                                            <i class="fa-solid fa-pen text-sm"></i>
 
-                                    </a>
+                                        </a>
 
 
-                                    <!-- ELIMINAR -->
+                                        <!-- ELIMINAR -->
 
-                                    <button
-                                        type="button"
-                                        onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')"
-                                        title="Eliminar producto"
-                                        aria-label="Eliminar producto"
-                                        class="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400 transition-all active:scale-90 shrink-0"
-                                    >
+                                        <button
+                                            type="button"
+                                            onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')"
+                                            title="Eliminar producto"
+                                            aria-label="Eliminar producto"
+                                            class="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400 transition-all active:scale-90 shrink-0"
+                                        >
 
-                                        <i class="fa-solid fa-trash text-sm"></i>
+                                            <i class="fa-solid fa-trash text-sm"></i>
 
-                                    </button>
+                                        </button>
 
-                                </div>
+                                    </div>
+
+                                {% endif %}
 
                             </div>
 
@@ -508,21 +528,32 @@
                             No hay productos registrados
                         </h3>
 
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
-                            Comienza agregando el primer producto a la tienda.
-                        </p>
+
+                        {% if user.is_superuser %}
+
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
+                                Comienza agregando el primer producto a la tienda.
+                            </p>
 
 
-                        <a
-                            href="{% url 'crear_producto' %}"
-                            class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-xs shadow-md shadow-red-600/20 transition-all active:scale-95"
-                        >
+                            <a
+                                href="{% url 'crear_producto' %}"
+                                class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-xs shadow-md shadow-red-600/20 transition-all active:scale-95"
+                            >
 
-                            <i class="fa-solid fa-plus"></i>
+                                <i class="fa-solid fa-plus"></i>
 
-                            <span>Crear producto</span>
+                                <span>Crear producto</span>
 
-                        </a>
+                            </a>
+
+                        {% else %}
+
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
+                                Aún no hay productos disponibles. Vuelve a consultar más tarde.
+                            </p>
+
+                        {% endif %}
 
                     {% endif %}
 
@@ -537,8 +568,10 @@
 </div>
 
 
+{% if user.is_superuser %}
+
 <!-- ============================================================= -->
-<!-- MODAL ELIMINAR -->
+<!-- MODAL ELIMINAR (SOLO SUPERUSUARIO) -->
 <!-- ============================================================= -->
 
 <div
@@ -638,7 +671,7 @@
 
 
 <!-- ============================================================= -->
-<!-- JAVASCRIPT -->
+<!-- JAVASCRIPT (SOLO SUPERUSUARIO) -->
 <!-- ============================================================= -->
 
 <script>
@@ -703,5 +736,6 @@
 
 </script>
 
+{% endif %}
+
 {% endblock %}
-```

@@ -394,6 +394,54 @@
 
                 </div>
 
+
+                <!-- DESCRIPCIÓN -->
+
+                <div class="md:col-span-2 xl:col-span-4">
+
+                    <label
+                        for="{{ formulario.descripcion.id_for_label }}"
+                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                    >
+                        Descripción
+                    </label>
+
+                    <div
+                        class="
+                            [&>textarea]:block
+                            [&>textarea]:w-full
+                            [&>textarea]:min-h-32
+                            [&>textarea]:px-4
+                            [&>textarea]:py-3
+                            [&>textarea]:rounded-xl
+                            [&>textarea]:border
+                            [&>textarea]:border-zinc-200
+                            dark:[&>textarea]:border-zinc-700
+                            [&>textarea]:bg-zinc-50
+                            dark:[&>textarea]:bg-zinc-800
+                            [&>textarea]:text-zinc-900
+                            dark:[&>textarea]:text-zinc-100
+                            [&>textarea]:placeholder-zinc-400
+                            dark:[&>textarea]:placeholder-zinc-500
+                            [&>textarea]:resize-y
+                            [&>textarea]:outline-none
+                            [&>textarea]:transition-all
+                            [&>textarea]:focus:border-red-500
+                            [&>textarea]:focus:ring-4
+                            [&>textarea]:focus:ring-red-500/10
+                        "
+                    >
+                        {{ formulario.descripcion }}
+                    </div>
+
+                    {% if formulario.descripcion.errors %}
+                        <p class="mt-2 text-xs font-medium text-red-600">
+                            {{ formulario.descripcion.errors.0 }}
+                        </p>
+                    {% endif %}
+
+                </div>
+
             </div>
 
         </div>
