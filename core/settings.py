@@ -137,6 +137,7 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 
+AUTH_USER_MODEL = "accounts.User"
 # Sesión de Django activa
 SESSION_COOKIE_AGE = 3600 # 15 minutos 
 SESSION_SAVE_EVERY_REQUEST = True
