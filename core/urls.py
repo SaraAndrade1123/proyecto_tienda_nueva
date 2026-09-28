@@ -9,7 +9,6 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
     path('usuarios/', include('accounts.urls')),
-    #path('', lambda request: redirect('login')),
 
     path('inventario/', include('gestor_inventario.urls')),
 

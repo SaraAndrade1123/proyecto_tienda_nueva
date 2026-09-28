@@ -14,12 +14,14 @@
     <script>
         (function () {
             try {
-                const saved = localStorage.getItem('color-theme');
+                const saved = localStorage.getItem('theme');
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 if (saved === 'dark' || (!saved && prefersDark)) {
                     document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
                 } else {
                     document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
                 }
             } catch (e) {}
         })();
@@ -64,12 +66,12 @@
             <!-- Navegación de escritorio -->
             <div class="hidden md:flex items-center space-x-6 text-sm font-semibold">
                 <a href="{% url 'informacion_tienda' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
-                <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
+                <a href="{% url 'lista_productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
 
                 {% if user.is_authenticated and user.is_staff %}
-                    <a href="{% url 'productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
-                    <a href="{% url 'clientes' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
-                    <a href="{% url 'proveedores' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
+                    <a href="{% url 'lista_productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
+                    <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
+                    <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
                 {% endif %}
 
                 <!-- Modo oscuro -->
@@ -136,12 +138,12 @@
                 {% endif %}
 
                 <a href="{% url 'informacion_tienda' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
-                <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
+                <a href="{% url 'lista_productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
 
                 {% if user.is_authenticated and user.is_staff %}
-                    <a href="{% url 'productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
-                    <a href="{% url 'clientes' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
-                    <a href="{% url 'proveedores' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
+                    <a href="{% url 'lista_productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
+                    <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
+                    <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
                 {% endif %}
 
                 <hr class="border-white/20 dark:border-gray-700">
@@ -168,7 +170,7 @@
     </nav>
 
     <!-- Contenido Principal -->
-    <main class="flex-grow container mx-auto px-4 py-12 max-w-4xl">
+    <main class="w-full min-h-screen bg-white dark:bg-brand-darkbg transition-colors duration-500">
         {% block content %}
         {% endblock %}
     </main>
@@ -221,7 +223,7 @@
             });
         }
 
-        // --- Modo oscuro ---
+        // --- Modo oscuro / claro ---
         const htmlElement = document.documentElement;
         const iconDesktop = document.getElementById('theme-icon-desktop');
         const iconMobile = document.getElementById('theme-icon-mobile');
@@ -241,10 +243,12 @@
             const isDark = htmlElement.classList.contains('dark');
             if (isDark) {
                 htmlElement.classList.remove('dark');
-                localStorage.setItem('color-theme', 'light');
+                htmlElement.classList.add('light');
+                localStorage.setItem('theme', 'light');
             } else {
+                htmlElement.classList.remove('light');
                 htmlElement.classList.add('dark');
-                localStorage.setItem('color-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
             }
             applyThemeIcons();
         }
@@ -255,5 +259,6 @@
         // Inicializar iconos según el tema ya aplicado en <head>
         applyThemeIcons();
     </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </body>
 </html>
