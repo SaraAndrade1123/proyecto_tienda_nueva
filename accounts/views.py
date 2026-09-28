@@ -120,3 +120,4 @@ def editar_perfil(request):
         return redirect('informacion')
 
     return render(request, 'perfil/editar-perfil.html')
+    
