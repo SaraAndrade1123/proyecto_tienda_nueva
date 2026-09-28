@@ -63,11 +63,11 @@
 
         <p>Has iniciado sesión correctamente.</p>
         
-        <a href="{% url 'catalogo' %}" class="boton">
+        <a href="{% url 'lista_productos' %}" class="boton">
             Ver catálogo
         </a>
 
-        <form method="POST" action="{% url 'logout' %}">
+        <form method="POST" action="#">
             {% csrf_token %}
 
             <button type="submit" class="boton">

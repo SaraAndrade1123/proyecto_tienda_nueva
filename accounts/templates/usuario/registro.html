@@ -9,6 +9,19 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#b91c1c',
+                            darkred: '#7f1d1d',
+                            darkbg: '#0f0f0f', 
+                            darknav: '#1a1a1a', 
+                            darkcard: '#1e1e1e',
+                        }
+                    }
+                }
+            }
         }
     </script>
     <!-- Font Awesome Free CDN -->
@@ -29,12 +42,12 @@
         }
     </script>
 </head>
-<body class="bg-[#fdf2f4] dark:bg-[#090d16] min-h-screen py-10 px-4 flex flex-col items-center justify-center text-slate-800 dark:text-slate-200 transition-colors duration-200">
+<body class="bg-[#fdf2f4] dark:bg-brand-darkbg min-h-screen py-10 px-4 flex flex-col items-center justify-center text-slate-800 dark:text-slate-200 transition-colors duration-200">
 
     <!-- CABECERA SUPERIOR -->
     <div class="text-center mb-6">
         <!-- Logo / Icono principal -->
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-[#be123c] dark:text-rose-400 mb-3 shadow-sm border border-rose-200/50 dark:border-rose-900/50">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-red-100 dark:bg-brand-darkred/30 text-brand-red dark:text-red-400 mb-3 shadow-sm border border-red-200/50 dark:border-brand-darkred/50">
             <i class="fa-solid fa-store text-2xl"></i>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -50,7 +63,7 @@
                 id="themeToggleBtn"
                 onclick="toggleTheme()"
                 type="button"
-                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border border-rose-200 dark:border-slate-700 bg-rose-50/80 dark:bg-slate-800/80 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-slate-700 transition-all shadow-sm"
+                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border border-red-200 dark:border-slate-700 bg-red-50/80 dark:bg-brand-darknav text-brand-red dark:text-red-400 hover:bg-red-100 dark:hover:bg-slate-700 transition-all shadow-sm"
             >
                 <i id="themeIcon" class="fa-solid fa-moon"></i>
                 <span id="themeText">Modo Oscuro</span>
@@ -59,15 +72,15 @@
     </div>
 
     <!-- TARJETA PRINCIPAL -->
-    <div class="w-full max-w-xl bg-white dark:bg-[#151c2c] rounded-3xl p-6 sm:p-9 shadow-xl shadow-rose-950/5 dark:shadow-black/40 border border-rose-100/60 dark:border-slate-800 transition-colors duration-200">
+    <div class="w-full max-w-xl bg-white dark:bg-brand-darkcard rounded-3xl p-6 sm:p-9 shadow-xl shadow-red-950/5 dark:shadow-black/40 border border-red-100/60 dark:border-slate-800 transition-colors duration-200">
 
         <!-- MENSAJE DE ERROR -->
         {% if errors %}
-        <div class="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 flex items-start gap-3">
-            <i class="fa-solid fa-circle-exclamation text-[#be123c] dark:text-rose-400 text-base mt-0.5"></i>
-            <div class="text-xs sm:text-sm text-rose-900 dark:text-rose-200">
+        <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-brand-darkred/20 border border-red-200/80 dark:border-brand-darkred/60 flex items-start gap-3">
+            <i class="fa-solid fa-circle-exclamation text-brand-red dark:text-red-400 text-base mt-0.5"></i>
+            <div class="text-xs sm:text-sm text-red-900 dark:text-red-200">
                 <p class="font-bold mb-1">Por favor corrige los siguientes errores:</p>
-                <ul class="list-disc list-inside space-y-1 text-rose-800/90 dark:text-rose-300">
+                <ul class="list-disc list-inside space-y-1 text-red-800/90 dark:text-red-300">
                     {% for error in errors %}
                         <li>{{ error }}</li>
                     {% endfor %}
@@ -100,7 +113,7 @@
                                 value="{{ datos.first_name|default:'' }}"
                                 placeholder="Juan"
                                 required
-                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                             >
                         </div>
                     </div>
@@ -119,7 +132,7 @@
                                 value="{{ datos.last_name|default:'' }}"
                                 placeholder="Pérez"
                                 required
-                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                             >
                         </div>
                     </div>
@@ -139,7 +152,7 @@
                             value="{{ datos.document|default:'' }}"
                             placeholder="1020304050"
                             required
-                            class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                         >
                     </div>
                 </div>
@@ -168,7 +181,7 @@
                                 value="{{ datos.username|default:'' }}"
                                 placeholder="juanperez"
                                 required
-                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                             >
                         </div>
                     </div>
@@ -187,7 +200,7 @@
                                 value="{{ datos.phone|default:'' }}"
                                 placeholder="3001234567"
                                 required
-                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                             >
                         </div>
                     </div>
@@ -207,7 +220,7 @@
                             value="{{ datos.email|default:'' }}"
                             placeholder="correo@ejemplo.com"
                             required
-                            class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                            class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                         >
                     </div>
                 </div>
@@ -235,7 +248,7 @@
                                 name="password1"
                                 placeholder="••••••••"
                                 required
-                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                             >
                         </div>
                     </div>
@@ -253,7 +266,7 @@
                                 name="password2"
                                 placeholder="••••••••"
                                 required
-                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-[#0b0f19] focus:border-[#be123c] dark:focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10"
+                                class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-brand-darkbg text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none transition-all focus:bg-white dark:focus:bg-brand-darkbg focus:border-brand-red dark:focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
                             >
                         </div>
                     </div>
@@ -263,7 +276,7 @@
             <!-- BOTÓN DE ACCIÓN -->
             <button
                 type="submit"
-                class="w-full h-12 mt-2 inline-flex items-center justify-center gap-2 bg-[#be123c] hover:bg-[#9f1239] text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-rose-900/10 active:scale-[0.99]"
+                class="w-full h-12 mt-2 inline-flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-darkred text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-red-900/10 active:scale-[0.99]"
             >
                 <i class="fa-solid fa-user-plus text-xs"></i>
                 Registrarse
@@ -274,12 +287,12 @@
         <div class="mt-6 text-center pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
             <p class="text-xs text-slate-500 dark:text-slate-400">
                 ¿Ya tienes una cuenta?
-                <a href="{% url 'login' %}" class="font-bold text-[#be123c] dark:text-rose-400 hover:underline ml-1">
+                <a href="{% url 'login' %}" class="font-bold text-brand-red dark:text-red-400 hover:underline ml-1">
                     Iniciar Sesión
                 </a>
             </p>
             <div>
-                <a href="{% url 'home' %}" class="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-colors">
+                <a href="{% url 'lista_productos' %}" class="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-colors">
                     <i class="fa-solid fa-arrow-left text-[10px]"></i>
                     Volver
                 </a>
@@ -299,7 +312,7 @@
                 icon.className = 'fa-solid fa-sun';
                 text.textContent = 'Modo Claro';
             } else {
-                icon.className = 'fa-solid fa-moon text-rose-600';
+                icon.className = 'fa-solid fa-moon text-brand-red';
                 text.textContent = 'Modo Oscuro';
             }
         }
