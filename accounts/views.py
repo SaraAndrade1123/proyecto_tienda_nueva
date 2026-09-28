@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import Group, Permission
+
 from .models import User
 from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.urls import reverse
+
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, 'home.html')
@@ -57,6 +60,8 @@ def registro(request):
             )
             login(request, user)
             return redirect('login')
+
+            
     return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
 
 def iniciar_sesion(request):
@@ -81,7 +86,9 @@ def iniciar_sesion(request):
 
         if usuario_autenticado is not None:
             login(request, usuario_autenticado)
-            return redirect('lista_productos')
+            if usuario_autenticado.is_staff:
+                return redirect('lista_productos')
+            return redirect('informacion_tienda')
 
         return render(request, 'login.html', {
             'error': 'Correo o contraseña incorrectos'
@@ -89,3 +96,27 @@ def iniciar_sesion(request):
 
     return render(request, 'login.html')
 
+def cerrar_sesion(request):
+    logout(request)
+    return redirect('login')
+
+@login_required
+def editar_perfil(request):
+    if request.method == 'POST':
+        user = request.user
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        user.phone = request.POST.get('phone', getattr(user, 'phone', ''))
+        user.save()
+
+        # Actualizar foto si el modelo Perfil la maneja
+        if hasattr(user, 'perfil'):
+            foto = request.FILES.get('foto')
+            if foto:
+                user.perfil.foto = foto
+                user.perfil.save()
+
+        return redirect('informacion')
+
+    return render(request, 'perfil/editar-perfil.html')

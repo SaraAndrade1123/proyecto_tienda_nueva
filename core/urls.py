@@ -8,15 +8,14 @@ from django.shortcuts import redirect
 urlpatterns = [
 
     path('admin/', admin.site.urls),
-    path('', include('accounts.urls')),
-
+    path('usuarios/', include('accounts.urls')),
     #path('', lambda request: redirect('login')),
 
-    path('', include('accounts.urls')),
-
-    path('', include('gestor_inventario.urls')),
+    path('inventario/', include('gestor_inventario.urls')),
 
     path('productos/', include('productos.urls')),
+
+    path('', lambda request: redirect('informacion_tienda')), 
 ]
 
 if settings.DEBUG:

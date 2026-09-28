@@ -3,12 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Tienda Nueva{% endblock %}</title>
-    
+    <title>{% block title %}Tienda Nueva - Información{% endblock %}</title>
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'><path fill='rgb(185, 28, 28)' d='M94.7 136.3C101.6 112.4 123.5 96 148.4 96L492.4 96C517.3 96 539.2 112.4 546.2 136.3L569.6 216.5C582.4 260.2 549.5 304 504 304C477.7 304 454.6 289.1 443.2 266.9C431.6 288.8 408.6 304 381.8 304C355.2 304 332.1 289 320.5 267C308.9 289 285.8 304 259.2 304C232.4 304 209.4 288.9 197.8 266.9C186.4 289 163.3 304 137 304C91.4 304 58.6 260.3 71.4 216.5L94.7 136.3zM160.4 416L480.4 416L480.4 349.6C488 351.2 495.9 352 503.9 352C518.2 352 531.9 349.4 544.4 344.8L544.4 496C544.4 522.5 522.9 544 496.4 544L144.4 544C117.9 544 96.4 522.5 96.4 496L96.4 344.8C108.9 349.4 122.5 352 136.9 352C145 352 152.8 351.2 160.4 349.6L160.4 416z'/></svg>">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Aplicar tema ANTES de renderizar para evitar flash -->
+    <script>
+        (function () {
+            try {
+                const saved = localStorage.getItem('color-theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     <script>
         tailwind.config = {
@@ -22,8 +37,8 @@
                         brand: {
                             red: '#b91c1c',
                             darkred: '#7f1d1d',
-                            darkbg: '#0f0f0f', 
-                            darknav: '#1a1a1a', 
+                            darkbg: '#0f0f0f',
+                            darknav: '#1a1a1a',
                             darkcard: '#1e1e1e',
                         }
                     }
@@ -36,8 +51,9 @@
 
     <!-- Navegación -->
     <nav class="bg-brand-red dark:bg-brand-darknav text-white shadow-md sticky top-0 z-50 transition-colors duration-500">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-5xl">
-            <!-- Logo con fondo rojo e ícono blanco -->
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-6xl">
+
+            <!-- Logo -->
             <a href="/" class="flex items-center space-x-3 text-xl font-bold tracking-widest uppercase">
                 <div class="p-2 bg-brand-red rounded-lg text-white">
                     <i class="fa-solid fa-store text-xl"></i>
@@ -45,28 +61,107 @@
                 <span>Tienda Nueva</span>
             </a>
 
-            <!-- Botón Hamburguesa -->
-            <button id="menu-btn" class="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
+            <!-- Navegación de escritorio -->
+            <div class="hidden md:flex items-center space-x-6 text-sm font-semibold">
+                <a href="{% url 'informacion_tienda' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
+                <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
+
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
+                    <a href="{% url 'clientes' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
+                    <a href="{% url 'proveedores' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
+                {% endif %}
+
+                <!-- Modo oscuro -->
+                <button id="theme-toggle-desktop" class="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition" title="Cambiar tema">
+                    <i id="theme-icon-desktop" class="fa-solid fa-moon text-lg"></i>
+                </button>
+
+                <!-- Usuario / Sesión -->
+                {% if user.is_authenticated %}
+                    <div class="relative" id="user-menu-container">
+                        <button id="user-menu-btn" class="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
+                            {% if user.perfil.foto %}
+                                <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover border-2 border-white/70">
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full bg-white text-brand-red flex items-center justify-center font-bold text-sm border-2 border-white/70">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="text-sm font-semibold max-w-[120px] truncate">{{ user.get_full_name|default:user.username }}</span>
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+
+                        <!-- Menú desplegable -->
+                        <div id="user-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                            <a href="{% url 'editar_perfil' %}" class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                                <i class="fa-regular fa-pen-to-square"></i> Editar perfil
+                            </a>
+                            <a href="{% url 'logout' %}" class="flex items-center gap-2 px-4 py-3 text-sm text-brand-red hover:bg-gray-100 dark:hover:bg-gray-800 transition border-t border-gray-200 dark:border-gray-700">
+                                <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 dark:hover:bg-gray-800 transition text-sm font-bold">
+                        <i class="fa-regular fa-user"></i> Iniciar Sesión
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Botón Hamburguesa (móvil) -->
+            <button id="menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
                 <i class="fa-solid fa-bars text-xl text-white"></i>
             </button>
         </div>
 
-        <!-- Menú Desplegable -->
-        <div id="mobile-menu" class="hidden bg-brand-darkred dark:bg-brand-darknav border-t border-white/20 dark:border-gray-800">
-            <div class="container mx-auto px-4 py-4 max-w-5xl flex flex-col space-y-4 text-white">
-                
-                <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Inicio</a>
-                <a href="#nosotros" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Sobre nosotros</a>
-                
-                <hr class="border-white/20 dark:border-gray-700">
-                
-                <a href="{% url 'login' %}" class="flex items-center gap-2 text-sm font-bold text-white hover:text-gray-200 dark:text-gray-300 dark:hover:text-brand-red transition">
-                    <i class="fa-regular fa-user"></i> Iniciar Sesión
-                </a>
+        <!-- Menú Móvil -->
+        <div id="mobile-menu" class="hidden md:hidden bg-brand-darkred dark:bg-brand-darknav border-t border-white/20 dark:border-gray-800">
+            <div class="container mx-auto px-4 py-4 max-w-6xl flex flex-col space-y-4 text-white">
 
-                <button id="theme-toggle" class="flex items-center gap-2 text-sm font-semibold text-left text-white hover:text-gray-200 dark:text-gray-300 dark:hover:text-brand-red transition focus:outline-none mt-2">
-                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
-                    <span id="theme-text">Modo Oscuro</span>
+                {% if user.is_authenticated %}
+                    <div class="flex items-center gap-3 pb-3 border-b border-white/20 dark:border-gray-700">
+                        {% if user.perfil.foto %}
+                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/70">
+                        {% else %}
+                            <div class="w-10 h-10 rounded-full bg-white text-brand-red flex items-center justify-center font-bold border-2 border-white/70">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <p class="font-bold text-sm">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-xs opacity-80">{{ user.email }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <a href="{% url 'informacion_tienda' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
+                <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
+
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="{% url 'productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
+                    <a href="{% url 'clientes' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
+                    <a href="{% url 'proveedores' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
+                {% endif %}
+
+                <hr class="border-white/20 dark:border-gray-700">
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'editar_perfil' %}" class="flex items-center gap-2 text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">
+                        <i class="fa-regular fa-pen-to-square"></i> Editar perfil
+                    </a>
+                    <a href="{% url 'logout' %}" class="flex items-center gap-2 text-sm font-bold text-white hover:text-gray-200 dark:hover:text-brand-red transition">
+                        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="flex items-center gap-2 text-sm font-bold text-white hover:text-gray-200 dark:hover:text-brand-red transition">
+                        <i class="fa-regular fa-user"></i> Iniciar Sesión
+                    </a>
+                {% endif %}
+
+                <button id="theme-toggle-mobile" class="flex items-center gap-2 text-sm font-semibold text-left text-white hover:text-gray-200 dark:hover:text-brand-red transition focus:outline-none mt-2">
+                    <i id="theme-icon-mobile" class="fa-solid fa-moon text-lg"></i>
+                    <span id="theme-text-mobile">Modo Oscuro</span>
                 </button>
             </div>
         </div>
@@ -81,22 +176,16 @@
     <!-- Footer -->
     <footer class="bg-brand-red dark:bg-brand-darknav text-white dark:text-gray-400 shadow-md mt-12 py-12 transition-colors duration-500">
         <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10 text-sm max-w-5xl text-left">
-            
-            <!-- Columna 1: Información Fiscal (NIT) -->
             <div class="flex flex-col items-start text-left">
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Información Fiscal</h4>
                 <p class="leading-relaxed opacity-90"><i class="fa-solid fa-id-card mr-2"></i> NIT: 123.456.789-0</p>
                 <p class="leading-relaxed opacity-90 mt-2">Régimen Común</p>
             </div>
-
-            <!-- Columna 2: Ubicación -->
             <div class="flex flex-col items-start text-left">
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Ubicación</h4>
                 <p class="leading-relaxed opacity-90">Smz 7 mz 5 c 17 Las Américas</p>
                 <p class="leading-relaxed opacity-90">Casa de la moneda</p>
             </div>
-
-            <!-- Columna 3: Contacto -->
             <div class="flex flex-col items-start text-left">
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Contacto</h4>
                 <p class="leading-relaxed opacity-90"><i class="fa-brands fa-whatsapp mr-2"></i> 3117150356</p>
@@ -106,46 +195,65 @@
                 </a>
             </div>
         </div>
-        
         <div class="text-center mt-12 pt-6 border-t border-white/20 dark:border-gray-800 text-xs opacity-75">
             &copy; 1998 - 2023 Tienda Nueva. Todos los derechos reservados.
         </div>
     </footer>
 
-    <!-- Script para Modo Oscuro y Menú -->
     <script>
+        // --- Menú hamburguesa ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        menuBtn.addEventListener('click', () => { mobileMenu.classList.toggle('hidden'); });
+        menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const themeText = document.getElementById('theme-text');
-        const htmlElement = document.documentElement;
-
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            htmlElement.classList.add('dark');
-            themeIcon.classList.remove('fa-moon'); themeIcon.classList.add('fa-sun');
-            themeText.textContent = 'Modo Claro';
-        } else {
-            htmlElement.classList.remove('dark');
-            themeIcon.classList.add('fa-moon'); themeIcon.classList.remove('fa-sun');
-            themeText.textContent = 'Modo Oscuro';
+        // --- Menú de usuario ---
+        const userMenuBtn = document.getElementById('user-menu-btn');
+        const userMenuDropdown = document.getElementById('user-menu-dropdown');
+        if (userMenuBtn && userMenuDropdown) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userMenuDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userMenuDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                    userMenuDropdown.classList.add('hidden');
+                }
+            });
         }
 
-        themeToggleBtn.addEventListener('click', function() {
-            if (htmlElement.classList.contains('dark')) {
+        // --- Modo oscuro ---
+        const htmlElement = document.documentElement;
+        const iconDesktop = document.getElementById('theme-icon-desktop');
+        const iconMobile = document.getElementById('theme-icon-mobile');
+        const textMobile = document.getElementById('theme-text-mobile');
+
+        function applyThemeIcons() {
+            const isDark = htmlElement.classList.contains('dark');
+            [iconDesktop, iconMobile].forEach(icon => {
+                if (!icon) return;
+                icon.classList.toggle('fa-moon', !isDark);
+                icon.classList.toggle('fa-sun', isDark);
+            });
+            if (textMobile) textMobile.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+        }
+
+        function toggleTheme() {
+            const isDark = htmlElement.classList.contains('dark');
+            if (isDark) {
                 htmlElement.classList.remove('dark');
                 localStorage.setItem('color-theme', 'light');
-                themeIcon.classList.remove('fa-sun'); themeIcon.classList.add('fa-moon');
-                themeText.textContent = 'Modo Oscuro';
             } else {
                 htmlElement.classList.add('dark');
                 localStorage.setItem('color-theme', 'dark');
-                themeIcon.classList.remove('fa-moon'); themeIcon.classList.add('fa-sun');
-                themeText.textContent = 'Modo Claro';
             }
-        });
+            applyThemeIcons();
+        }
+
+        document.getElementById('theme-toggle-desktop')?.addEventListener('click', toggleTheme);
+        document.getElementById('theme-toggle-mobile')?.addEventListener('click', toggleTheme);
+
+        // Inicializar iconos según el tema ya aplicado en <head>
+        applyThemeIcons();
     </script>
 </body>
 </html>
