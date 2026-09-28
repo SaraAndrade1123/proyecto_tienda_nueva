@@ -8,12 +8,15 @@ from django.shortcuts import redirect
 urlpatterns = [
 
     path('admin/', admin.site.urls),
+    path('', include('accounts.urls')),
 
-    path('', lambda request: redirect('login')),
+    #path('', lambda request: redirect('login')),
 
     path('', include('accounts.urls')),
 
     path('', include('gestor_inventario.urls')),
+    
+    path('', include('productos.urls')),
 
     path('productos/', include('productos.urls')),
 ]
