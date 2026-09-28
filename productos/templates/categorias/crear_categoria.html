@@ -1,0 +1,280 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Nueva categoría - Tienda Nueva{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
+
+<div class="w-full max-w-4xl mx-auto">
+
+    <!-- Encabezado -->
+    <div class="relative overflow-hidden bg-red-600 rounded-[2rem] shadow-2xl shadow-red-900/20 mb-8">
+
+        <!-- Elementos decorativos -->
+        <div class="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-white/10"></div>
+        <div class="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-black/10"></div>
+
+        <div class="relative p-7 sm:p-9">
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+
+                <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg shrink-0">
+                    <i class="fa-solid fa-folder-plus text-red-600 text-2xl"></i>
+                </div>
+
+                <div>
+                    <p class="text-red-100 text-sm font-semibold uppercase tracking-wider mb-1">
+                        Gestión de inventario
+                    </p>
+
+                    <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                        Nueva categoría
+                    </h1>
+
+                    <p class="text-red-100 mt-2 max-w-xl">
+                        Crea una categoría para organizar y clasificar fácilmente los productos de la tienda.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Contenedor principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+
+        <!-- Información -->
+        <div class="lg:col-span-1">
+
+            <div class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
+
+                <div class="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center mb-5">
+                    <i class="fa-solid fa-layer-group text-red-600 dark:text-red-400 text-xl"></i>
+                </div>
+
+                <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
+                    Organiza tu tienda
+                </h2>
+
+                <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 leading-6">
+                    Las categorías permiten mantener los productos ordenados y facilitan su búsqueda dentro del inventario.
+                </p>
+
+
+                <div class="mt-6 space-y-4">
+
+                    <div class="flex items-start gap-3">
+
+                        <div class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-tag text-red-600 text-sm"></i>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                                Nombre único
+                            </p>
+
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                Usa un nombre fácil de identificar.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="flex items-start gap-3">
+
+                        <div class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-boxes-stacked text-red-600 text-sm"></i>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                                Mejor organización
+                            </p>
+
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                Clasifica tus productos fácilmente.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Formulario -->
+        <div class="lg:col-span-2">
+
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-xl shadow-zinc-200/50 dark:shadow-black/20 overflow-hidden">
+
+                <!-- Cabecera formulario -->
+                <div class="px-6 sm:px-8 py-5 border-b border-zinc-200 dark:border-zinc-800">
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center">
+                            <i class="fa-solid fa-pen text-red-600 dark:text-red-400"></i>
+                        </div>
+
+                        <div>
+                            <h2 class="font-bold text-zinc-900 dark:text-white">
+                                Información de la categoría
+                            </h2>
+
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                Completa el siguiente campo
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <div class="p-6 sm:p-8">
+
+
+                        <!-- Campo nombre -->
+                        <div>
+
+                            <label for="id_nombre"
+                                   class="block text-sm font-semibold text-zinc-800 dark:text-zinc-200 mb-3">
+                                Nombre de la categoría
+                            </label>
+
+                            <div class="relative">
+
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                    <i class="fa-solid fa-tag text-zinc-400"></i>
+                                </div>
+
+                                <input
+                                    type="text"
+                                    id="id_nombre"
+                                    name="nombre"
+                                    value="{{ formulario.nombre.value|default:'' }}"
+                                    placeholder="Ej: Bebidas, Lácteos, Frutas..."
+                                    autocomplete="off"
+                                    required
+                                    class="w-full pl-11 pr-4 py-4 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white dark:focus:bg-zinc-900 transition"
+                                >
+
+                            </div>
+
+
+                            {% if formulario.nombre.errors %}
+
+                                <div class="mt-3 flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-sm text-red-600 dark:text-red-400">
+
+                                    <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+
+                                    <div>
+                                        {{ formulario.nombre.errors }}
+                                    </div>
+
+                                </div>
+
+                            {% endif %}
+
+                            <p class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+                                Escribe un nombre claro para identificar los productos que pertenecerán a esta categoría.
+                            </p>
+
+                        </div>
+
+
+                        <!-- Vista previa -->
+                        <div class="mt-7 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700">
+
+                            <div class="flex items-center gap-3">
+
+                                <div class="w-11 h-11 rounded-xl bg-red-600 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-tag text-white"></i>
+                                </div>
+
+                                <div class="min-w-0">
+
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                        Vista previa
+                                    </p>
+
+                                    <p id="vistaPreviaNombre"
+                                       class="font-semibold text-zinc-900 dark:text-white truncate">
+                                        Nueva categoría
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Acciones -->
+                    <div class="px-6 sm:px-8 py-5 bg-zinc-50 dark:bg-zinc-950/50 border-t border-zinc-200 dark:border-zinc-800">
+
+                        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+
+                            <a
+                                href="{% url 'lista_categorias' %}"
+                                class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold transition"
+                            >
+                                <i class="fa-solid fa-arrow-left"></i>
+                                Cancelar
+                            </a>
+
+
+                            <button
+                                type="submit"
+                                class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition shadow-lg shadow-red-900/20"
+                            >
+                                <i class="fa-solid fa-plus"></i>
+                                Crear categoría
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- Vista previa en tiempo real -->
+
+<script>
+    const inputNombre = document.getElementById('id_nombre');
+    const vistaPrevia = document.getElementById('vistaPreviaNombre');
+
+    if (inputNombre && vistaPrevia) {
+        inputNombre.addEventListener('input', function () {
+            vistaPrevia.textContent = this.value.trim() || 'Nueva categoría';
+        });
+    }
+</script>
+
+{% endblock %}
