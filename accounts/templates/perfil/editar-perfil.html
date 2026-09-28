@@ -1,11 +1,200 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends 'layouts/base.html' %}
+
+{% block title %}Editar Perfil - Tienda Nueva{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+
+    <div class="text-center md:text-left mb-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Editar <span class="text-brand-red">Perfil</span>
+        </h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">
+            Actualiza tus datos personales y de contacto.
+        </p>
+    </div>
+
+    {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="p-3 rounded-lg text-sm border
+                    {% if message.tags == 'success' %}
+                        bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-900 text-green-800 dark:text-green-300
+                    {% elif message.tags == 'error' %}
+                        bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900 text-red-800 dark:text-red-300
+                    {% else %}
+                        bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-300
+                    {% endif %}">
+                    <i class="fa-solid fa-circle-info mr-2"></i>{{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="bg-white dark:bg-brand-darkcard border border-gray-200 dark:border-gray-800 rounded-3xl shadow-lg p-6 md:p-9">
+
+        <form method="POST" enctype="multipart/form-data" action="{% url 'editar_perfil' %}" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- FOTO DE PERFIL -->
+            <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-7">
+                <div class="flex-shrink-0">
+                    {% if perfil.foto %}
+                        <img id="preview-foto"
+                             src="{{ perfil.foto.url }}"
+                             alt="{{ user.username }}"
+                             class="w-24 h-24 rounded-full object-cover border-4 border-brand-red/30 shadow-md">
+                    {% else %}
+                        <div id="preview-inicial"
+                             class="w-24 h-24 rounded-full bg-brand-red text-white flex items-center justify-center text-3xl font-bold border-4 border-brand-red/30 shadow-md">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <img id="preview-foto" src="" alt=""
+                             class="hidden w-24 h-24 rounded-full object-cover border-4 border-brand-red/30 shadow-md">
+                    {% endif %}
+                </div>
+
+                <div class="flex-1 w-full">
+                    <label for="foto" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        Foto de perfil
+                    </label>
+                    <input type="file" name="foto" id="foto" accept="image/*"
+                           class="block w-full text-sm text-gray-700 dark:text-gray-300
+                                  file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                                  file:text-sm file:font-semibold file:bg-brand-red file:text-white
+                                  hover:file:bg-brand-darkred file:cursor-pointer
+                                  border border-gray-300 dark:border-gray-700 rounded-lg
+                                  bg-white dark:bg-brand-darknav cursor-pointer">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Formatos permitidos: JPG, PNG. Máx 2MB.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="border-gray-200 dark:border-gray-700">
+
+            <!-- DATOS PERSONALES -->
+            <div class="space-y-4">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 block">
+                    Información personal
+                </span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="first_name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Nombre
+                        </label>
+                        <input type="text" name="first_name" id="first_name" value="{{ user.first_name }}"
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition">
+                    </div>
+                    <div>
+                        <label for="last_name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Apellido
+                        </label>
+                        <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}"
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="document" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        Documento de Identidad
+                    </label>
+                    <input type="text" name="document" id="document" value="{{ user.document }}"
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition">
+                </div>
+            </div>
+
+            <hr class="border-gray-200 dark:border-gray-700">
+
+            <!-- CUENTA Y CONTACTO -->
+            <div class="space-y-4">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 block">
+                    Cuenta y contacto
+                </span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="username" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Nombre de Usuario
+                        </label>
+                        <input type="text" name="username" id="username" value="{{ user.username }}"
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition">
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Teléfono
+                        </label>
+                        <input type="tel" name="phone" id="phone" value="{{ user.phone }}"
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                        Correo electrónico
+                    </label>
+                    <input type="email" name="email" id="email" value="{{ user.email }}"
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition">
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button type="submit"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-darkred text-white font-bold py-3 px-8 rounded-lg shadow-md transition">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Guardar cambios
+                </button>
+                <a href="{% url 'informacion_tienda' %}"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold py-3 px-8 rounded-lg transition">
+                    <i class="fa-solid fa-xmark"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- ELIMINAR USUARIO -->
+    <div class="mt-10 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 rounded-3xl p-6 md:p-8">
+        <h3 class="text-lg font-bold text-red-800 dark:text-red-300 mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Zona de peligro
+        </h3>
+        <p class="text-sm text-red-700 dark:text-red-400 mb-5">
+            Una vez elimines tu cuenta, no podrás recuperarla. Todos tus datos serán borrados permanentemente.
+        </p>
+
+        <form method="POST" action="{% url 'eliminar_usuario' %}"
+              onsubmit="return confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.');">
+            {% csrf_token %}
+            <button type="submit"
+                    class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg shadow-md transition">
+                <i class="fa-solid fa-trash-can"></i>
+                Eliminar mi cuenta
+            </button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    const inputFoto = document.getElementById('foto');
+    const previewFoto = document.getElementById('preview-foto');
+    const previewInicial = document.getElementById('preview-inicial');
+
+    if (inputFoto && previewFoto) {
+        inputFoto.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                previewFoto.src = ev.target.result;
+                previewFoto.classList.remove('hidden');
+                if (previewInicial) previewInicial.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+{% endblock %}

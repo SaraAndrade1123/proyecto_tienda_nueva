@@ -1,15 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import User
-from django.contrib.auth.decorators import user_passes_test, permission_required
-from django.urls import reverse
+from gestor_inventario.models import Perfil
 
-from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, 'home.html')
+
 
 def registro(request):
     datos = ''
@@ -24,12 +24,9 @@ def registro(request):
         email = request.POST.get('email')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        
 
         datos = request.POST
 
-        print(username)
-        # Validacion basica
         if password1 != password2:
             errors.append('Las contraseñas no coinciden')
 
@@ -45,10 +42,7 @@ def registro(request):
         if User.objects.filter(email=email).exists():
             errors.append('El correo electronico ya esta registrado')
 
-
-
         if not errors:
-            # Create _user hashea la contraseña automaticamente
             user = User.objects.create_user(
                 username=username,
                 document=document,
@@ -61,13 +55,11 @@ def registro(request):
             login(request, user)
             return redirect('login')
 
-            
     return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
 
+
 def iniciar_sesion(request):
-
     if request.method == 'POST':
-
         correo = request.POST.get('email')
         contraseña = request.POST.get('password')
 
@@ -96,27 +88,76 @@ def iniciar_sesion(request):
 
     return render(request, 'login.html')
 
+
 def cerrar_sesion(request):
     logout(request)
     return redirect('login')
 
+
 @login_required
 def editar_perfil(request):
+    user = request.user
+    perfil, _ = Perfil.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        # Recoger datos del POST
+        user.first_name = request.POST.get('first_name', '').strip()
+        user.last_name  = request.POST.get('last_name', '').strip()
+        user.document   = request.POST.get('document', '').strip()
+        user.username   = request.POST.get('username', '').strip()
+        user.phone      = request.POST.get('phone', '').strip()
+        user.email      = request.POST.get('email', '').strip()
+
+        # Validaciones básicas
+        errores = []
+        if not user.first_name:
+            errores.append('El nombre es obligatorio.')
+        if not user.username:
+            errores.append('El nombre de usuario es obligatorio.')
+        if not user.email or '@' not in user.email:
+            errores.append('El correo no es válido.')
+
+        # Verificar que el username no esté usado por OTRO usuario
+        if User.objects.filter(username=user.username).exclude(pk=user.pk).exists():
+            errores.append('Ese nombre de usuario ya está en uso.')
+
+        # Verificar que el documento no esté usado por OTRO usuario
+        if User.objects.filter(document=user.document).exclude(pk=user.pk).exists():
+            errores.append('Ese documento ya está registrado.')
+
+        # Verificar que el email no esté usado por OTRO usuario
+        if User.objects.filter(email=user.email).exclude(pk=user.pk).exists():
+            errores.append('Ese correo ya está registrado.')
+
+        # Verificar que el teléfono no esté usado por OTRO usuario
+        if User.objects.filter(phone=user.phone).exclude(pk=user.pk).exists():
+            errores.append('Ese teléfono ya está registrado.')
+
+        if errores:
+            for e in errores:
+                messages.error(request, e)
+        else:
+            user.save()
+
+            # Manejar la foto
+            if 'foto' in request.FILES:
+                perfil.foto = request.FILES['foto']
+                perfil.save()
+
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('editar_perfil')
+
+    return render(request, 'perfil/editar_perfil.html', {
+        'user': user,
+        'perfil': perfil,
+    })
+
+
+@login_required
+def eliminar_usuario(request):
     if request.method == 'POST':
         user = request.user
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
-        user.email = request.POST.get('email', user.email)
-        user.phone = request.POST.get('phone', getattr(user, 'phone', ''))
-        user.save()
-
-        # Actualizar foto si el modelo Perfil la maneja
-        if hasattr(user, 'perfil'):
-            foto = request.FILES.get('foto')
-            if foto:
-                user.perfil.foto = foto
-                user.perfil.save()
-
-        return redirect('informacion')
-
-    return render(request, 'perfil/editar-perfil.html')
+        logout(request)
+        user.delete()
+        return redirect('informacion_tienda')
+    return redirect('editar_perfil')
