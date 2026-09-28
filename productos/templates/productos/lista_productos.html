@@ -416,73 +416,7 @@
                                 <!-- AJUSTAR STOCK -->
                                 <!-- ================================= -->
 
-                                <div class="bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 flex items-center justify-between">
-
-                                    <span class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 pl-1">
-                                        Ajustar stock
-                                    </span>
-
-
-                                    <div class="flex items-center gap-1.5">
-
-
-                                        <!-- DISMINUIR -->
-
-                                        <form
-                                            method="POST"
-                                            action="{% url 'disminuir_stock' producto.id %}"
-                                        >
-
-                                            {% csrf_token %}
-
-                                            <button
-                                                type="submit"
-                                                title="Disminuir stock"
-                                                class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-950 border border-zinc-200 dark:border-zinc-700 hover:border-red-300 dark:hover:border-red-900 text-zinc-500 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 inline-flex items-center justify-center transition-all active:scale-90"
-                                            >
-
-                                                <i class="fa-solid fa-minus text-xs"></i>
-
-                                            </button>
-
-                                        </form>
-
-
-                                        <!-- CANTIDAD -->
-
-                                        <span class="min-w-8 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100">
-
-                                            {{ producto.existencias }}
-
-                                        </span>
-
-
-                                        <!-- AUMENTAR -->
-
-                                        <form
-                                            method="POST"
-                                            action="{% url 'aumentar_stock' producto.id %}"
-                                        >
-
-                                            {% csrf_token %}
-
-                                            <button
-                                                type="submit"
-                                                title="Aumentar stock"
-                                                class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-800 hover:bg-red-600 border border-zinc-200 dark:border-zinc-700 hover:border-red-600 text-zinc-500 dark:text-zinc-300 hover:text-white inline-flex items-center justify-center transition-all active:scale-90"
-                                            >
-
-                                                <i class="fa-solid fa-plus text-xs"></i>
-
-                                            </button>
-
-                                        </form>
-
-                                    </div>
-
-                                </div>
-
-
+                               
                                 <!-- ================================= -->
                                 <!-- ACCIONES -->
                                 <!-- ================================= -->
