@@ -53,5 +53,36 @@ def registro(request):
                 last_name=last_name
             )
             login(request, user)
-            return redirect('registro')
+            return redirect('login')
     return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
+
+def iniciar_sesion(request):
+
+    if request.method == 'POST':
+
+        correo = request.POST.get('email')
+        contraseña = request.POST.get('password')
+
+        try:
+            usuario = User.objects.get(email=correo)
+        except User.DoesNotExist:
+            return render(request, 'login.html', {
+                'error': 'Correo o contraseña incorrectos'
+            })
+
+        usuario_autenticado = authenticate(
+            request,
+            username=usuario.username,
+            password=contraseña
+        )
+
+        if usuario_autenticado is not None:
+            login(request, usuario_autenticado)
+            return redirect('lista_productos')
+
+        return render(request, 'login.html', {
+            'error': 'Correo o contraseña incorrectos'
+        })
+
+    return render(request, 'login.html')
+

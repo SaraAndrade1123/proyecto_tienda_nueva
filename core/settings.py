@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     
     'accounts',
     'gestor_inventario',
+    'productos',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +58,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,3 +138,7 @@ LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 
 AUTH_USER_MODEL = "accounts.User"
+# Sesión de Django activa
+SESSION_COOKIE_AGE = 3600 # 15 minutos 
+SESSION_SAVE_EVERY_REQUEST = True
+

@@ -4,4 +4,10 @@ from . import views
 
 urlpatterns = [
     path('registro/', views.registro, name='registro'),
+    path('login/',views.iniciar_sesion,name='login'),
+
+    #path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    path('home/', views.home, name='home'),
+
 ]

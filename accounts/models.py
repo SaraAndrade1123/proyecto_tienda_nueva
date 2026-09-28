@@ -5,4 +5,3 @@ class User(AbstractUser):
 
     document = models.CharField(max_length=15)
     phone = models.TextField()
-

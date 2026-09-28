@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Catálogo</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff1f2;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .contenedor {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #b91c1c;
+        }
+
+        .buscador {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.10);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        input {
+            padding: 12px;
+            width: 60%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .producto {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.10);
+        }
+
+        .producto h2 {
+            color: #b91c1c;
+        }
+
+        .precio {
+            font-weight: bold;
+            color: #16a34a;
+        }
+
+        .volver {
+            display: block;
+            width: fit-content;
+            margin: 30px auto;
+            padding: 12px 20px;
+            background: #64748b;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+
+        <h1>Catálogo de productos</h1>
+
+        <div class="buscador">
+
+            <form method="GET">
+
+                <input
+                    type="text"
+                    name="buscar"
+                    placeholder="Buscar producto..."
+                    value="{{ request.GET.buscar }}"
+                >
+
+                <button type="submit">
+                    Buscar
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="productos">
+
+            {% for producto in productos %}
+
+                <div class="producto">
+
+                    <h2>{{ producto.nombre }}</h2>
+
+                    <p>{{ producto.descripcion }}</p>
+
+                    <p class="precio">
+                        ${{ producto.precio }}
+                    </p>
+
+                    <p>
+                        Stock: {{ producto.stock }}
+                    </p>
+
+                </div>
+
+            {% empty %}
+
+                <p>No se encontraron productos.</p>
+
+            {% endfor %}
+
+        </div>
+
+        <a href="{% url 'home' %}" class="volver">
+            Volver al inicio
+        </a>
+
+    </div>
+
+</body>
+</html>
