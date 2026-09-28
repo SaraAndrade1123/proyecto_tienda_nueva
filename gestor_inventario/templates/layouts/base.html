@@ -10,7 +10,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Aplicar tema ANTES de renderizar para evitar flash -->
     <script>
         (function () {
             try {
@@ -51,11 +50,9 @@
 </head>
 <body class="bg-white text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans">
 
-    <!-- Navegación -->
     <nav class="bg-brand-red dark:bg-brand-darknav text-white shadow-md sticky top-0 z-50 transition-colors duration-500">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center max-w-6xl">
 
-            <!-- Logo -->
             <a href="/" class="flex items-center space-x-3 text-xl font-bold tracking-widest uppercase">
                 <div class="p-2 bg-brand-red rounded-lg text-white">
                     <i class="fa-solid fa-store text-xl"></i>
@@ -63,7 +60,6 @@
                 <span>Tienda Nueva</span>
             </a>
 
-            <!-- Navegación de escritorio -->
             <div class="hidden md:flex items-center space-x-6 text-sm font-semibold">
                 <a href="{% url 'informacion_tienda' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
                 <a href="{% url 'lista_productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
@@ -74,28 +70,59 @@
                     <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
                 {% endif %}
 
-                <!-- Modo oscuro -->
                 <button id="theme-toggle-desktop" class="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition" title="Cambiar tema">
                     <i id="theme-icon-desktop" class="fa-solid fa-moon text-lg"></i>
                 </button>
 
-                <!-- Usuario / Sesión -->
                 {% if user.is_authenticated %}
                     <div class="relative" id="user-menu-container">
-                        <button id="user-menu-btn" class="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
-                            {% if user.perfil.foto %}
+                        <button id="user-menu-btn" class="group flex items-center gap-2 pl-2 pr-2 py-1 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
+
+                            {% if user.perfil and user.perfil.foto %}
                                 <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover border-2 border-white/70">
                             {% else %}
                                 <div class="w-8 h-8 rounded-full bg-white text-brand-red flex items-center justify-center font-bold text-sm border-2 border-white/70">
                                     {{ user.username|first|upper }}
                                 </div>
                             {% endif %}
-                            <span class="text-sm font-semibold max-w-[120px] truncate">{{ user.get_full_name|default:user.username }}</span>
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
+
+                            <!-- Nombre con hover sutil -->
+                            <span class="text-sm font-semibold max-w-[120px] truncate opacity-90 group-hover:opacity-100 dark:opacity-80 dark:group-hover:opacity-100 transition-opacity duration-200">
+                                {{ user.username }}
+                            </span>
+
+                            <i class="fa-solid fa-chevron-down text-xs opacity-80 group-hover:opacity-100 transition-opacity duration-200"></i>
                         </button>
 
-                        <!-- Menú desplegable -->
-                        <div id="user-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                        <div id="user-menu-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+
+                            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-brand-darknav">
+
+                                <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                    {% if user.get_full_name %}
+                                        {{ user.get_full_name }}
+                                    {% else %}
+                                        {{ user.username }}
+                                    {% endif %}
+                                </p>
+
+                                <div class="flex items-center justify-between gap-2 mt-1">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate flex-1 min-w-0">
+                                        {{ user.email }}
+                                    </p>
+
+                                    {% if user.is_staff %}
+                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                                            Admin
+                                        </span>
+                                    {% else %}
+                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                                            Cliente
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
                             <a href="{% url 'editar_perfil' %}" class="flex items-center gap-2 px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                                 <i class="fa-regular fa-pen-to-square"></i> Editar perfil
                             </a>
@@ -111,29 +138,45 @@
                 {% endif %}
             </div>
 
-            <!-- Botón Hamburguesa (móvil) -->
             <button id="menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
                 <i class="fa-solid fa-bars text-xl text-white"></i>
             </button>
         </div>
 
-        <!-- Menú Móvil -->
         <div id="mobile-menu" class="hidden md:hidden bg-brand-darkred dark:bg-brand-darknav border-t border-white/20 dark:border-gray-800">
             <div class="container mx-auto px-4 py-4 max-w-6xl flex flex-col space-y-4 text-white">
 
                 {% if user.is_authenticated %}
                     <div class="flex items-center gap-3 pb-3 border-b border-white/20 dark:border-gray-700">
-                        {% if user.perfil.foto %}
-                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/70">
+
+                        {% if user.perfil and user.perfil.foto %}
+                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/70 flex-shrink-0">
                         {% else %}
-                            <div class="w-10 h-10 rounded-full bg-white text-brand-red flex items-center justify-center font-bold border-2 border-white/70">
+                            <div class="w-10 h-10 rounded-full bg-white text-brand-red flex items-center justify-center font-bold border-2 border-white/70 flex-shrink-0">
                                 {{ user.username|first|upper }}
                             </div>
                         {% endif %}
-                        <div>
-                            <p class="font-bold text-sm">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="text-xs opacity-80">{{ user.email }}</p>
+
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-sm truncate">
+                                {% if user.get_full_name %}
+                                    {{ user.get_full_name }}
+                                {% else %}
+                                    {{ user.username }}
+                                {% endif %}
+                            </p>
+                            <p class="text-xs opacity-80 truncate">{{ user.email }}</p>
                         </div>
+
+                        {% if user.is_staff %}
+                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                                Admin
+                            </span>
+                        {% else %}
+                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                                Cliente
+                            </span>
+                        {% endif %}
                     </div>
                 {% endif %}
 
@@ -169,13 +212,11 @@
         </div>
     </nav>
 
-    <!-- Contenido Principal -->
     <main class="w-full min-h-screen bg-white dark:bg-brand-darkbg transition-colors duration-500">
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="bg-brand-red dark:bg-brand-darknav text-white dark:text-gray-400 shadow-md mt-12 py-12 transition-colors duration-500">
         <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10 text-sm max-w-5xl text-left">
             <div class="flex flex-col items-start text-left">
@@ -203,12 +244,10 @@
     </footer>
 
     <script>
-        // --- Menú hamburguesa ---
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-        // --- Menú de usuario ---
         const userMenuBtn = document.getElementById('user-menu-btn');
         const userMenuDropdown = document.getElementById('user-menu-dropdown');
         if (userMenuBtn && userMenuDropdown) {
@@ -223,7 +262,6 @@
             });
         }
 
-        // --- Modo oscuro / claro ---
         const htmlElement = document.documentElement;
         const iconDesktop = document.getElementById('theme-icon-desktop');
         const iconMobile = document.getElementById('theme-icon-mobile');
@@ -256,7 +294,6 @@
         document.getElementById('theme-toggle-desktop')?.addEventListener('click', toggleTheme);
         document.getElementById('theme-toggle-mobile')?.addEventListener('click', toggleTheme);
 
-        // Inicializar iconos según el tema ya aplicado en <head>
         applyThemeIcons();
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>

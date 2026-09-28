@@ -139,7 +139,16 @@ def editar_perfil(request):
         else:
             user.save()
 
-            # Manejar la foto
+            # Eliminar foto si el usuario presionó el botón
+            if request.POST.get('eliminar_foto'):
+                if perfil.foto:
+                    perfil.foto.delete(save=False)  # borra el archivo físico del disco
+                    perfil.foto = None
+                    perfil.save()
+                messages.success(request, 'Foto de perfil eliminada.')
+                return redirect('editar_perfil')
+
+            # Manejar la subida de una foto nueva
             if 'foto' in request.FILES:
                 perfil.foto = request.FILES['foto']
                 perfil.save()
@@ -147,7 +156,7 @@ def editar_perfil(request):
             messages.success(request, 'Perfil actualizado correctamente.')
             return redirect('editar_perfil')
 
-    return render(request, 'perfil/editar_perfil.html', {
+    return render(request, 'perfil/editar-perfil.html', {
         'user': user,
         'perfil': perfil,
     })

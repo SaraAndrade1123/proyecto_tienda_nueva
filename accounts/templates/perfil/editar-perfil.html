@@ -37,38 +37,62 @@
             {% csrf_token %}
 
             <!-- FOTO DE PERFIL -->
-            <div class="flex flex-col sm:flex-row items-center gap-5 sm:gap-7">
-                <div class="flex-shrink-0">
-                    {% if perfil.foto %}
-                        <img id="preview-foto"
-                             src="{{ perfil.foto.url }}"
-                             alt="{{ user.username }}"
-                             class="w-24 h-24 rounded-full object-cover border-4 border-brand-red/30 shadow-md">
-                    {% else %}
-                        <div id="preview-inicial"
-                             class="w-24 h-24 rounded-full bg-brand-red text-white flex items-center justify-center text-3xl font-bold border-4 border-brand-red/30 shadow-md">
-                            {{ user.username|first|upper }}
-                        </div>
-                        <img id="preview-foto" src="" alt=""
-                             class="hidden w-24 h-24 rounded-full object-cover border-4 border-brand-red/30 shadow-md">
-                    {% endif %}
+            <div class="space-y-4">
+
+                <!-- Avatar -->
+                <div class="flex justify-center sm:justify-start">
+                    <div class="flex-shrink-0">
+                        {% if perfil.foto %}
+                            <img id="preview-foto"
+                                 src="{{ perfil.foto.url }}"
+                                 alt="{{ user.username }}"
+                                 class="w-28 h-28 rounded-full object-cover border-4 border-brand-red/30 shadow-md">
+                        {% else %}
+                            <div id="preview-inicial"
+                                 class="w-28 h-28 rounded-full bg-brand-red text-white flex items-center justify-center text-4xl font-bold border-4 border-brand-red/30 shadow-md">
+                                {{ user.username|first|upper }}
+                            </div>
+                            <img id="preview-foto" src="" alt=""
+                                 class="hidden w-28 h-28 rounded-full object-cover border-4 border-brand-red/30 shadow-md">
+                        {% endif %}
+                    </div>
                 </div>
 
-                <div class="flex-1 w-full">
-                    <label for="foto" class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                        Foto de perfil
-                    </label>
-                    <input type="file" name="foto" id="foto" accept="image/*"
-                           class="block w-full text-sm text-gray-700 dark:text-gray-300
-                                  file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-                                  file:text-sm file:font-semibold file:bg-brand-red file:text-white
-                                  hover:file:bg-brand-darkred file:cursor-pointer
-                                  border border-gray-300 dark:border-gray-700 rounded-lg
-                                  bg-white dark:bg-brand-darknav cursor-pointer">
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Formatos permitidos: JPG, PNG. Máx 2MB.
-                    </p>
-                </div>
+                <!-- Label -->
+                <label for="foto" class="block text-sm font-bold text-gray-700 dark:text-gray-300">
+                    Foto de perfil
+                </label>
+
+                <!-- Input de archivo a todo el ancho -->
+                <input type="file" name="foto" id="foto" accept="image/*"
+                       class="block w-full text-sm text-gray-700 dark:text-gray-300
+                              file:mr-4 file:py-2.5 file:px-5 file:rounded-lg file:border-0
+                              file:text-sm file:font-semibold file:bg-brand-red file:text-white
+                              hover:file:bg-brand-darkred file:cursor-pointer
+                              border border-gray-300 dark:border-gray-700 rounded-lg
+                              bg-white dark:bg-brand-darknav cursor-pointer transition">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Formatos permitidos: JPG, PNG. Máx 2MB.
+                </p>
+
+                <!-- Botón eliminar foto (diseño mejorado) -->
+                {% if perfil.foto %}
+                    <div class="pt-1">
+                        <button type="submit" name="eliminar_foto" value="1"
+                                onclick="return confirm('¿Seguro que deseas eliminar tu foto de perfil? Esta acción no se puede deshacer.');"
+                                class="group inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                                       text-brand-red dark:text-red-400
+                                       bg-brand-red/10 dark:bg-brand-red/15
+                                       hover:bg-brand-red/20 dark:hover:bg-brand-red/25
+                                       border border-brand-red/30 dark:border-brand-red/40
+                                       hover:border-brand-red/50 dark:hover:border-brand-red/60
+                                       shadow-sm hover:shadow
+                                       transition-all duration-200">
+                            <i class="fa-solid fa-trash-can text-xs transition-transform duration-200 group-hover:scale-110"></i>
+                            <span>Eliminar foto actual</span>
+                        </button>
+                    </div>
+                {% endif %}
             </div>
 
             <hr class="border-gray-200 dark:border-gray-700">
