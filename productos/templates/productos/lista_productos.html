@@ -172,18 +172,14 @@
                                     Todas las categorías
                                 </option>
 
-                                {% for valor, nombre in categorias %}
+                                {% for categoria in categorias %}
 
-                                    {% if valor %}
-
-                                        <option
-                                            value="{{ valor }}"
-                                            {% if categoria_seleccionada == valor %}selected{% endif %}
-                                        >
-                                            {{ nombre }}
-                                        </option>
-
-                                    {% endif %}
+                                    <option
+                                        value="{{ categoria.id }}"
+                                        {% if categoria_seleccionada == categoria.id|stringformat:"s" %}selected{% endif %}
+                                    >
+                                        {{ categoria.nombre }}
+                                    </option>
 
                                 {% endfor %}
 
