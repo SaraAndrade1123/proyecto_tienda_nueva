@@ -177,14 +177,14 @@
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                         ¿No tienes una cuenta?
                     </p>
-                    <a href="#" class="inline-block mt-2 text-sm font-bold text-rose-700 hover:text-rose-900 dark:hover:text-rose-400 transition">
+                    <a href="{% url 'registro' %}" class="inline-block mt-2 text-sm font-bold text-rose-700 hover:text-rose-900 dark:hover:text-rose-400 transition">
                         Crear una cuenta
                     </a>
                 </div>
 
                 <!-- Volver -->
                 <div class="text-center mt-5">
-                    <a href="/" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-rose-700 dark:hover:text-rose-700 transition">
+                    <a href="{% url 'home' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-rose-700 dark:hover:text-rose-700 transition">
                         <i class="fa-solid fa-arrow-left"></i>
                         Volver
                     </a>

@@ -5,6 +5,9 @@ from .models import User
 from django.contrib.auth.decorators import user_passes_test, permission_required
 from django.urls import reverse
 
+def home(request):
+    return render(request, 'home.html')
+
 def registro(request):
     datos = ''
     errors = []
