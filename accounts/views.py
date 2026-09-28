@@ -8,7 +8,7 @@ from gestor_inventario.models import Perfil
 
 
 def home(request):
-    return render(request, 'home.html')
+    return redirect('lista_productos')
 
 
 def registro(request):
