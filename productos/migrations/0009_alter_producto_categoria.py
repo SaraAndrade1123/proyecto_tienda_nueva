@@ -11,23 +11,19 @@ def convertir_categorias(apps, schema_editor):
     Producto = apps.get_model('productos', 'Producto')
     Categoria = apps.get_model('productos', 'Categoria')
 
-    relaciones = {
-        'Lacteos': Categoria.objects.get(nombre='Lacteos').id,
-        'Bebidas': Categoria.objects.get(nombre='Bebidas').id,
-        'Verduras': Categoria.objects.get(nombre='Verduras').id,
-        'Frutas': Categoria.objects.get(nombre='Frutas').id,
-        'Enlatados': Categoria.objects.get(nombre='Enlatados').id,
-        'Dulces': Categoria.objects.get(nombre='Dulces').id,
-        'Embutidos': Categoria.objects.get(nombre='Embutidos').id,
-        'Granos': Categoria.objects.get(nombre='Granos').id,
-        'Legumbres': Categoria.objects.get(nombre='Legumbres').id,
-        'Paqueteria': Categoria.objects.get(nombre='Paqueteria').id,
-    }
+    # Usamos get_or_create para que no falle si la categoría no existe
+    nombres_categorias = [
+        'Lacteos', 'Bebidas', 'Verduras', 'Frutas', 'Enlatados',
+        'Dulces', 'Embutidos', 'Granos', 'Legumbres', 'Paqueteria'
+    ]
+
+    relaciones = {}
+    for nombre in nombres_categorias:
+        categoria, _ = Categoria.objects.get_or_create(nombre=nombre)
+        relaciones[nombre] = categoria.id
 
     for producto in Producto.objects.all():
-
         categoria_antigua = producto.categoria
-
         if categoria_antigua in relaciones:
             producto.categoria = relaciones[categoria_antigua]
             producto.save(update_fields=['categoria'])
@@ -40,7 +36,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-
         migrations.AlterField(
             model_name='producto',
             name='categoria',
@@ -52,7 +47,6 @@ class Migration(migrations.Migration):
                 to='productos.categoria',
             ),
         ),
-
         migrations.RunPython(
             convertir_categorias,
             migrations.RunPython.noop,

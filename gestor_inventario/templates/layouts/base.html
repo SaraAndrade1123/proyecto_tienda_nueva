@@ -66,8 +66,15 @@
 
                 {% if user.is_authenticated and user.is_staff %}
                     <a href="{% url 'lista_productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
+                    <a href="{% url 'lista_categorias' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Categorías</a>
                     <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Clientes</a>
                     <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
+                    
+                    <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Consumo</a>
+                    <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">pp</a>
+
+                    <a href="/" class="hover:text-gray-200 dark:hover:text-brand-red transition">Cierre de caja</a>
+                    
                 {% endif %}
 
                 <button id="theme-toggle-desktop" class="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition" title="Cambiar tema">
@@ -221,8 +228,8 @@
         <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10 text-sm max-w-5xl text-left">
             <div class="flex flex-col items-start text-left">
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Información Fiscal</h4>
-                <p class="leading-relaxed opacity-90"><i class="fa-solid fa-id-card mr-2"></i> NIT: 123.456.789-0</p>
-                <p class="leading-relaxed opacity-90 mt-2">Régimen Común</p>
+                <p class="leading-relaxed opacity-90"><i class="fa-solid fa-id-card mr-2"></i> NIT: -</p>
+                <p class="leading-relaxed opacity-90 mt-2">Régimen -</p>
             </div>
             <div class="flex flex-col items-start text-left">
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Ubicación</h4>
@@ -239,7 +246,7 @@
             </div>
         </div>
         <div class="text-center mt-12 pt-6 border-t border-white/20 dark:border-gray-800 text-xs opacity-75">
-            &copy; 1998 - 2023 Tienda Nueva. Todos los derechos reservados.
+            &copy; 1998 - 2026 Tienda Nueva. Todos los derechos reservados.
         </div>
     </footer>
 
