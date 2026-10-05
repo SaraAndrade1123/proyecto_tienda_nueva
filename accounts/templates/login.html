@@ -33,6 +33,24 @@
         }
     </script>
 
+    <!-- Aplicar tema ANTES de renderizar para evitar flash -->
+    <script>
+        (function () {
+            try {
+                const saved = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const html = document.documentElement;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    html.classList.add('dark');
+                    html.classList.remove('light');
+                } else {
+                    html.classList.remove('dark');
+                    html.classList.add('light');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <style>
         html, body {
             min-height: 100%;
@@ -219,7 +237,6 @@
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                         ¿No tienes una cuenta?
                     </p>
-                    <a href="#" class="inline-block mt-2 text-sm font-bold text-brand-red hover:text-brand-darkred dark:hover:text-red-400 transition">
                     <a href="{% url 'registro' %}" class="inline-block mt-2 text-sm font-bold text-rose-700 hover:text-rose-900 dark:hover:text-rose-400 transition">
                         Crear una cuenta
                     </a>
@@ -227,8 +244,7 @@
 
                 <!-- Volver -->
                 <div class="text-center mt-5">
-                    <a href="/" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-brand-red dark:hover:text-brand-red transition">
-                    <a href="{% url 'home' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-rose-700 dark:hover:text-rose-700 transition">
+                    <a href="{% url 'informacion_tienda' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-rose-700 dark:hover:text-rose-700 transition">
                         <i class="fa-solid fa-arrow-left"></i>
                         Volver
                     </a>
@@ -264,33 +280,20 @@
             }
         }
 
-        // Al cargar la página, recuperar el tema guardado
+        // Al cargar la página, sincronizar iconos con el tema ya aplicado en <head>
         (function() {
-            const savedTheme = localStorage.getItem('theme');
             const html = document.documentElement;
             const icon = document.getElementById('theme-icon');
             const text = document.getElementById('theme-text');
 
-            if (savedTheme === 'dark') {
-                html.classList.remove('light');
-                html.classList.add('dark');
+            if (html.classList.contains('dark')) {
                 icon.classList.remove('fa-moon');
                 icon.classList.add('fa-sun');
                 text.textContent = 'Modo Claro';
-            } else if (savedTheme === 'light') {
-                html.classList.remove('dark');
-                html.classList.add('light');
+            } else {
                 icon.classList.remove('fa-sun');
                 icon.classList.add('fa-moon');
                 text.textContent = 'Modo Oscuro';
-            } else {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    html.classList.remove('light');
-                    html.classList.add('dark');
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                    text.textContent = 'Modo Claro';
-                }
             }
         })();
     </script>
