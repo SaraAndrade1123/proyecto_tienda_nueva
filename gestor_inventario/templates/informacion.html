@@ -15,63 +15,52 @@
         </p>
     </section>
 
-    <!-- 2. ¿QUÉ ENCUENTRAS AQUÍ? -->
+    <!-- 2. ¿QUÉ ENCUENTRAS AQUÍ? - LIBRO PAGINADO -->
     <section class="mb-20">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
             <span class="w-8 h-1 bg-brand-red inline-block"></span> ¿Qué encuentras aquí?
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-            <!-- Categoría: Alimentos -->
-            <div class="space-y-4">
-                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-apple-whole text-brand-red"></i> Alimentos
+        <!-- Contenedor del libro con sombra interior -->
+        <div id="bookContainer" class="bg-white dark:bg-brand-darkcard rounded-xl shadow-inset-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <!-- Cabecera del libro con sombra interior sutil (ancla de scroll) -->
+            <div id="bookHeader" class="bg-brand-red px-6 py-4 shadow-inset-sm">
+                <h3 id="bookPageTitle" class="text-xl font-bold text-white text-center transition-all duration-300">
+                    Abarrotes
                 </h3>
-                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
-                    <li>Lácteos</li>
-                    <li>Dulces</li>
-                    <li>Enlatados</li>
-                    <li>Granos</li>
-                    <li>Bebidas</li>
-                </ul>
             </div>
 
-            <!-- Categoría: Aseo -->
-            <div class="space-y-4">
-                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-spray-can-sparkles text-brand-red"></i> Aseo
-                </h3>
-                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
-                    <li>Jabones</li>
-                    <li>Detergentes</li>
-                    <li>Limpiadores</li>
-                    <li>Cuidado Personal</li>
-                </ul>
-            </div>
+            <!-- Contenido de la página -->
+            <div class="p-6 md:p-8 flex flex-col">
+                <!-- Lista con scroll interno y barra personalizada -->
+                <div id="bookPageContent" class="book-scroll-area flex-1 transition-all duration-300">
+                    <!-- El contenido se llena con JS -->
+                </div>
 
-            <!-- Categoría: Papelería -->
-            <div class="space-y-4">
-                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-ruler text-brand-red"></i> Papelería
-                </h3>
-                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
-                    <li>Cuadernos</li>
-                    <li>Bolígrafos</li>
-                    <li>Colores</li>
-                    <li>Papel</li>
-                </ul>
-            </div>
+                <!-- Controles de navegación (SIN sombra interior) -->
+                <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex gap-2">
+                        <button id="btnFirst" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                            <i class="fa-solid fa-angles-left mr-1"></i> Primera
+                        </button>
+                        <button id="btnPrev" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                            <i class="fa-solid fa-angle-left mr-1"></i> Volver
+                        </button>
+                    </div>
 
-            <!-- Categoría: Varios -->
-            <div class="space-y-4">
-                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-boxes-stacked text-brand-red"></i> Varios
-                </h3>
-                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 ml-4">
-                    <li>Artículos de Hogar</li>
-                    <li>Accesorios</li>
-                    <li>Otros</li>
-                </ul>
+                    <span id="pageIndicator" class="text-sm text-gray-500 dark:text-gray-400 font-medium order-first w-full text-center sm:order-none sm:w-auto">
+                        Página 1 de 7
+                    </span>
+
+                    <div class="flex gap-2">
+                        <button id="btnNext" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand-red text-white hover:bg-red-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                            Siguiente <i class="fa-solid fa-angle-right ml-1"></i>
+                        </button>
+                        <button id="btnLast" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                            Última <i class="fa-solid fa-angles-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -196,5 +185,316 @@
     .animate-fade-in-up {
         animation: fadeInUp 0.8s ease-out forwards;
     }
+
+    /* Transición suave para el cambio de página del libro */
+    .book-transition {
+        animation: bookFade 0.35s ease-out;
+    }
+    @keyframes bookFade {
+        from {
+            opacity: 0;
+            transform: translateX(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* ============================================================
+       ÁREA DE SCROLL INTERNO DEL LIBRO
+       ============================================================ */
+    .book-scroll-area {
+        max-height: 340px;            /* Límite de altura visible */
+        overflow-y: auto;             /* Scroll vertical cuando se desborda */
+        padding-right: 0.5rem;        /* Espacio para que la barra no pegue al texto */
+        scroll-behavior: smooth;      /* Desplazamiento suave dentro del área */
+    }
+
+    /* Barra de scroll personalizada (WebKit: Chrome, Edge, Safari) */
+    .book-scroll-area::-webkit-scrollbar {
+        width: 8px;
+    }
+    .book-scroll-area::-webkit-scrollbar-track {
+        background: #f3f4f6;          /* Gris claro */
+        border-radius: 8px;
+    }
+    .book-scroll-area::-webkit-scrollbar-thumb {
+        background: #b91c1c;          /* Rojo de marca */
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+    .book-scroll-area::-webkit-scrollbar-thumb:hover {
+        background: #991b1b;          /* Rojo más oscuro al pasar el ratón */
+    }
+
+    /* Barra de scroll personalizada (Firefox) */
+    .book-scroll-area {
+        scrollbar-width: thin;
+        scrollbar-color: #b91c1c #f3f4f6;
+    }
+
+    /* Modo oscuro */
+    .dark .book-scroll-area::-webkit-scrollbar-track {
+        background: #1f2937;
+    }
+    .dark .book-scroll-area::-webkit-scrollbar-thumb {
+        background: #b91c1c;
+    }
+    .dark .book-scroll-area {
+        scrollbar-color: #b91c1c #1f2937;
+    }
+
+    /* Estilo para listas dentro del libro */
+    .book-list {
+        columns: 2;
+        column-gap: 1.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .book-list li {
+        break-inside: avoid;
+        padding: 0.2rem 0;
+        color: #4b5563;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+    }
+    .book-list li::before {
+        content: "•";
+        color: #b91c1c;
+        font-weight: bold;
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+    .dark .book-list li {
+        color: #9ca3af;
+    }
+
+    @media (max-width: 640px) {
+        .book-list {
+            columns: 1;
+        }
+        .book-scroll-area {
+            max-height: 280px;
+        }
+    }
+
+    /* ============================================================
+       SOMBRAS INTERIORES (INSET) — SOLO PARA EL LIBRO
+       ============================================================ */
+
+    /* Sombra interior grande para el contenedor principal del libro */
+    .shadow-inset-lg {
+        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.08),
+                    inset 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+    .dark .shadow-inset-lg {
+        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.35),
+                    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Sombra interior sutil para la cabecera roja */
+    .shadow-inset-sm {
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    .dark .shadow-inset-sm {
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
 </style>
+
+<script>
+    // ============================================================
+    // DATOS DEL LIBRO: PÁGINAS CON TÍTULO Y CONTENIDO
+    // ============================================================
+    const bookPages = [
+        {
+            title: "Abarrotes",
+            items: [
+                "Aceites", "Granos", "Azúcar", "Sal", "Panela", "Mantequilla", "Galletas",
+                "Enlatados", "Papel higiénico", "Toallas de cocina", "Servilletas",
+                "Café instantáneo y molido", "Condimentos", "Kelloggs", "Dulcería",
+                "Harina para arepas", "Harina de trigo", "Avena en hojuelas", "Chocolate",
+                "Milo", "Mermeladas", "Aderezos", "Miel de abejas", "Vinagre",
+                "Cremas de leche", "Papel aluminio", "Papel vinipel", "Veladoras",
+                "Pañales desechables", "Refrescos en polvo", "Conservas", "Fósforos",
+                "Mecheras", "Pastillas raid", "Raid aerosoles"
+            ]
+        },
+        {
+            title: "Aseo Personal",
+            items: [
+                "Jabones", "Crema dental", "Shampoo", "Cepillos", "Desodorante",
+                "Gel para el cabello", "Bloqueador solar", "Listerine",
+                "Toallas higiénicas", "Afeitadoras", "Seda dental", "Pañitos húmedos",
+                "Pañuelos faciales", "Copitos"
+            ]
+        },
+        {
+            title: "Aseo General",
+            items: [
+                "Jabones en polvo", "Jabones en barra", "Jabón líquido", "Límpido",
+                "Aromatizantes para baño", "Aromatizantes para piso", "Varsol",
+                "Ácido muriático", "Guantes", "Esponjas", "Escobas", "Traperos",
+                "Recogedores", "Cepillos de lavar ropa", "Bolsas para la basura",
+                "Pastas de cloro", "Productos de plaza", "Productos de panadería",
+                "Concentrado para animales"
+            ]
+        },
+        {
+            title: "Bebidas",
+            items: [
+                "Gaseosas", "Whisky", "Crema de Whisky", "Vinos", "Aguardiente",
+                "Ron", "Tequila", "Sabajón", "Piña colada", "Cervezas", "Cócteles",
+                "Bebidas energizantes", "Sueros", "Jugos", "Yogur", "Kumis"
+            ]
+        },
+        {
+            title: "Medicamentos",
+            items: [
+                "Para la gripe", "Dolores en general", "Malestar estomacal",
+                "Reflujo gástrico", "Para la tos", "Diarrea", "Cólicos menstruales",
+                "Curas", "Crema yodora", "Piedra alumbre", "Aceite de almendra",
+                "Vaselina", "Talcos", "Preservativos", "Suero en sobres"
+            ]
+        },
+        {
+            title: "Cacharrería y Papelería",
+            items: [
+                "Metros de modistería", "Cortauñas", "Ganchos para el cabello",
+                "Nodriza", "Guantes de látex", "Lluvia de sobres", "Bombillos",
+                "Cinta dorada", "Canicas", "Caucho olla exprés", "Cartas españolas",
+                "Dominó", "Ajedrez", "Parqués", "Fichas para parqués", "Tapa bocas",
+                "Memorias USB", "Agujas", "Hilos", "Cinta de enmascarar",
+                "Cinta aislante", "Cinta teflón", "Tarritos para muestra médica",
+                "Algodón", "Gasa", "Micropore", "Esparadrapo", "Jeringas", "Pilas",
+                "Medias para colegio", "Medias para fútbol", "Talonario de rifas",
+                "Recibo de caja", "Factureros", "Silicona barra", "Silicona líquida",
+                "Palo pincho", "Gancho legajador", "Cordones", "Bolas de icopor",
+                "Vasos de icopor", "Vasos plásticos", "Platos de icopor",
+                "Bandejas de icopor", "Cubiertos plásticos", "Bandejas para lasaña",
+                "Alcancías", "Lupas", "Velas de parafina", "Velas de cebo",
+                "Vela volcán", "Platillas para zapatos", "Toallas para cocina",
+                "Bolsas de regalo", "Limas", "Cauchitos para el cabello", "Bombas",
+                "Peinetas", "Palo para helado", "Esmaltes", "Removedor",
+                "Tiras para brasieres"
+            ]
+        },
+        {
+            title: "Papelería (continuación)",
+            items: [
+                "Papel calcante", "Cuadernos", "Lapiceros", "Borradores",
+                "Taja lápiz", "Marcadores", "Crayones", "Forros para cuadernos",
+                "Clips", "Correctores", "Pegantes en barra", "Pegantes líquidos",
+                "Reglas", "Grapadoras", "Bisturí", "Cartón paja", "Fomi",
+                "Block carta", "Carpeta de presentación", "Resma oficio",
+                "Resma carta", "Cartulinas", "Papel crepé", "Papel seda",
+                "Témperas", "Sobre de manila", "Sobre de carta"
+            ]
+        }
+    ];
+
+    // ============================================================
+    // LÓGICA DEL LIBRO PAGINADO
+    // ============================================================
+    let currentPage = 0;
+    const totalPages = bookPages.length;
+
+    // Elementos del DOM
+    const pageTitleEl = document.getElementById('bookPageTitle');
+    const pageContentEl = document.getElementById('bookPageContent');
+    const pageIndicatorEl = document.getElementById('pageIndicator');
+    const btnFirst = document.getElementById('btnFirst');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnLast = document.getElementById('btnLast');
+    const bookHeaderEl = document.getElementById('bookHeader');
+
+    /**
+     * Renderiza la página actual del libro.
+     */
+    function renderPage() {
+        const page = bookPages[currentPage];
+
+        // Actualizar título
+        pageTitleEl.textContent = page.title;
+
+        // Construir lista de items
+        let html = '<ul class="book-list">';
+        page.items.forEach(item => {
+            html += `<li>${item}</li>`;
+        });
+        html += '</ul>';
+
+        // Insertar contenido con animación
+        pageContentEl.innerHTML = html;
+        pageContentEl.classList.remove('book-transition');
+        void pageContentEl.offsetWidth;
+        pageContentEl.classList.add('book-transition');
+
+        // Resetear el scroll interno del área de contenido al inicio
+        pageContentEl.scrollTop = 0;
+
+        // Actualizar indicador de página
+        pageIndicatorEl.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+
+        // Actualizar estado de botones
+        btnFirst.disabled = currentPage === 0;
+        btnPrev.disabled = currentPage === 0;
+        btnNext.disabled = currentPage === totalPages - 1;
+        btnLast.disabled = currentPage === totalPages - 1;
+
+        // ============================================================
+        // SCROLL AUTOMÁTICO AL TÍTULO DEL LIBRO
+        // ============================================================
+        // Calculamos la posición del header del libro relativa al documento.
+        // Añadimos un margen superior (HEADER_OFFSET) para compensar el header
+        // fijo del sitio (la barra roja "TIENDA NUEVA"), de modo que el título
+        // del libro quede completamente visible justo debajo.
+        const HEADER_OFFSET = 90; // Altura aproximada de la barra fija + margen
+
+        const headerRect = bookHeaderEl.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetPosition = headerRect.top + scrollTop - HEADER_OFFSET;
+
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    }
+
+    // Event listeners
+    btnFirst.addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage = 0;
+            renderPage();
+        }
+    });
+
+    btnPrev.addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage--;
+            renderPage();
+        }
+    });
+
+    btnNext.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            renderPage();
+        }
+    });
+
+    btnLast.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+            currentPage = totalPages - 1;
+            renderPage();
+        }
+    });
+
+    // Inicializar
+    renderPage();
+</script>
 {% endblock %}
