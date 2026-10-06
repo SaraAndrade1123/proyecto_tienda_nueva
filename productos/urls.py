@@ -18,4 +18,5 @@ urlpatterns = [
     path('categorias/crear/',views.crear_categoria,name='crear_categoria'),
     path('categorias/editar/<int:id>/',views.editar_categoria,name='editar_categoria'),
     path('categorias/eliminar/<int:id>/',views.eliminar_categoria,name='eliminar_categoria'),
+    path('catalogo/', views.catalogo_productos, name='catalogo_productos'),
 ]   

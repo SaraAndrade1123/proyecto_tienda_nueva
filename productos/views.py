@@ -397,3 +397,28 @@ def eliminar_categoria(request, id):
             )
 
     return redirect('lista_categorias')
+
+@login_required
+def catalogo_productos(request):
+
+    busqueda = request.GET.get('buscar', '').strip()
+    categoria_seleccionada = request.GET.get('categoria', '').strip()
+
+    productos = Producto.objects.select_related('categoria').all()
+
+    if busqueda:
+        productos = productos.filter(nombre__icontains=busqueda)
+
+    if categoria_seleccionada:
+        productos = productos.filter(categoria_id=categoria_seleccionada)
+
+    return render(
+        request,
+        'productos/catalogo_productos.html',
+        {
+            'productos': productos,
+            'busqueda': busqueda,
+            'categoria_seleccionada': categoria_seleccionada,
+            'categorias': Categoria.objects.all(),
+        }
+    )
