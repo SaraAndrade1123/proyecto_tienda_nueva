@@ -414,8 +414,11 @@
 
     /**
      * Renderiza la página actual del libro.
+     * @param {boolean} scrollToBook - Si es true, hace scroll hasta el título del libro.
+     *                                 Solo debe ser true cuando se navega con los botones,
+     *                                 nunca en la carga inicial de la página.
      */
-    function renderPage() {
+    function renderPage(scrollToBook = false) {
         const page = bookPages[currentPage];
 
         // Actualizar título
@@ -447,54 +450,56 @@
         btnLast.disabled = currentPage === totalPages - 1;
 
         // ============================================================
-        // SCROLL AUTOMÁTICO AL TÍTULO DEL LIBRO
+        // SCROLL AUTOMÁTICO AL TÍTULO DEL LIBRO (SOLO AL NAVEGAR)
         // ============================================================
-        // Calculamos la posición del header del libro relativa al documento.
-        // Añadimos un margen superior (HEADER_OFFSET) para compensar el header
-        // fijo del sitio (la barra roja "TIENDA NUEVA"), de modo que el título
-        // del libro quede completamente visible justo debajo.
-        const HEADER_OFFSET = 90; // Altura aproximada de la barra fija + margen
+        if (scrollToBook) {
+            // Calculamos la posición del header del libro relativa al documento.
+            // Añadimos un margen superior (HEADER_OFFSET) para compensar el header
+            // fijo del sitio (la barra roja "TIENDA NUEVA"), de modo que el título
+            // del libro quede completamente visible justo debajo.
+            const HEADER_OFFSET = 90; // Altura aproximada de la barra fija + margen
 
-        const headerRect = bookHeaderEl.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetPosition = headerRect.top + scrollTop - HEADER_OFFSET;
+            const headerRect = bookHeaderEl.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetPosition = headerRect.top + scrollTop - HEADER_OFFSET;
 
-        window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth'
-        });
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        }
     }
 
     // Event listeners
     btnFirst.addEventListener('click', () => {
         if (currentPage > 0) {
             currentPage = 0;
-            renderPage();
+            renderPage(true);
         }
     });
 
     btnPrev.addEventListener('click', () => {
         if (currentPage > 0) {
             currentPage--;
-            renderPage();
+            renderPage(true);
         }
     });
 
     btnNext.addEventListener('click', () => {
         if (currentPage < totalPages - 1) {
             currentPage++;
-            renderPage();
+            renderPage(true);
         }
     });
 
     btnLast.addEventListener('click', () => {
         if (currentPage < totalPages - 1) {
             currentPage = totalPages - 1;
-            renderPage();
+            renderPage(true);
         }
     });
 
-    // Inicializar
-    renderPage();
+    // Inicializar SIN hacer scroll al libro (la página carga desde arriba)
+    renderPage(false);
 </script>
 {% endblock %}
