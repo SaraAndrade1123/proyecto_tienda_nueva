@@ -23,7 +23,7 @@ def registro(request):
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        document = request.POST.get('document')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento')
         phone = request.POST.get('phone')
         email = request.POST.get('email')
         password1 = request.POST.get('password1')
@@ -49,7 +49,7 @@ def registro(request):
         if not errors:
             user = User.objects.create_user(
                 username=username,
-                document=document,
+                fecha_nacimiento=fecha_nacimiento,
                 phone=phone,
                 email=email,
                 password=password1,
