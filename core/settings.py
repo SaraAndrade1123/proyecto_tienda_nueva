@@ -25,7 +25,16 @@ SECRET_KEY = 'django-insecure-mvo+1j_a52ohd9huee%5_4+$oav&e8s9=+y-wkbnl4u!8*mq0j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# MODIFICADO: Permitir todos los hosts (necesario para Codespaces y túneles)
+ALLOWED_HOSTS = ['*']
+
+# MODIFICADO: Agregar la URL de tu Codespace y localhost para evitar el error 403 CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://obscure-space-telegram-qvqgpjirq7x6fr.wp-8000.app.github.dev',
+]
 
 
 # Application definition
@@ -142,4 +151,3 @@ AUTH_USER_MODEL = "accounts.User"
 SESSION_COOKIE_AGE = 7200 # 2 horas
 SESSION_SAVE_EVERY_REQUEST = True # renueva la expiración con cada request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegador
-

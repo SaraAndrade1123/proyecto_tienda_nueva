@@ -209,24 +209,24 @@ def dar_no_miembros(grupo):
 @user_passes_test(es_superadmin)
 def editar_grupo(request, id_grupo):
     grupo = get_object_or_404(Group, id=id_grupo)
-    miembros = grupo.user_set.all()
-    
-    # Usuarios que NO están en este grupo (para agregarlos)
-    usuarios_disponibles = User.objects.exclude(groups=grupo)
 
-    if request.method == 'POST':
-        # Si están editando el nombre del grupo
-        if 'nombre' in request.POST:
-            nuevo_nombre = request.POST.get('nombre')
-            if nuevo_nombre:
-                grupo.name = nuevo_nombre
-                grupo.save()
-                return redirect('editar_grupo', id_grupo=grupo.id)
-                
+    if request.method == "POST":
+        nuevo_nombre = request.POST.get('nombre', '').strip()
+
+        if nuevo_nombre:
+            grupo.name = nuevo_nombre
+            grupo.save()
+
+
+        return redirect('grupos')
+
+    miembros = dar_miembros(grupo)
+    no_miembros = dar_no_miembros(grupo)
+
     return render(request, 'editar_grupo.html', {
         'grupo': grupo,
         'miembros': miembros,
-        'usuarios_disponibles': usuarios_disponibles
+        'no_miembros': no_miembros,
     })
 
 @user_passes_test(es_superadmin)
@@ -244,12 +244,15 @@ def agregar_usuario_grupo(request, id_grupo):
 @user_passes_test(es_superadmin)
 def eliminar_usuario_grupo(request, id_grupo):
     grupo = get_object_or_404(Group, id=id_grupo)
-    if request.method == 'POST':
-        id_usuario = request.POST.get('id_usuario')
-        if id_usuario:
-            usuario = get_object_or_404(User, id=id_usuario)
-            grupo.user_set.remove(usuario)
-    return redirect('editar_grupo', id_grupo=grupo.id)
+    if request.method == "POST":
+        id_user = request.POST.get('id_usuario')
+        if id_user:
+            user = get_object_or_404(User, id=id_user)
+            grupo.user_set.remove(user)
+
+        return redirect('editar_grupo', id_grupo=grupo.id)
+    
+    return render(request, 'editar_grupo', id_grupo=grupo.id)
 
 @permission_required('auth.add_permission', raise_exception=True)
 def permisos(request):
