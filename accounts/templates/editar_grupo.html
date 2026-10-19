@@ -1,0 +1,110 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Editar Grupo - Tienda Nueva{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto my-8 p-6 md:p-8 bg-white dark:bg-[#1e1e1e] text-slate-800 dark:text-slate-100 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 space-y-8">
+    
+    <!-- Encabezado -->
+    <div class="border-b border-slate-200 dark:border-slate-800 pb-4 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+                Editar Grupo: <span class="text-[#b91c1c]">{{ grupo.name }}</span>
+            </h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Actualiza el nombre y gestiona los usuarios asociados a este grupo.</p>
+        </div>
+        <a href="{% url 'grupos' %}" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+            ✕
+        </a>
+    </div>
+
+    <!-- Formulario para editar el nombre del grupo -->
+    <form method="POST" action="{% url 'editar_grupo' grupo.id %}" class="space-y-6">
+        {% csrf_token %}
+        <div>
+            <label for="nombre" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nombre del Grupo</label>
+            <input type="text" 
+                    id="nombre" 
+                    name="nombre" 
+                    value="{{ grupo.name }}" 
+                    required
+                    class="w-full px-4 py-2 bg-white dark:bg-[#0f0f0f] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#b91c1c] transition">
+        </div>
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <a href="{% url 'grupos' %}" 
+                class="px-4 py-2 bg-slate-200 dark:bg-[#1a1a1a] hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition">
+                Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-4 py-2 bg-[#b91c1c] hover:bg-[#7f1d1d] text-white rounded-lg text-sm font-medium transition shadow-sm cursor-pointer">
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+
+    <!-- Sección para Agregar Usuario al Grupo -->
+    <div class="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Agregar Usuario al Grupo</h3>
+        
+        <form action="{% url 'agregar_usuario_grupo' grupo.id %}" method="POST" class="flex flex-col sm:flex-row gap-3">
+            {% csrf_token %}
+            <div class="flex-1">
+                <select name="id_usuario" required class="w-full px-4 py-2 bg-white dark:bg-[#0f0f0f] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#b91c1c] text-sm">
+                    <option value="" disabled selected>Selecciona un usuario disponible...</option>
+                    {% for usuario in usuarios_disponibles %}
+                        <option value="{{ usuario.id }}">{{ usuario.username }} ({{ usuario.email|default:"Sin correo" }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="px-5 py-2 bg-[#b91c1c] hover:bg-[#7f1d1d] text-white rounded-lg text-sm font-medium transition shadow-sm cursor-pointer whitespace-nowrap">
+                Añadir al Grupo
+            </button>
+        </form>
+    </div>
+
+    <!-- Sección de Miembros Actuales del Grupo -->
+    <div class="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+        <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center justify-between">
+            <span>Miembros Actuales</span>
+            <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 dark:bg-[#1a1a1a] text-slate-600 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-800">
+                Total: {{ miembros|length }}
+            </span>
+        </h3>
+
+        <div class="bg-slate-50 dark:bg-[#0f0f0f] border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+            {% if miembros %}
+                <ul class="divide-y divide-slate-200 dark:divide-slate-800">
+                    {% for usuario in miembros %}
+                        <li class="px-4 py-3 flex items-center justify-between hover:bg-slate-100/50 dark:hover:bg-[#1a1a1a]/50 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-[#7f1d1d]/30 text-[#b91c1c] dark:text-[#b91c1c] font-bold text-xs flex items-center justify-center border border-red-200 dark:border-[#7f1d1d]/50">
+                                    {{ usuario.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ usuario.username }}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ usuario.email|default:"Sin correo registrado" }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Botón para quitar al usuario del grupo -->
+                            <form action="{% url 'eliminar_usuario_grupo' grupo.id %}" method="POST" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="id_usuario" value="{{ usuario.id }}">
+                                <button type="submit" 
+                                        class="px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-[#7f1d1d]/20 dark:hover:bg-[#7f1d1d]/40 text-[#b91c1c] dark:text-red-400 rounded-lg text-xs font-semibold transition border border-red-200 dark:border-[#7f1d1d]/40 cursor-pointer"
+                                        onclick="return confirm('¿Seguro que deseas quitar a este usuario del grupo?');">
+                                    Quitar del grupo
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="p-8 text-center">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 italic">No hay usuarios asignados a este grupo actualmente.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

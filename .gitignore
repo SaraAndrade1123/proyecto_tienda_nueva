@@ -11,3 +11,7 @@ __pycache__/
 *.pyc
 *$spy.class
 media/
+
+# Copias de seguridad de la base de datos
+db.sqlite3.backup
+db.sqlite3.respaldo

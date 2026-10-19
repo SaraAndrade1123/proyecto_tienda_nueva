@@ -94,7 +94,8 @@
         </ul>
     </section>
 
-    <!-- 4. LLAMADO A LA ACCIÓN (Iniciar Sesión) -->
+    <!-- 4. LLAMADO A LA ACCIÓN (Iniciar Sesión) — SOLO SI NO ESTÁ LOGUEADO -->
+    {% if not user.is_authenticated %}
     <section class="mb-0">
         <!-- Separador rojo centrado -->
         <div class="w-full max-w-xs h-1 bg-brand-red mx-auto mt-16 mb-10"></div>
@@ -113,6 +114,7 @@
             </a>
         </div>
     </section>
+    {% endif %}
 
     <!-- 5. SOBRE NOSOTROS -->
     <section id="nosotros" class="scroll-mt-24 mb-20">

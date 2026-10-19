@@ -1,14 +1,18 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
-
 from .models import User
 from gestor_inventario.models import Perfil
+from django.contrib.auth.models import Group, Permission
+from django.urls import reverse
 
 
 def home(request):
     return redirect('lista_productos')
+
+def es_superadmin(user):
+    return user.is_authenticated and user.is_superuser
 
 
 def registro(request):
@@ -170,3 +174,111 @@ def eliminar_usuario(request):
         user.delete()
         return redirect('informacion_tienda')
     return redirect('editar_perfil')
+
+@user_passes_test(es_superadmin)
+def grupos(request):
+    if request.method == "POST":
+        nombre = request.POST.get('nombre', '').strip()
+        if nombre and not Group.objects.filter(name=nombre).exists():
+            Group.objects.create(name=nombre)
+        return redirect('grupos')
+
+    grupos = Group.objects.all()
+    usuarios = User.objects.all()
+
+    return render(request, 'grupos.html', {
+        'grupos': grupos,
+        'usuarios': usuarios
+    })
+
+@user_passes_test(es_superadmin)
+def eliminar_grupo(request, id_grupo):
+    if request.method == "POST":
+        grupo = get_object_or_404 (Group, id=id_grupo)
+        grupo.delete()
+    return redirect('grupos')
+
+def dar_miembros(grupo):
+    return grupo.user_set.all()
+
+def dar_no_miembros(grupo):
+    miembros = dar_miembros(grupo)
+    return User.objects.exclude(id__in=miembros.values_list('id', flat=True))
+
+
+@user_passes_test(es_superadmin)
+def editar_grupo(request, id_grupo):
+    grupo = get_object_or_404(Group, id=id_grupo)
+    miembros = grupo.user_set.all()
+    
+    # Usuarios que NO están en este grupo (para agregarlos)
+    usuarios_disponibles = User.objects.exclude(groups=grupo)
+
+    if request.method == 'POST':
+        # Si están editando el nombre del grupo
+        if 'nombre' in request.POST:
+            nuevo_nombre = request.POST.get('nombre')
+            if nuevo_nombre:
+                grupo.name = nuevo_nombre
+                grupo.save()
+                return redirect('editar_grupo', id_grupo=grupo.id)
+                
+    return render(request, 'editar_grupo.html', {
+        'grupo': grupo,
+        'miembros': miembros,
+        'usuarios_disponibles': usuarios_disponibles
+    })
+
+@user_passes_test(es_superadmin)
+def agregar_usuario_grupo(request, id_grupo):
+    grupo = get_object_or_404(Group, id=id_grupo)
+    if request.method == "POST":
+        id_user = request.POST.get('id_usuario')
+        if id_user:
+            user = get_object_or_404(User, id=id_user)
+            grupo.user_set.add(user)
+
+        return redirect('agregar_usuario_grupo', id_grupo=grupo.id)
+    return redirect('grupos')
+
+@user_passes_test(es_superadmin)
+def eliminar_usuario_grupo(request, id_grupo):
+    grupo = get_object_or_404(Group, id=id_grupo)
+    if request.method == 'POST':
+        id_usuario = request.POST.get('id_usuario')
+        if id_usuario:
+            usuario = get_object_or_404(User, id=id_usuario)
+            grupo.user_set.remove(usuario)
+    return redirect('editar_grupo', id_grupo=grupo.id)
+
+@permission_required('auth.add_permission', raise_exception=True)
+def permisos(request):
+    permisos = Permission.objects.all()
+    grupos = Group.objects.all()
+
+    if request.POST.get('grupo'):
+        grupo_id = request.POST.get('grupo')
+    else:
+        grupo_id = request.GET.get('grupo')
+
+    if grupo_id:
+        grupo = get_object_or_404(Group, id=grupo_id)
+    else:
+        grupo = grupos.first()
+
+    if request.method == "POST":
+        permisos_ids = request.POST.getlist('permisos')
+        grupo.permissions.set(permisos_ids)
+        return redirect(f"{reverse('permisos')}?grupo={grupo.id}")
+
+    if grupo:
+        permisos_grupo = set(grupo.permissions.values_list('id', flat=True))
+    else:
+        permisos_grupo = set()
+
+    return render(request, 'permisos.html', {
+        'permisos': permisos,
+        'grupos': grupos,
+        'grupo': grupo,
+        'permisos_grupo': permisos_grupo
+    })
