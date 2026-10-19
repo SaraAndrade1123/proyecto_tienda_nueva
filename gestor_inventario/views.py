@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from .models import Proyecto, Tarea, Proveedor, VisitaProveedor
 from accounts.views import es_superadmin as es_admin  # en este proyecto la función se llama es_superadmin
-
+# hola prueba
 @login_required
 def home(request):
     return render(request, 'home.html')
