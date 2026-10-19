@@ -1,0 +1,157 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Editar categoría - Tienda Nueva{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
+
+<div class="w-full max-w-2xl mx-auto">
+
+    <!-- Encabezado -->
+    <div class="bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8 mb-6">
+
+        <div class="flex items-center gap-4">
+
+            <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-pen-to-square text-white text-2xl"></i>
+            </div>
+
+            <div>
+                <p class="text-red-100 text-sm font-medium mb-1">
+                    Gestión de categorías
+                </p>
+
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">
+                    Editar categoría
+                </h1>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Formulario -->
+    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden">
+
+        <div class="p-6 sm:p-8">
+
+            <div class="mb-7">
+                <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
+                    Información de la categoría
+                </h2>
+
+                <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                    Modifica el nombre de la categoría y guarda los cambios.
+                </p>
+            </div>
+
+
+            <form method="POST" class="space-y-6">
+
+                {% csrf_token %}
+
+
+                <!-- Nombre -->
+                <div>
+
+                    <label for="id_nombre"
+                           class="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Nombre de la categoría
+                    </label>
+
+                    <div class="relative">
+
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <i class="fa-solid fa-tag text-zinc-400"></i>
+                        </div>
+
+                        <input
+                            type="text"
+                            id="id_nombre"
+                            name="nombre"
+                            value="{{ formulario.nombre.value|default:categoria.nombre }}"
+                            placeholder="Ej: Lácteos"
+                            autocomplete="off"
+                            required
+                            class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                        >
+
+                    </div>
+
+
+                    {% if formulario.nombre.errors %}
+
+                        <div class="mt-2 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+
+                            <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+
+                            <div>
+                                {{ formulario.nombre.errors }}
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Categoría actual -->
+                <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 p-4">
+
+                    <div class="flex items-center gap-3">
+
+                        <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center">
+                            <i class="fa-solid fa-circle-info text-red-600 dark:text-red-400"></i>
+                        </div>
+
+                        <div>
+                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                Categoría actual
+                            </p>
+
+                            <p class="font-semibold text-zinc-900 dark:text-white">
+                                {{ categoria.nombre }}
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Botones -->
+                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+
+                    <a
+                        href="{% url 'lista_categorias' %}"
+                        class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold transition"
+                    >
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Cancelar
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition shadow-lg shadow-red-900/20"
+                    >
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

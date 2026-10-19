@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
+ 
     'accounts',
     'gestor_inventario',
     'productos',
@@ -120,6 +121,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
@@ -139,6 +143,7 @@ LOGIN_URL = 'login'
 
 AUTH_USER_MODEL = "accounts.User"
 # Sesión de Django activa
-SESSION_COOKIE_AGE = 3600 # 15 minutos 
-SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 7200 # 2 horas
+SESSION_SAVE_EVERY_REQUEST = True # renueva la expiración con cada request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegador
 
