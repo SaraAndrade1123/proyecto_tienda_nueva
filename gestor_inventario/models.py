@@ -108,4 +108,21 @@ class Perfil(models.Model):
     foto = models.ImageField(upload_to='perfiles/', blank=True, null=True)
 
     def __str__(self):
-        return f"Perfil de {self.user}"
+        return self.nombre_empresa
+
+
+# ============================================================
+# NUEVO MODELO PARA EL CARRUSEL DE IMÁGENES
+# ============================================================
+class ImagenCarrusel(models.Model):
+    imagen = models.ImageField(upload_to='carrusel/', verbose_name="Imagen")
+    orden = models.PositiveIntegerField(default=0, verbose_name="Orden de visualización")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+
+    class Meta:
+        ordering = ['orden', 'fecha_creacion']
+        verbose_name = 'Imagen del Carrusel'
+        verbose_name_plural = 'Imágenes del Carrusel'
+
+    def __str__(self):
+        return f"Imagen #{self.id} - Orden {self.orden}"

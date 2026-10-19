@@ -47,6 +47,40 @@
             }
         }
     </script>
+
+    <style>
+        /* Elimina el highlight azul al tocar en móvil */
+        html, body {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Animación del menú móvil: pausada y elegante */
+        #mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition:
+                max-height 0.65s cubic-bezier(0.25, 0.1, 0.25, 1),
+                opacity 0.5s ease-in-out,
+                transform 0.65s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: max-height, opacity, transform;
+        }
+        #mobile-menu.open {
+            max-height: 100vh;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Rotación tranquila del ícono hamburguesa: media vuelta suave */
+        #menu-btn i {
+            transform: rotate(0deg);
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        #menu-btn.active i {
+            transform: rotate(180deg);
+        }
+    </style>
 </head>
 <body class="bg-white text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans">
 
@@ -62,58 +96,51 @@
 
             <!-- Menú de escritorio: Navegación primero, luego usuario -->
             <div class="hidden md:flex items-center space-x-8 text-sm font-semibold">
-                <!-- Navegación principal -->
+                <!-- Navegación principal (siempre visible) -->
                 <a href="{% url 'informacion_tienda' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
                 <a href="{% url 'catalogo_productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
 
-                <!-- Botón hamburguesa escritorio (para opciones admin) -->
+                <!-- Botón hamburguesa escritorio: SOLO para staff/admin -->
+                {% if user.is_authenticated and user.is_staff %}
                 <div class="relative" id="desktop-more-container">
-                    <button id="desktop-more-btn" class="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none" title="Más opciones">
+                    <button id="desktop-more-btn" class="p-2 rounded-lg hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0" title="Más opciones">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <div id="desktop-more-dropdown" class="hidden absolute right-0 mt-4 w-60 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-xl shadow-2xl border-t-4 border-brand-red dark:border-brand-red overflow-hidden z-50">
-                        {% if user.is_authenticated and user.is_staff %}
-                            <a href="{% url 'lista_productos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-box-open w-5 text-brand-red"></i> Productos
-                            </a>
-                            <a href="{% url 'lista_categorias' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-tags w-5 text-brand-red"></i> Categorías
-                            </a>
-                            <a href="{% url 'grupos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-user-shield w-5 text-brand-red"></i> Grupos & Usuarios
-                            </a>
-                            <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-truck-field w-5 text-brand-red"></i> Proveedores
-                            </a>
-                            <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-chart-pie w-5 text-brand-red"></i> Consumo
-                            </a>
-                            <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-percent w-5 text-brand-red"></i> pp
-                            </a>
-                            <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-700">
-                                <i class="fa-solid fa-cash-register w-5 text-brand-red"></i> Cierre de caja
-                            </a>
-                        {% else %}
-                            <a href="{% url 'informacion_tienda' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-circle-info w-5 text-brand-red"></i> Información
-                            </a>
-                            <a href="{% url 'catalogo_productos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-solid fa-store w-5 text-brand-red"></i> Catálogo
-                            </a>
-                        {% endif %}
+                        <a href="{% url 'lista_productos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-box-open w-5 text-brand-red"></i> Productos
+                        </a>
+                        <a href="{% url 'lista_categorias' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-tags w-5 text-brand-red"></i> Categorías
+                        </a>
+                        <a href="{% url 'grupos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-user-shield w-5 text-brand-red"></i> Grupos & Usuarios
+                        </a>
+                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-truck-field w-5 text-brand-red"></i> Proveedores
+                        </a>
+                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-chart-pie w-5 text-brand-red"></i> Consumo
+                        </a>
+                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-percent w-5 text-brand-red"></i> pp
+                        </a>
+                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-600">
+                            <i class="fa-solid fa-cash-register w-5 text-brand-red"></i> Cierre de caja
+                        </a>
                     </div>
                 </div>
+                {% endif %}
 
                 <!-- Toggle de tema -->
-                <button id="theme-toggle-desktop" class="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition" title="Cambiar tema">
+                <button id="theme-toggle-desktop" class="p-2 rounded-lg hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0" title="Cambiar tema">
                     <i id="theme-icon-desktop" class="fa-solid fa-moon text-lg"></i>
                 </button>
 
                 <!-- Perfil de usuario -->
                 {% if user.is_authenticated %}
                     <div class="relative" id="user-menu-container">
-                        <button id="user-menu-btn" class="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
+                        <button id="user-menu-btn" class="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0">
                             {% if user.perfil and user.perfil.foto %}
                                 <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover border-2 border-white/70">
                             {% else %}
@@ -130,7 +157,7 @@
                         </button>
 
                         <div id="user-menu-dropdown" class="hidden absolute right-0 mt-4 w-64 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-xl shadow-2xl border-t-4 border-brand-red dark:border-brand-red overflow-hidden z-50">
-                            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-brand-darknav">
+                            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-brand-darknav">
                                 <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
                                     {% if user.get_full_name %}
                                         {{ user.get_full_name }}
@@ -138,16 +165,17 @@
                                         {{ user.username }}
                                     {% endif %}
                                 </p>
-                                <div class="flex items-center justify-between gap-2 mt-1">
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate flex-1 min-w-0">
+                                <!-- Email + badge alineados -->
+                                <div class="flex items-center gap-2 mt-1">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate flex-1 min-w-0 mr-auto">
                                         {{ user.email }}
                                     </p>
                                     {% if user.is_staff %}
-                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-brand-red text-white dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
                                             Admin
                                         </span>
                                     {% else %}
-                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-brand-red text-white dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
                                             Cliente
                                         </span>
                                     {% endif %}
@@ -156,30 +184,30 @@
                             <a href="{% url 'editar_perfil' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
                                 <i class="fa-regular fa-pen-to-square w-5 text-brand-red"></i> Editar perfil
                             </a>
-                            <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-700">
+                            <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-600">
                                 <i class="fa-solid fa-right-from-bracket w-5 text-brand-red"></i> Cerrar sesión
                             </a>
                         </div>
                     </div>
                 {% else %}
-                    <a href="{% url 'login' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 dark:hover:bg-gray-800 transition text-sm font-bold">
+                    <a href="{% url 'login' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 active:bg-white/25 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition text-sm font-bold focus:outline-none focus:ring-0">
                         <i class="fa-regular fa-user"></i> Iniciar Sesión
                     </a>
                 {% endif %}
             </div>
 
             <!-- Botón hamburguesa móvil -->
-            <button id="menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800 transition focus:outline-none">
+            <button id="menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0">
                 <i class="fa-solid fa-bars text-xl text-white"></i>
             </button>
         </div>
 
         <!-- Menú móvil: muestra TODAS las opciones de navegación -->
-        <div id="mobile-menu" class="hidden md:hidden bg-brand-darkred dark:bg-brand-darknav border-t border-white/20 dark:border-gray-800">
+        <div id="mobile-menu" class="md:hidden bg-brand-darkred dark:bg-brand-darknav border-t border-white/20 dark:border-gray-600">
             <div class="container mx-auto px-4 py-4 max-w-6xl flex flex-col space-y-4 text-white">
 
                 {% if user.is_authenticated %}
-                    <div class="flex items-center gap-3 pb-3 border-b border-white/20 dark:border-gray-700">
+                    <div class="flex items-center gap-3 pb-3 border-b border-white/20 dark:border-gray-600">
                         {% if user.perfil and user.perfil.foto %}
                             <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/70 flex-shrink-0">
                         {% else %}
@@ -198,11 +226,11 @@
                             <p class="text-xs opacity-80 truncate">{{ user.email }}</p>
                         </div>
                         {% if user.is_staff %}
-                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white text-brand-red dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
                                 Admin
                             </span>
                         {% else %}
-                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border bg-brand-red/10 text-brand-red border-brand-red/30 dark:bg-brand-red/20 dark:text-red-400 dark:border-brand-red/50">
+                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white text-brand-red dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
                                 Cliente
                             </span>
                         {% endif %}
@@ -213,7 +241,7 @@
                 <a href="{% url 'informacion_tienda' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
                 <a href="{% url 'catalogo_productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
 
-                <!-- Opciones de administrador -->
+                <!-- Opciones de administrador (solo staff) -->
                 {% if user.is_authenticated and user.is_staff %}
                     <a href="{% url 'lista_productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
                     <a href="{% url 'lista_categorias' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Categorías</a>
@@ -224,7 +252,7 @@
                     <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Cierre de caja</a>
                 {% endif %}
 
-                <hr class="border-white/20 dark:border-gray-700">
+                <hr class="border-white/20 dark:border-gray-600">
 
                 {% if user.is_authenticated %}
                     <a href="{% url 'editar_perfil' %}" class="flex items-center gap-2 text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">
@@ -273,16 +301,19 @@
                 </a>
             </div>
         </div>
-        <div class="text-center mt-12 pt-6 border-t border-white/20 dark:border-gray-800 text-xs opacity-75">
+        <div class="text-center mt-12 pt-6 border-t border-white/20 dark:border-gray-600 text-xs opacity-75">
             &copy; 1998 - 2026 Tienda Nueva. Todos los derechos reservados.
         </div>
     </footer>
 
     <script>
-        // Menú móvil
+        // Menú móvil con animación suave y rotación del ícono
         const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        menuBtn.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.toggle('open');
+            menuBtn.classList.toggle('active', isOpen);
+        });
 
         // Menú de usuario (dropdown)
         const userMenuBtn = document.getElementById('user-menu-btn');
@@ -300,7 +331,7 @@
             });
         }
 
-        // Botón hamburguesa escritorio (más opciones)
+        // Botón hamburguesa escritorio (más opciones) - solo existe para staff
         const desktopMoreBtn = document.getElementById('desktop-more-btn');
         const desktopMoreDropdown = document.getElementById('desktop-more-dropdown');
         if (desktopMoreBtn && desktopMoreDropdown) {
