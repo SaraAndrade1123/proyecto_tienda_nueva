@@ -10,11 +10,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('usuarios/', include('accounts.urls')),
 
-    path('inventario/', include('gestor_inventario.urls')),
-
-    path('productos/', include('productos.urls')),
-
-    path('', lambda request: redirect('informacion_tienda')), 
+    path('', include('accounts.urls')),
+    path('', include('gestor_inventario.urls')),
+    path('', include('productos.urls')),
 ]
 
 if settings.DEBUG:
