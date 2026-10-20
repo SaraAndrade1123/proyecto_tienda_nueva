@@ -1,36 +1,111 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.conf import settings
 
-User = get_user_model()
-
-class Producto(models.Model):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField()
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField(default=0)
-
+class Proyecto(models.Model):
+    '''
+    Modelo que representa un proyecto
+    '''
+    nombre = models.CharField(max_length=100) #Campo de texto (varchar)
+    descripcion = models.TextField() #texto largo
+    duracion = models.IntegerField() #entero
+    imagen = models.ImageField(upload_to = 'img/', default = 'img/logo.png')
     def __str__(self):
         return self.nombre
 
+class Tarea(models.Model):
+    '''
+    modelo que representa la tarea de un proyecto
+    '''
 
-class Perfil(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
-    foto = models.ImageField(upload_to='perfiles/', blank=True, null=True)
-
+    PRIORIDAD_CHOICES = [
+        ('BAJA', 'Baja'),
+        ('MEDIA', 'Media'),
+        ('ALTA', 'Alta'),
+    ]
+    ESTADO_CHOICES = [
+        ('PENDIENTE', 'Pendiente'),
+        ('EN_PROGRESO', 'En progreso'),
+        ('COMPLETADA', 'Completada'),
+    ]
+    
+    # relacion 1 a muchos: un proyecto tiene muchas tareas
+    proyecto = models.ForeignKey(
+        Proyecto,
+        on_delete = models.CASCADE,
+        related_name='tareas',
+    )
+    titulo = models.CharField(max_length=50)
+    prioridad = models.CharField(
+        max_length=5,
+        choices= PRIORIDAD_CHOICES,
+        default='MEDIA')
+    estado = models.CharField(
+        max_length=11,
+        choices= ESTADO_CHOICES,
+        default='PENDIENTE'
+    )
     def __str__(self):
-        return f"Perfil de {self.user.username}"
+        return self.titulo + "(" + self.proyecto.nombre + ")"
 
 
 class Proveedor(models.Model):
-    nombre_empresa = models.CharField(max_length=200, verbose_name="Nombre de la empresa / Razón Social")
-    nit = models.CharField(max_length=20, unique=True, verbose_name="NIT")
-    contacto_nombre = models.CharField(max_length=150, verbose_name="Nombre del contacto")
-    telefono = models.CharField(max_length=20, verbose_name="Teléfono")
-    email = models.EmailField(verbose_name="Correo electrónico")
-    direccion = models.CharField(max_length=250, blank=True, null=True, verbose_name="Dirección")
-    activo = models.BooleanField(default=True, verbose_name="Proveedor Activo")
+    '''
+    Modelo que representa un proveedor que surte productos.
+    HU_008: CRUD_PROVEEDOR
+    '''
+    nombre = models.CharField(max_length=150)
+    # unique=True hace que la BD rechace un NIT repetido (criterio: "si el NIT ya existe no se guarda")
+    nit = models.CharField(max_length=20, unique=True)
+    telefono_contacto = models.CharField(max_length=20)
+    correo = models.EmailField()
+    # desactivar en vez de borrar: no aparece en activos pero conserva su historial
+    activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    proxima_visita = models.DateField(null=True, blank=True, verbose_name="Próxima visita")
+
+    class Meta:
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.nombre} ({self.nit})"
+
+    def proxima_visita(self):
+        '''
+        Devuelve la próxima visita (fecha más cercana, hoy o en el futuro) o None si no hay.
+        '''
+        hoy = timezone.now().date()
+        return self.visitas.filter(fecha__gte=hoy).order_by('fecha').first()
+
+
+class VisitaProveedor(models.Model):
+    '''
+    Fecha de visita programada de un proveedor.
+    Un proveedor puede tener varias fechas de visita (historial + próximas).
+    '''
+    proveedor = models.ForeignKey(
+        Proveedor,
+        on_delete=models.CASCADE,
+        related_name='visitas',
+    )
+    fecha = models.DateField()
+
+    class Meta:
+        ordering = ['fecha']
+
+    def __str__(self):
+        return f"{self.proveedor.nombre} - {self.fecha}"
+
+
+class Perfil(models.Model):
+    '''
+    Datos adicionales del usuario (foto de perfil).
+    '''
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='perfil',
+    )
+    foto = models.ImageField(upload_to='perfiles/', blank=True, null=True)
 
     def __str__(self):
         return self.nombre_empresa
