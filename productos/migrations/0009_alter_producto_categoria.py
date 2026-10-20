@@ -2,31 +2,50 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def convertir_categorias(apps, schema_editor):
-    """
-    Convierte las categorías antiguas almacenadas como texto
-    a las categorías almacenadas en la tabla Categoria.
-    """
-
+def crear_categorias(apps, schema_editor):
     Producto = apps.get_model('productos', 'Producto')
     Categoria = apps.get_model('productos', 'Categoria')
+    alias = schema_editor.connection.alias
 
-    # Usamos get_or_create para que no falle si la categoría no existe
-    nombres_categorias = [
-        'Lacteos', 'Bebidas', 'Verduras', 'Frutas', 'Enlatados',
-        'Dulces', 'Embutidos', 'Granos', 'Legumbres', 'Paqueteria'
-    ]
+    nombres = (
+        Producto.objects.using(alias)
+        .values_list('categoria', flat=True)
+        .distinct()
+    )
 
-    relaciones = {}
-    for nombre in nombres_categorias:
-        categoria, _ = Categoria.objects.get_or_create(nombre=nombre)
-        relaciones[nombre] = categoria.id
+    for nombre in nombres:
+        if nombre and nombre.strip():
+            Categoria.objects.using(alias).get_or_create(
+                nombre=nombre
+            )
 
-    for producto in Producto.objects.all():
-        categoria_antigua = producto.categoria
-        if categoria_antigua in relaciones:
-            producto.categoria = relaciones[categoria_antigua]
-            producto.save(update_fields=['categoria'])
+
+def convertir_categorias(apps, schema_editor):
+    Producto = apps.get_model('productos', 'Producto')
+    Categoria = apps.get_model('productos', 'Categoria')
+    alias = schema_editor.connection.alias
+
+    tabla = schema_editor.quote_name(Producto._meta.db_table)
+    columna = schema_editor.quote_name(
+        Producto._meta.get_field('categoria').column
+    )
+
+    categorias = Categoria.objects.using(alias).values_list(
+        'nombre', 'id'
+    )
+
+    with schema_editor.connection.cursor() as cursor:
+        for nombre, categoria_id in categorias:
+            cursor.execute(
+                f"UPDATE {tabla} SET {columna} = %s "
+                f"WHERE {columna} = %s",
+                [categoria_id, nombre],
+            )
+
+        cursor.execute(
+            f"UPDATE {tabla} SET {columna} = NULL "
+            f"WHERE {columna} = ''"
+        )
 
 
 class Migration(migrations.Migration):
@@ -36,6 +55,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(
+            crear_categorias,
+            migrations.RunPython.noop,
+        ),
         migrations.AlterField(
             model_name='producto',
             name='categoria',
