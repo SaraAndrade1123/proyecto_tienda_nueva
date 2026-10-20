@@ -30,7 +30,7 @@ class Proveedor(models.Model):
         hoy = timezone.now().date()
         return self.visitas.filter(fecha__gte=hoy).order_by('fecha').first()
 
-
+#errrer
 class VisitaProveedor(models.Model):
     '''
     Fecha de visita programada de un proveedor.
