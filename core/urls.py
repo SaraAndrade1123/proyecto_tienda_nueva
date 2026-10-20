@@ -6,16 +6,18 @@ from django.shortcuts import redirect
 
 
 urlpatterns = [
-
     path('admin/', admin.site.urls),
+
     path('usuarios/', include('accounts.urls')),
 
     path('inventario/', include('gestor_inventario.urls')),
 
     path('productos/', include('productos.urls')),
 
-    path('', lambda request: redirect('informacion_tienda')), 
+    # Redirigir la página principal al catálogo de productos
+    path('', lambda request: redirect('catalogo_productos')),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(

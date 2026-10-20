@@ -1,151 +1,37 @@
+
 from datetime import timedelta
-from django.shortcuts import render , redirect, get_object_or_404
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 
-from .models import Proyecto, Tarea, Proveedor, VisitaProveedor
-from accounts.views import es_superadmin as es_admin  # en este proyecto la función se llama es_superadmin
-# hola prueba
+from .models import Proveedor, VisitaProveedor
+from accounts.views import es_superadmin as es_admin
+
+
+# =========================================================
+# INICIO Y ACERCA DE
+# =========================================================
+
 @login_required
 def home(request):
     return render(request, 'home.html')
 
+
 @login_required
 def acerda_de(request):
-    return render(request,'acerca-de.html')
-
-@login_required
-def mostrar_proyectos(request):
-    proyectos = Proyecto.objects.all()
-    return render(request, 'proyectos.html', {'proyectos': proyectos})
-
-@login_required
-def nuevos_registros(request):
-    Proyecto.objects.create(
-        nombre="Aplicación Bancaria", 
-        descripcion="Aplicación web para gestionar cuentas bancarias", 
-        duracion=1000
-    )
-    return HttpResponse('registro guardado')
-
-@login_required
-def ver_proyecto(request,id):
-    proyecto = Proyecto.objects.get(id=id)
-    return render(request, 'detalle-proyecto.html', {'proyecto': proyecto})
-
-@login_required
-def nuevo_proyecto(request):
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion')
-        duracion = request.POST.get('duracion')
-        imagen = request.FILES.get('imagen')
-    
-        if nombre and descripcion and duracion: 
-            proyecto = Proyecto(
-                nombre=nombre,
-                descripcion=descripcion,
-                duracion=duracion,
-                imagen=imagen
-            )
-            proyecto.save()
-    
-            return redirect('proyectos')
-
-    return render(request, 'nuevo-proyecto.html')
-
-@login_required
-def eliminar_proyecto(request, id):
-    proyecto = Proyecto.objects.get(id=id)
-    proyecto.delete()
-    return redirect('proyectos')
-
-@login_required
-def editar_proyecto(request,id):   
-    proyecto = Proyecto.objects.get(id=id)
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion')
-        duracion = request.POST.get('duracion')
-
-        if nombre and descripcion and duracion:
-            proyecto.nombre = nombre
-            proyecto.descripcion = descripcion
-            proyecto.duracion = int(duracion)
-            proyecto.save()
-            return redirect('ver_proyecto', id=proyecto.pk)
-    
-    return render(request,'editar-proyecto.html', {"proyecto":proyecto})
-
-@login_required
-def crear_tarea(request, proyecto_id):
-    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
-
-    if request.method == 'POST':
-        titulo = request.POST.get('titulo').strip()
-        prioridad = request.POST.get('prioridad')
-        estado = request.POST.get('estado')
-
-        if titulo:
-            tarea = Tarea(
-                titulo=titulo,
-                prioridad=prioridad,
-                estado=estado,
-                proyecto=proyecto)
-            tarea.save()
-
-            return redirect('ver_proyecto', id=proyecto_id)
-    
-    datos = {
-        'proyecto' : proyecto,
-        'prioridad_choices': Tarea.PRIORIDAD_CHOICES,
-        'estado_choices': Tarea.ESTADO_CHOICES
-    }
-
-    return render(request,'crear_tarea.html', datos)
-
-#lo siguiente es un decorador, le da indicaciones a lo que esta debajo de el, ya sea metodo u otra cosa
-
-@require_POST
-def avanzar_estado_tarea(request, id):
-    tarea = get_object_or_404(Tarea, id=id)
-
-    if tarea.estado == 'PENDIENTE':
-        tarea.estado = 'EN_PROGRESO'
-        tarea.save()
-    elif tarea.estado == 'EN_PROGRESO':
-        tarea.estado = 'COMPLETADA'
-        tarea.save()
-    
-    return redirect('ver_proyecto', id=tarea.proyecto.id)
-
-def avanzar_rapido(request,id):
-    tarea = get_object_or_404(Tarea, id=id)
-    
-    if tarea.estado != 'COMPLETADA':
-        tarea.estado = 'COMPLETADA'
-        tarea.save()
-    
-    return redirect('ver_proyecto', id=tarea.proyecto.id)
-
-@require_POST
-def eliminar_tarea(request,id):
-    tarea = get_object_or_404(Tarea,id=id)
-    id_proyecto = tarea.proyecto.id
-    tarea.delete()
-    return redirect('ver_proyecto',id=id_proyecto)
+    return render(request, 'acerca-de.html')
 
 
 # =========================================================
-# HU_008: CRUD_PROVEEDOR
-# Criterio: "Solo el administrador puede agregar, buscar,
-# eliminar, desactivar, editar al proveedor" -> @user_passes_test(es_admin)
+# HU_008: CRUD DE PROVEEDORES
 # =========================================================
 
-DIAS_AVISO_VISITA = 3  # con cuántos días de anticipación se muestra el aviso
+DIAS_AVISO_VISITA = 3
 
 
 @login_required
@@ -154,14 +40,18 @@ def mostrar_proveedores(request):
     query = request.GET.get('q', '').strip()
     mostrar_inactivos = request.GET.get('inactivos') == '1'
 
-    proveedores = Proveedor.objects.all() if mostrar_inactivos else Proveedor.objects.filter(activo=True)
+    proveedores = Proveedor.objects.all()
+
+    if not mostrar_inactivos:
+        proveedores = proveedores.filter(activo=True)
 
     if query:
         proveedores = proveedores.filter(
-            Q(nombre__icontains=query) | Q(nit__icontains=query)
+            Q(nombre__icontains=query) |
+            Q(nit__icontains=query)
         )
 
-    hoy = timezone.now().date()
+    hoy = timezone.localdate()
     limite_aviso = hoy + timedelta(days=DIAS_AVISO_VISITA)
 
     datos = {
@@ -171,110 +61,170 @@ def mostrar_proveedores(request):
         'hoy': hoy,
         'limite_aviso': limite_aviso,
     }
-    return render(request, 'proveedores.html', datos)
+
+    return render(request, 'proveedores/lista.html', datos)
 
 
 @login_required
 @user_passes_test(es_admin)
 def nuevo_proveedor(request):
     error_nit = False
+    error_campos = False
+    error_fecha = False
     datos_form = {}
 
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
         nit = request.POST.get('nit', '').strip()
-        telefono_contacto = request.POST.get('telefono_contacto', '').strip()
+        telefono_contacto = request.POST.get(
+            'telefono_contacto', ''
+        ).strip()
         correo = request.POST.get('correo', '').strip()
-        fecha_visita = request.POST.get('fecha_visita')
+        fecha_visita_texto = request.POST.get(
+            'fecha_visita', ''
+        ).strip()
+
         datos_form = request.POST
 
-        # Criterio: "Si el NIT ya existe debe mostrar 'el usuario ya esta registrado' no se guarda"
-        if Proveedor.objects.filter(nit=nit).exists():
+        # Todos los campos principales son obligatorios.
+        if not all([nombre, nit, telefono_contacto, correo]):
+            error_campos = True
+
+        # Comprobar que el NIT no esté registrado.
+        elif Proveedor.objects.filter(nit=nit).exists():
             error_nit = True
-        elif nombre and nit and telefono_contacto and correo:
-            proveedor = Proveedor.objects.create(
-                nombre=nombre,
-                nit=nit,
-                telefono_contacto=telefono_contacto,
-                correo=correo,
-            )
-            if fecha_visita:
-                VisitaProveedor.objects.create(proveedor=proveedor, fecha=fecha_visita)
 
-            return redirect('proveedores')
+        else:
+            fecha_visita = None
 
-    return render(request, 'nuevo-proveedor.html', {'error_nit': error_nit, 'datos': datos_form})
+            fecha_visita = None
+
+            if fecha_visita_texto:
+                fecha_visita = parse_date(fecha_visita_texto)
+
+                if fecha_visita is None:
+                    error_fecha = True
+
+            if not error_fecha:
+                proveedor = Proveedor.objects.create(
+                    nombre=nombre,
+                    nit=nit,
+                    telefono_contacto=telefono_contacto,
+                    correo=correo,
+                )
+
+                if fecha_visita:
+                    VisitaProveedor.objects.create(
+                        proveedor=proveedor,
+                        fecha=fecha_visita
+                    )
+
+                return redirect('proveedores')
+
+    return render(
+        request,
+        'proveedores/registro_y_edicion.html',
+        {
+            'error_nit': error_nit,
+            'error_campos': error_campos,
+            'error_fecha': error_fecha,
+            'datos': datos_form,
+        }
+    )
 
 
 @login_required
 @user_passes_test(es_admin)
 def editar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
+
     error_nit = False
+    error_campos = False
 
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
         nit = request.POST.get('nit', '').strip()
-        telefono_contacto = request.POST.get('telefono_contacto', '').strip()
+        telefono_contacto = request.POST.get(
+            'telefono_contacto', ''
+        ).strip()
         correo = request.POST.get('correo', '').strip()
 
-        # El NIT ya existente en OTRO proveedor tampoco se debe guardar
-        nit_duplicado = Proveedor.objects.filter(nit=nit).exclude(id=proveedor.id).exists()
+        if not all([nombre, nit, telefono_contacto, correo]):
+            error_campos = True
 
-        if nit_duplicado:
+        elif Proveedor.objects.filter(nit=nit).exclude(
+            id=proveedor.id
+        ).exists():
             error_nit = True
-        elif nombre and nit and telefono_contacto and correo:
+
+        else:
             proveedor.nombre = nombre
             proveedor.nit = nit
             proveedor.telefono_contacto = telefono_contacto
             proveedor.correo = correo
             proveedor.save()
+
             return redirect('proveedores')
 
-    return render(request, 'editar-proveedor.html', {'proveedor': proveedor, 'error_nit': error_nit})
+    return render(
+        request,
+        'proveedores/registro_y_edicion.html',
+        {
+            'proveedor': proveedor,
+            'error_nit': error_nit,
+            'error_campos': error_campos,
+        }
+    )
 
 
-@require_POST
 @login_required
 @user_passes_test(es_admin)
+@require_POST
 def eliminar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
     proveedor.delete()
+
     return redirect('proveedores')
 
 
-@require_POST
 @login_required
 @user_passes_test(es_admin)
+@require_POST
 def desactivar_proveedor(request, id):
-    '''
-    Criterio: "Poder desactivar un proveedor (no aparece en activos,
-    pero debe permitir conservar su historial)"
-    '''
     proveedor = get_object_or_404(Proveedor, id=id)
+
     proveedor.activo = False
-    proveedor.save()
+    proveedor.save(update_fields=['activo'])
+
+    # Las visitas se conservan al desactivar el proveedor.
     return redirect('proveedores')
 
 
-@require_POST
 @login_required
 @user_passes_test(es_admin)
+@require_POST
 def activar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
+
     proveedor.activo = True
-    proveedor.save()
+    proveedor.save(update_fields=['activo'])
+
     return redirect('proveedores')
 
 
 @login_required
 @user_passes_test(es_admin)
+@require_POST
 def agregar_visita_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
 
-    if request.method == 'POST':
-        fecha = request.POST.get('fecha')
-        if fecha:
-            VisitaProveedor.objects.create(proveedor=proveedor, fecha=fecha)
+    fecha_texto = request.POST.get('fecha', '').strip()
+    fecha = parse_date(fecha_texto)
+
+    if fecha:
+        VisitaProveedor.objects.create(
+            proveedor=proveedor,
+            fecha=fecha
+        )
 
     return redirect('proveedores')

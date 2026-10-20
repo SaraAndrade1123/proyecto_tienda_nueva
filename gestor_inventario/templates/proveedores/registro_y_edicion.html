@@ -1,65 +1,340 @@
+
+{% extends 'layouts/base.html' %}
+
+{% block title %}{% if proveedor %}Editar proveedor{% else %}Nuevo proveedor{% endif %} - Tienda Nueva{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">{{ titulo }}</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
+<div class="min-h-screen w-full bg-white px-4 py-8 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 lg:px-10">
 
-                        <div class="mb-3">
-                            <label class="form-label">Nombre de la Empresa</label>
-                            {{ form.nombre_empresa }}
-                            {{ form.nombre_empresa.errors }}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">NIT</label>
-                            {{ form.nit }}
-                            {{ form.nit.errors }}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Persona de Contacto</label>
-                            {{ form.contacto_nombre }}
-                            {{ form.contacto_nombre.errors }}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Teléfono</label>
-                                {{ form.telefono }}
-                                {{ form.telefono.errors }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Correo Electrónico</label>
-                                {{ form.email }}
-                                {{ form.email.errors }}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Dirección</label>
-                            {{ form.direccion }}
-                            {{ form.direccion.errors }}
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Próxima Visita</label>
-                            {{ form.proxima_visita }}
-                            {{ form.proxima_visita.errors }}
-                        </div>
-                        <div class="form-check mb-3">
-                            {{ form.activo }}
-                            <label class="form-check-label">Proveedor Activo</label>
-                        </div>
+  <div class="mx-auto w-full max-w-5xl">
 
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'lista_proveedores' %}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-success">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+    <!-- Encabezado -->
+    <header class="relative mb-8 overflow-hidden rounded-[2rem] bg-red-600 shadow-2xl shadow-red-900/20">
+      <div class="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-black/10"></div>
+
+      <div class="relative p-6 sm:p-9">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white shadow-lg">
+            {% if proveedor %}
+              <i class="fa-solid fa-user-pen text-2xl text-red-600"></i>
+            {% else %}
+              <i class="fa-solid fa-user-plus text-2xl text-red-600"></i>
+            {% endif %}
+          </div>
+
+          <div class="min-w-0">
+            <p class="mb-1 text-xs font-bold uppercase tracking-widest text-red-100">
+              Gestión de inventario
+            </p>
+
+            <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              {% if proveedor %}
+                Editar proveedor
+              {% else %}
+                Nuevo proveedor
+              {% endif %}
+            </h1>
+
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-red-50 sm:text-base">
+              {% if proveedor %}
+                Actualiza los datos de contacto y la información del proveedor.
+              {% else %}
+                Registra un proveedor para mantener organizada la información de tu negocio.
+              {% endif %}
+            </p>
+          </div>
         </div>
+      </div>
+    </header>
+
+    <!-- Distribución principal -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Tarjeta informativa -->
+      <aside class="min-w-0 lg:col-span-1">
+        <div class="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
+
+          <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 dark:bg-red-950/50">
+            <i class="fa-solid fa-truck-field text-xl text-red-600 dark:text-red-400"></i>
+          </div>
+
+          <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
+            Información organizada
+          </h2>
+
+          <p class="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            Mantén los datos de contacto actualizados para facilitar la gestión de tus proveedores y sus visitas.
+          </p>
+
+          <div class="mt-6 space-y-5">
+
+            <div class="flex items-start gap-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                <i class="fa-solid fa-id-card text-sm text-red-600 dark:text-red-400"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  Identificación única
+                </p>
+                <p class="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  Cada proveedor debe tener un NIT diferente.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                <i class="fa-solid fa-address-book text-sm text-red-600 dark:text-red-400"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  Datos de contacto
+                </p>
+                <p class="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  Registra un teléfono y un correo válidos.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                <i class="fa-solid fa-calendar-check text-sm text-red-600 dark:text-red-400"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  Seguimiento de visitas
+                </p>
+                <p class="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  Podrás programar y consultar visitas desde el listado.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mt-7 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/70 dark:bg-red-950/30">
+            <div class="flex items-start gap-3">
+              <i class="fa-solid fa-circle-info mt-0.5 text-red-600 dark:text-red-400"></i>
+              <p class="text-xs leading-5 text-red-800 dark:text-red-200">
+                Revisa los datos antes de guardar para evitar duplicados o información incorrecta.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Formulario -->
+      <section class="min-w-0 lg:col-span-2">
+        <div class="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-xl shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-black/20">
+
+          <!-- Encabezado del formulario -->
+          <div class="border-b border-zinc-200 px-5 py-5 dark:border-zinc-800 sm:px-8">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40">
+                <i class="fa-solid fa-pen-to-square text-red-600 dark:text-red-400"></i>
+              </div>
+              <div class="min-w-0">
+                <h2 class="font-bold text-zinc-900 dark:text-white">
+                  Datos del proveedor
+                </h2>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  Completa todos los campos obligatorios.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="space-y-5 p-5 sm:p-8">
+
+              <!-- Errores -->
+              {% if error_nit %}
+                <div role="alert" class="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                  <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                  <div>
+                    <p class="font-bold">NIT ya registrado</p>
+                    <p class="mt-1 leading-5">Ya existe otro proveedor con ese NIT. Comprueba el dato e inténtalo nuevamente.</p>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if error_campos %}
+                <div role="alert" class="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                  <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                  <div>
+                    <p class="font-bold">Faltan datos obligatorios</p>
+                    <p class="mt-1 leading-5">Completa el nombre, el NIT, el teléfono y el correo electrónico.</p>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if error_fecha %}
+                <div role="alert" class="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                  <i class="fa-solid fa-calendar-xmark mt-0.5"></i>
+                  <div>
+                    <p class="font-bold">Fecha de visita no válida</p>
+                    <p class="mt-1 leading-5">Selecciona una fecha válida para la primera visita.</p>
+                  </div>
+                </div>
+              {% endif %}
+
+              <!-- Nombre -->
+              <div>
+                <label for="nombre" class="mb-2 block text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  Nombre del proveedor <span class="text-red-600">*</span>
+                </label>
+                <div class="relative">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <i class="fa-solid fa-building text-zinc-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    value="{% if proveedor %}{{ proveedor.nombre }}{% else %}{{ datos.nombre|default:'' }}{% endif %}"
+                    placeholder="Ej. Distribuidora Central"
+                    autocomplete="organization"
+                    maxlength="150"
+                    required
+                    class="min-h-12 w-full rounded-2xl border border-zinc-300 bg-zinc-50 py-3 pl-11 pr-4 text-base text-zinc-900 placeholder-zinc-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:bg-zinc-900"
+                  >
+                </div>
+              </div>
+
+              <!-- NIT -->
+              <div>
+                <label for="nit" class="mb-2 block text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  NIT <span class="text-red-600">*</span>
+                </label>
+                <div class="relative">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <i class="fa-solid fa-id-card text-zinc-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    id="nit"
+                    name="nit"
+                    value="{% if proveedor %}{{ proveedor.nit }}{% else %}{{ datos.nit|default:'' }}{% endif %}"
+                    placeholder="Ej. 900123456-1"
+                    autocomplete="off"
+                    maxlength="20"
+                    required
+                    class="min-h-12 w-full rounded-2xl border border-zinc-300 bg-zinc-50 py-3 pl-11 pr-4 text-base text-zinc-900 placeholder-zinc-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:bg-zinc-900"
+                  >
+                </div>
+                <p class="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  El NIT no puede estar registrado en otro proveedor.
+                </p>
+              </div>
+
+              <!-- Teléfono -->
+              <div>
+                <label for="telefono_contacto" class="mb-2 block text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  Teléfono de contacto <span class="text-red-600">*</span>
+                </label>
+                <div class="relative">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <i class="fa-solid fa-phone text-zinc-400"></i>
+                  </div>
+                  <input
+                    type="tel"
+                    id="telefono_contacto"
+                    name="telefono_contacto"
+                    value="{% if proveedor %}{{ proveedor.telefono_contacto }}{% else %}{{ datos.telefono_contacto|default:'' }}{% endif %}"
+                    placeholder="Ej. 300 123 4567"
+                    autocomplete="tel"
+                    maxlength="20"
+                    required
+                    class="min-h-12 w-full rounded-2xl border border-zinc-300 bg-zinc-50 py-3 pl-11 pr-4 text-base text-zinc-900 placeholder-zinc-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:bg-zinc-900"
+                  >
+                </div>
+              </div>
+
+              <!-- Correo -->
+              <div>
+                <label for="correo" class="mb-2 block text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                  Correo electrónico <span class="text-red-600">*</span>
+                </label>
+                <div class="relative">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <i class="fa-solid fa-envelope text-zinc-400"></i>
+                  </div>
+                  <input
+                    type="email"
+                    id="correo"
+                    name="correo"
+                    value="{% if proveedor %}{{ proveedor.correo }}{% else %}{{ datos.correo|default:'' }}{% endif %}"
+                    placeholder="contacto@proveedor.com"
+                    autocomplete="email"
+                    required
+                    class="min-h-12 w-full rounded-2xl border border-zinc-300 bg-zinc-50 py-3 pl-11 pr-4 text-base text-zinc-900 placeholder-zinc-400 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:bg-zinc-900"
+                  >
+                </div>
+              </div>
+
+              <!-- Fecha inicial: solo al registrar -->
+              {% if not proveedor %}
+                <div>
+                  <label for="fecha_visita" class="mb-2 block text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                    Primera fecha de visita <span class="text-red-600">*</span>
+                  </label>
+                  <div class="relative">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                      <i class="fa-regular fa-calendar text-zinc-400"></i>
+                    </div>
+                    <input
+                      type="date"
+                      id="fecha_visita"
+                      name="fecha_visita"
+                      value="{{ datos.fecha_visita|default:'' }}"
+                      required
+                      class="min-h-12 w-full rounded-2xl border border-zinc-300 bg-zinc-50 py-3 pl-11 pr-4 text-base text-zinc-900 focus:border-red-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:bg-zinc-900"
+                    >
+                  </div>
+                  <p class="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                    Puedes gestionar las siguientes visitas desde el listado de proveedores.
+                  </p>
+                </div>
+              {% endif %}
+
+            </div>
+
+            <!-- Botones -->
+            <div class="flex flex-col-reverse gap-3 border-t border-zinc-200 bg-zinc-50 px-5 py-5 dark:border-zinc-800 dark:bg-zinc-950/50 sm:flex-row sm:justify-end sm:px-8">
+
+              <a
+                href="{% url 'proveedores' %}"
+                class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-zinc-300 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 sm:w-auto"
+              >
+                <i class="fa-solid fa-arrow-left"></i>
+                Cancelar
+              </a>
+
+              <button
+                type="submit"
+                class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-red-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-red-900/20 transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 sm:w-auto"
+              >
+                {% if proveedor %}
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  Guardar cambios
+                {% else %}
+                  <i class="fa-solid fa-plus"></i>
+                  Registrar proveedor
+                {% endif %}
+              </button>
+
+            </div>
+          </form>
+        </div>
+
+        <p class="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
+          Tienda Nueva · Gestión de proveedores
+        </p>
+      </section>
     </div>
+  </div>
 </div>
 {% endblock %}

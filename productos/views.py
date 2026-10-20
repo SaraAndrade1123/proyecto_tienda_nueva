@@ -422,3 +422,6 @@ def catalogo_productos(request):
             'categorias': Categoria.objects.all(),
         }
     )
+
+def informacion_tienda(request):
+    return render(request, 'informacion.html')
