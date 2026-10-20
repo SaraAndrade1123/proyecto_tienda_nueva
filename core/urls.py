@@ -15,7 +15,7 @@ urlpatterns = [
     path('productos/', include('productos.urls')),
 
     # Redirigir la página principal al catálogo de productos
-    path('', lambda request: redirect('catalogo_productos')),
+    path('', lambda request: redirect('informacion_tienda')),
 ]
 
 
