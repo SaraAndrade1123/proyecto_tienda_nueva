@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Proyecto, Tarea, Proveedor, VisitaProveedor
+from .models import Producto, Perfil, Proveedor, VisitaProveedor, ImagenCarrusel
 
 
 class VisitaProveedorInline(admin.TabularInline):
@@ -9,11 +9,27 @@ class VisitaProveedorInline(admin.TabularInline):
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'nit', 'telefono_contacto', 'correo', 'activo', 'fecha_registro')
+    list_display = (
+        'nombre_empresa',
+        'nit',
+        'contacto_nombre',
+        'telefono',
+        'email',
+        'activo',
+        'fecha_registro',
+    )
+
     list_filter = ('activo',)
-    search_fields = ('nombre', 'nit')
+
+    search_fields = (
+        'nombre_empresa',
+        'nit',
+        'contacto_nombre',
+    )
+
     inlines = [VisitaProveedorInline]
 
 
-admin.site.register(Proyecto)
-admin.site.register(Tarea)
+admin.site.register(Producto)
+admin.site.register(Perfil)
+admin.site.register(ImagenCarrusel)
