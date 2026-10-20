@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import Proyecto, Tarea, Proveedor, VisitaProveedor
+from .models import Proveedor, VisitaProveedor
 
 
 class VisitaProveedorInline(admin.TabularInline):
     model = VisitaProveedor
     extra = 1
-
+#
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
