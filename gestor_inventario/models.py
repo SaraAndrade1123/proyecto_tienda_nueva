@@ -4,38 +4,20 @@ from django.conf import settings
 
 
 class Proveedor(models.Model):
-    '''
-    Modelo que representa un proveedor que surte productos.
-    HU_008: CRUD_PROVEEDOR
-    '''
-    nombre = models.CharField(max_length=150)
-    # unique=True hace que la BD rechace un NIT repetido (criterio: "si el NIT ya existe no se guarda")
-    nit = models.CharField(max_length=20, unique=True)
-    telefono_contacto = models.CharField(max_length=20)
-    correo = models.EmailField()
-    # desactivar en vez de borrar: no aparece en activos pero conserva su historial
-    activo = models.BooleanField(default=True)
+    nombre_empresa = models.CharField(max_length=200, verbose_name="Nombre de la empresa / Razón Social", default='')
+    nit = models.CharField(max_length=20, unique=True, verbose_name="NIT")
+    contacto_nombre = models.CharField(max_length=150, verbose_name="Nombre del contacto", default='')
+    telefono = models.CharField(max_length=20, verbose_name="Teléfono", default='')
+    email = models.EmailField(verbose_name="Correo electrónico", default='')
+    direccion = models.CharField(max_length=250, blank=True, null=True, verbose_name="Dirección")
+    activo = models.BooleanField(default=True, verbose_name="Proveedor Activo")
     fecha_registro = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['nombre']
+    proxima_visita = models.DateField(null=True, blank=True, verbose_name="Próxima visita")
 
     def __str__(self):
-        return f"{self.nombre} ({self.nit})"
+        return self.nombre_empresa
 
-    def proxima_visita(self):
-        '''
-        Devuelve la próxima visita (fecha más cercana, hoy o en el futuro) o None si no hay.
-        '''
-        hoy = timezone.now().date()
-        return self.visitas.filter(fecha__gte=hoy).order_by('fecha').first()
-
-#errrer
 class VisitaProveedor(models.Model):
-    '''
-    Fecha de visita programada de un proveedor.
-    Un proveedor puede tener varias fechas de visita (historial + próximas).
-    '''
     proveedor = models.ForeignKey(
         Proveedor,
         on_delete=models.CASCADE,
@@ -47,8 +29,7 @@ class VisitaProveedor(models.Model):
         ordering = ['fecha']
 
     def __str__(self):
-        return f"{self.proveedor.nombre} - {self.fecha}"
-
+        return f"{self.proveedor.nombre_empresa} - {self.fecha}"
 
 class Perfil(models.Model):
     '''
