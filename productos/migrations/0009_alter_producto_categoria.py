@@ -21,6 +21,14 @@ def crear_categorias(apps, schema_editor):
 
 
 def convertir_categorias(apps, schema_editor):
+    # Este paso solo aplica a SQLite, donde la columna conserva el texto
+    # ("Lacteos") despues de pasar a ForeignKey y hay que reemplazarlo por el id.
+    # En PostgreSQL la columna ya es numerica (bigint): comparar con '' o con un
+    # nombre produce "invalid input syntax for type bigint". En una base nueva
+    # (Neon) no hay productos que convertir, asi que se omite.
+    if schema_editor.connection.vendor != 'sqlite':
+        return
+
     Producto = apps.get_model('productos', 'Producto')
     Categoria = apps.get_model('productos', 'Categoria')
     alias = schema_editor.connection.alias
