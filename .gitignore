@@ -1,13 +1,35 @@
 # Entorno virtual
 venv/
 .venv/
+env/
 
-# Base de datos local
+# Variables de entorno y claves (NUNCA subir)
+.env
+.env.*
+!.env.example
+
+# Base de datos local y respaldos
 db.sqlite3
+db.sqlite3-journal
+respaldo.json
+*.sql
+*.dump
 
-# Caché
+# Archivos subidos por usuarios
+media/
+
+# Archivos estáticos generados por collectstatic
+staticfiles/
+
+# Caché de Python
 __pycache__/
 *.py[cod]
-*.pyc
-*$spy.class
-media/
+
+# Registros
+*.log
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
