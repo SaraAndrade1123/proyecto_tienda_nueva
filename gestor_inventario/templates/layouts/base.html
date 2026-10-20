@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
 <head>
@@ -88,13 +89,17 @@
         <div class="container mx-auto px-4 py-3 flex justify-between items-center max-w-6xl">
 
             <a href="/" class="flex items-center space-x-3 text-xl font-bold tracking-widest uppercase">
-                <div class="p-2 bg-brand-red rounded-lg text-white">
-                    <i class="fa-solid fa-store text-xl"></i>
+
+                <div class="p-1 rounded-full flex items-center justify-center">
+    		    <img src="{% static 'img/logo.png' %}" alt="Logo de Tienda Nueva" class="w-10 h-10 object-contain rounded-full">
                 </div>
+                   
+              
                 <span>Tienda Nueva</span>
             </a>
 
             <!-- Menú de escritorio: Navegación primero, luego usuario -->
+		{% load static %}
             <div class="hidden md:flex items-center space-x-8 text-sm font-semibold">
                 <!-- Navegación principal (siempre visible) -->
                 <a href="{% url 'informacion_tienda' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>

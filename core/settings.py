@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'cloudinary_storage',
     'django.contrib.staticfiles',
-    
+
+ 
     'accounts',
     'gestor_inventario',
     'productos',
@@ -137,15 +138,24 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# configuracion del correo electronico de las pruebas
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'lopezreyeskarensofia@gmail.com'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 STORAGES = {
     "default": {
@@ -162,6 +172,6 @@ LOGIN_URL = 'login'
 
 AUTH_USER_MODEL = "accounts.User"
 # Sesión de Django activa
-SESSION_COOKIE_AGE = 7200 # 2 horas
+SESSION_COOKIE_AGE = 600 
 SESSION_SAVE_EVERY_REQUEST = True # renueva la expiración con cada request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegador

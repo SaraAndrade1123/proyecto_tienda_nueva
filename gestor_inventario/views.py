@@ -14,6 +14,10 @@ from .models import Proveedor, VisitaProveedor, ImagenCarrusel
 from accounts.views import es_superadmin as es_admin
 
 @login_required
+
+def informacion_tienda(request):
+    return render(request, 'informacion.html')
+
 def home(request):
     return render(request, 'home.html')
 

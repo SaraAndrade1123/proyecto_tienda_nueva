@@ -1,3 +1,7 @@
+import secrets
+from datetime import timedelta
+from django.core.mail import send_mail
+from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
@@ -6,6 +10,10 @@ from .models import User
 from gestor_inventario.models import Perfil
 from django.contrib.auth.models import Group, Permission
 from django.urls import reverse
+from django.contrib.auth import get_user_model
+
+def home(request):
+    return redirect('lista_productos')
 
 def es_superadmin(user):
     return user.is_authenticated and user.is_superuser
@@ -56,6 +64,154 @@ def registro(request):
             return redirect('login')
 
     return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
+
+
+def recuperar_password(request):
+    if request.method == 'POST':
+        accion = request.POST.get('accion', 'solicitar')
+
+        if accion in ['solicitar', 'reenviar']:
+            if accion == 'solicitar':
+                correo = request.POST.get('email', '').strip()
+                usuario = User.objects.filter(email__iexact=correo).first()
+
+                if not usuario:
+                    return render(request, 'usuario/recuperar_password.html', {
+                        'error': 'No encontramos una cuenta con ese correo.'
+                    })
+
+                request.session['recuperacion_email'] = usuario.email
+
+            else:
+                correo = request.session.get('recuperacion_email')
+
+                if not correo:
+                    return render(request, 'usuario/recuperar_password.html', {
+                        'error': 'Ingresa tu correo para solicitar un código nuevo.'
+                    })
+
+                fecha_reenvio = request.session.get(
+                    'recuperacion_reenviar_despues'
+                )
+
+                if fecha_reenvio:
+                    momento_reenvio = timezone.datetime.fromisoformat(
+                        fecha_reenvio
+                    )
+
+                    if timezone.now() < momento_reenvio:
+                        segundos = max(1, int(
+                            (momento_reenvio - timezone.now()).total_seconds()
+                        ))
+
+                        return render(request, 'usuario/recuperar_password.html', {
+                            'codigo_enviado': True,
+                            'error': 'Todavía debes esperar para reenviar el código.',
+                            'reenviar_en': segundos,
+                        })
+
+                usuario = User.objects.filter(email__iexact=correo).first()
+
+                if not usuario:
+                    return render(request, 'usuario/recuperar_password.html', {
+                        'error': 'No encontramos la cuenta.'
+                    })
+
+            codigo = str(secrets.randbelow(900000) + 100000)
+            ahora = timezone.now()
+
+            request.session['recuperacion_codigo'] = codigo
+            request.session['recuperacion_expira'] = (
+                ahora + timedelta(minutes=4)
+            ).isoformat()
+            request.session['recuperacion_reenviar_despues'] = (
+                ahora + timedelta(minutes=2)
+            ).isoformat()
+
+            send_mail(
+                subject='Código de recuperación - Tienda Nueva',
+                message=(
+                    f'Hola {usuario.first_name or usuario.username}.\n\n'
+                    f'Tu código de recuperación es: {codigo}\n\n'
+                    'Este código vence en 4 minutos. '
+                    'Si no solicitaste este cambio, ignora este mensaje.'
+                ),
+                from_email=None,
+                recipient_list=[usuario.email],
+                fail_silently=False,
+            )
+
+            return render(request, 'usuario/recuperar_password.html', {
+                'codigo_enviado': True,
+                'reenviar_en': 300,
+                'mensaje': 'Te enviamos un código de recuperación. Revisa tu correo.',
+            })
+
+        elif accion == 'verificar':
+            codigo_ingresado = request.POST.get('codigo', '').strip()
+            password1 = request.POST.get('password1', '')
+            password2 = request.POST.get('password2', '')
+
+            codigo_guardado = request.session.get('recuperacion_codigo')
+            fecha_expiracion = request.session.get('recuperacion_expira')
+            correo = request.session.get('recuperacion_email')
+
+            if not codigo_guardado or not fecha_expiracion or not correo:
+                return render(request, 'usuario/recuperar_password.html', {
+                    'error': 'Solicita un nuevo código de recuperación.'
+                })
+
+            if timezone.now() >= timezone.datetime.fromisoformat(fecha_expiracion):
+                request.session.pop('recuperacion_codigo', None)
+                request.session.pop('recuperacion_expira', None)
+                request.session.pop('recuperacion_reenviar_despues', None)
+
+                return render(request, 'usuario/recuperar_password.html', {
+                    'error': 'El código venció. Solicita uno nuevo.'
+                })
+
+            if not secrets.compare_digest(codigo_ingresado, codigo_guardado):
+                return render(request, 'usuario/recuperar_password.html', {
+                    'codigo_enviado': True,
+                    'error': 'El código ingresado es incorrecto.',
+                })
+
+            if len(password1) < 8:
+                return render(request, 'usuario/recuperar_password.html', {
+                    'codigo_enviado': True,
+                    'error': 'La contraseña debe tener al menos 8 caracteres.',
+                })
+
+            if password1 != password2:
+                return render(request, 'usuario/recuperar_password.html', {
+                    'codigo_enviado': True,
+                    'error': 'Las contraseñas no coinciden.',
+                })
+
+            usuario = User.objects.filter(email__iexact=correo).first()
+
+            if not usuario:
+                return render(request, 'usuario/recuperar_password.html', {
+                    'error': 'No encontramos la cuenta.'
+                })
+
+            usuario.set_password(password1)
+            usuario.save()
+
+            for clave in [
+                'recuperacion_codigo',
+                'recuperacion_expira',
+                'recuperacion_email',
+                'recuperacion_reenviar_despues',
+            ]:
+                request.session.pop(clave, None)
+
+            return render(request, 'usuario/recuperar_password.html', {
+                'mensaje': '¡Contraseña actualizada! Ya puedes iniciar sesión.',
+                'recuperacion_completa': True,
+            })
+
+    return render(request, 'usuario/recuperar_password.html')
 
 
 def iniciar_sesion(request):
