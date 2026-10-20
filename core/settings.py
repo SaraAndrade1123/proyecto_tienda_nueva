@@ -94,13 +94,28 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Base de datos COMPARTIDA (Neon/PostgreSQL): todos los ordenadores deben usar
+# la misma DATABASE_URL (definida en el archivo .env) para ver los mismos datos.
+# Si no existe DATABASE_URL se usa SQLite local (cada PC tendría datos distintos).
+import dj_database_url
 
+_database_url = os.environ.get('DATABASE_URL')
+
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
@@ -137,7 +152,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFFILES_DIRS = [
+STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 

@@ -34,5 +34,8 @@ db.sqlite3.respaldo
 .idea/
 .DS_Store
 Thumbs.db
+
+productos.json
 *.sqlite3.bak
 db.sqlite3.bak
+
