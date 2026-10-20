@@ -3,408 +3,391 @@
 {% block title %}Información - Tienda Nueva{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-12 animate-fade-in-up">
 
-    <!-- 1. INICIO / BIENVENIDA -->
-    <section class="text-center md:text-left mt-8 mb-20">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight mb-6 tracking-tight">
-            Bienvenido a <br class="hidden md:block"> <span class="text-brand-red">Tienda Nueva</span>
-        </h1>
-        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl">
-            Tu destino de confianza para alimentos, aseo y papelería. Calidad y servicio en un solo lugar.
-        </p>
-    </section>
+<!-- 1. HERO EN DOS COLUMNAS (PC) / APILADO (MÓVIL) -->
+<section class="relative w-full mb-8 md:mb-12 overflow-hidden bg-white dark:bg-[#0f0f0f] transition-colors duration-500 ease-in-out">
 
-    <!-- 2. ¿QUÉ ENCUENTRAS AQUÍ? - LIBRO PAGINADO -->
-    <section class="mb-20">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
-            <span class="w-8 h-1 bg-brand-red inline-block"></span> ¿Qué encuentras aquí?
-        </h2>
+    <div class="relative w-full grid grid-cols-1 md:grid-cols-[1.6fr_1fr] min-h-[60vh] md:min-h-[70vh] transition-all duration-500 ease-in-out">
 
-        <!-- Contenedor del libro con sombra interior -->
-        <div id="bookContainer" class="bg-white dark:bg-brand-darkcard rounded-xl shadow-inset-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <!-- Cabecera del libro con sombra interior sutil (ancla de scroll) -->
-            <div id="bookHeader" class="bg-brand-red px-6 py-4 shadow-inset-sm">
-                <h3 id="bookPageTitle" class="text-xl font-bold text-white text-center transition-all duration-300">
-                    Abarrotes
+        <!-- COLUMNA IZQUIERDA: IMAGEN / CARRUSEL -->
+        <div class="relative w-full h-[45vh] md:h-full min-h-[300px] md:min-h-full overflow-hidden">
+            {% if imagenes %}
+                <div id="carruselHero" class="relative w-full h-full">
+                    {% for imagen in imagenes %}
+                    <img src="{{ imagen.imagen.url }}"
+                         alt="Imagen de la tienda"
+                         class="carrusel-hero-img absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out {% if forloop.first %}opacity-100{% else %}opacity-0{% endif %}"
+                         data-index="{{ forloop.counter0 }}">
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="w-full h-full bg-gray-200 dark:bg-[#1a1a1a] transition-colors duration-500 ease-in-out"></div>
+            {% endif %}
+
+            <div class="absolute inset-0 bg-black/20 dark:bg-black/40 transition-colors duration-500 ease-in-out"></div>
+
+            <div class="hidden md:block absolute top-0 right-0 bottom-0 w-32 lg:w-48 bg-gradient-to-r from-transparent to-white transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"></div>
+            <div class="hidden md:block absolute top-0 right-0 bottom-0 w-32 lg:w-48 bg-gradient-to-r from-transparent to-[#0f0f0f] transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
+
+            <div class="hidden md:block absolute bottom-0 left-0 right-0 h-24 lg:h-32 bg-gradient-to-t from-white to-transparent transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"></div>
+            <div class="hidden md:block absolute bottom-0 left-0 right-0 h-24 lg:h-32 bg-gradient-to-t from-[#0f0f0f] to-transparent transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
+
+            <div class="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"></div>
+            <div class="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0f0f0f] to-transparent transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
+        </div>
+
+        <!-- COLUMNA DERECHA: TEXTO -->
+        <div class="relative w-full flex items-center justify-start md:justify-end px-6 md:px-10 lg:px-14 py-4 md:py-16 bg-gray-100 dark:bg-[#0a0a0a] transition-colors duration-500 ease-in-out">
+            <div class="w-full max-w-lg text-left md:text-right transition-colors duration-500 ease-in-out">
+                <h1 class="text-5xl md:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight font-sans mb-6 transition-colors duration-500 ease-in-out">
+                    Bienvenido a <br class="hidden md:block">
+                    <span class="text-brand-red">Tienda Nueva</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed font-medium transition-colors duration-500 ease-in-out">
+                    Tu destino de confianza para alimentos, aseo y papelería. Calidad y servicio en un solo lugar.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- CONTENIDO PRINCIPAL (limitado a max-w-3xl) -->
+<div class="max-w-3xl mx-auto px-4">
+
+    <!-- CONTROLES DE ADMINISTRADOR (ID agregado para el scroll) -->
+    {% if user.is_authenticated and user.is_staff %}
+    <section id="adminPanel" class="mb-12 p-6 rounded-2xl border border-gray-200 dark:border-[#1e1e1e] bg-gray-50 dark:bg-[#1e1e1e] transition-colors duration-500 ease-in-out scroll-mt-24">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 transition-colors duration-500 ease-in-out">
+                    <i class="fa-solid fa-shield-halved text-brand-red"></i> Panel de Administración
                 </h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-500 ease-in-out">Gestiona las imágenes del carrusel principal.</p>
+            </div>
+            <button id="btnMostrarFormularioCarrusel" type="button" class="px-4 py-2 rounded-lg bg-brand-red text-white font-semibold hover:bg-red-700 transition shadow-sm text-sm">
+                <i class="fa-solid fa-plus"></i> Agregar
+            </button>
+        </div>
+
+        <div id="formularioCarrusel" class="hidden mb-6 p-4 rounded-xl border border-gray-300 dark:border-[#1e1e1e] bg-white dark:bg-[#0f0f0f] transition-colors duration-500 ease-in-out">
+            <form method="post" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-center gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="agregar">
+                <input type="file" name="imagenes" accept="image/*" multiple required class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-800 hover:file:bg-gray-300 dark:file:bg-[#1e1e1e] dark:file:text-white transition">
+                <button type="submit" class="px-4 py-2 bg-brand-red text-white font-semibold rounded-lg hover:bg-red-700 transition">Subir</button>
+                <button type="button" id="btnCancelarFormularioCarrusel" class="px-4 py-2 bg-gray-200 dark:bg-[#1e1e1e] text-gray-800 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+            </form>
+        </div>
+
+        {% if imagenes %}
+        <!-- NUEVO CONTENEDOR: Fila horizontal con botones de desplazamiento -->
+        <div class="relative mt-4">
+            <!-- Botón Izquierda -->
+            <button id="btnScrollLeft" type="button" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-brand-red text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-700 transition opacity-80 hover:opacity-100">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+            <!-- Contenedor con scroll horizontal -->
+            <div id="adminGallery" class="flex overflow-x-auto gap-4 py-2 px-10 scroll-smooth snap-x snap-mandatory" style="scrollbar-width: none; -ms-overflow-style: none;">
+                {% for imagen in imagenes %}
+                <div class="snap-start shrink-0 relative group rounded-lg overflow-hidden border border-gray-300 dark:border-[#1e1e1e] w-32 h-24">
+                    <img src="{{ imagen.imagen.url }}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                        <div class="flex gap-1">
+                            <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="izquierda"><button type="submit" class="w-6 h-6 rounded bg-white text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center" {% if forloop.first %}disabled{% endif %}><i class="fa-solid fa-arrow-left text-[10px]"></i></button></form>
+                            <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="derecha"><button type="submit" class="w-6 h-6 rounded bg-white text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center" {% if forloop.last %}disabled{% endif %}><i class="fa-solid fa-arrow-right text-[10px]"></i></button></form>
+                        </div>
+                        <form method="post" class="inline" onsubmit="return confirm('¿Eliminar esta imagen?');">{% csrf_token %}<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><button type="submit" class="px-1.5 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold hover:bg-red-700"><i class="fa-solid fa-trash mr-0.5"></i></button></form>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
 
-            <!-- Contenido de la página -->
-            <div class="p-6 md:p-8 flex flex-col">
-                <!-- Lista con scroll interno y barra personalizada -->
-                <div id="bookPageContent" class="book-scroll-area flex-1 transition-all duration-300">
-                    <!-- El contenido se llena con JS -->
+            <!-- Botón Derecha -->
+            <button id="btnScrollRight" type="button" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-brand-red text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-700 transition opacity-80 hover:opacity-100">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+        <!-- Ocultar la barra de scroll visualmente -->
+        <style>
+            #adminGallery::-webkit-scrollbar { display: none; }
+        </style>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- MENSAJES DEL SISTEMA -->
+    {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+                <div class="p-4 rounded-lg transition-colors duration-500 ease-in-out {% if message.tags == 'success' %}bg-gray-200 text-black border border-gray-300 dark:bg-[#1e1e1e] dark:text-white dark:border-[#2a2a2a]{% else %}bg-red-100 text-brand-red border border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800{% endif %}">
+                    {{ message }}
                 </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
-                <!-- Controles de navegación (SIN sombra interior) -->
-                <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+    <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-8 md:mt-16 mb-8 md:mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
+
+    <!-- 3. ¿QUÉ ENCUENTRAS AQUÍ? -->
+    <section class="mb-20">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3 transition-colors duration-500 ease-in-out">
+            <span class="w-8 h-1 bg-brand-red inline-block"></span> ¿Qué encuentras aquí?
+        </h2>
+        <div id="bookContainer" class="bg-white dark:bg-[#0f0f0f] rounded-xl shadow-inset-lg border border-gray-200 dark:border-[#1e1e1e] overflow-hidden transition-colors duration-500 ease-in-out">
+            <div id="bookHeader" class="bg-brand-red px-6 py-4 shadow-inset-sm">
+                <h3 id="bookPageTitle" class="text-xl font-bold text-white text-center transition-all duration-300">Abarrotes</h3>
+            </div>
+            <div class="p-6 md:p-8 flex flex-col">
+                <div id="bookPageContent" class="flex-1 transition-all duration-300"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-[#1e1e1e] transition-colors duration-500 ease-in-out">
                     <div class="flex gap-2">
-                        <button id="btnFirst" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>
-                            <i class="fa-solid fa-angles-left mr-1"></i> Primera
-                        </button>
-                        <button id="btnPrev" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>
-                            <i class="fa-solid fa-angle-left mr-1"></i> Volver
-                        </button>
+                        <button id="btnFirst" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition disabled:opacity-40" disabled>Primera</button>
+                        <button id="btnPrev" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition disabled:opacity-40" disabled>Volver</button>
                     </div>
-
-                    <span id="pageIndicator" class="text-sm text-gray-500 dark:text-gray-400 font-medium order-first w-full text-center sm:order-none sm:w-auto">
-                        Página 1 de 7
-                    </span>
-
+                    <span id="pageIndicator" class="text-sm text-gray-500 dark:text-gray-400 font-medium order-first w-full text-center sm:order-none sm:w-auto transition-colors duration-500 ease-in-out">Página 1 de 7</span>
                     <div class="flex gap-2">
-                        <button id="btnNext" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand-red text-white hover:bg-red-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                            Siguiente <i class="fa-solid fa-angle-right ml-1"></i>
-                        </button>
-                        <button id="btnLast" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                            Última <i class="fa-solid fa-angles-right ml-1"></i>
-                        </button>
+                        <button id="btnNext" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand-red text-white hover:bg-red-700 transition disabled:opacity-40">Siguiente</button>
+                        <button id="btnLast" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition disabled:opacity-40">Última</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 3. MEDIOS DE PAGO -->
+    <!-- 4. MEDIOS DE PAGO -->
     <section class="mb-0">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3 transition-colors duration-500 ease-in-out">
             <span class="w-8 h-1 bg-brand-red inline-block"></span> Medios de Pago
         </h2>
         <ul class="space-y-4">
-            <!-- Efectivo -->
-            <li class="group flex items-center gap-4 p-5 bg-red-50 dark:bg-brand-darkcard rounded-2xl border border-red-100 dark:border-gray-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-brand-red/50 cursor-default">
-                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full transition-transform duration-300 group-hover:scale-110">
-                    <i class="fa-solid fa-money-bill-wave text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-900 dark:text-white">Efectivo</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Pago en tienda física</p>
-                </div>
+            <li class="group flex items-center gap-4 p-5 bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl border border-gray-200 dark:border-[#1e1e1e] transition-all duration-300 hover:shadow-lg hover:border-brand-red/50">
+                <div class="w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full group-hover:scale-110 transition-transform"><i class="fa-solid fa-money-bill-wave text-lg"></i></div>
+                <div><h3 class="font-bold text-gray-900 dark:text-white transition-colors duration-300">Efectivo</h3><p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">Pago en tienda física</p></div>
             </li>
-            <!-- Nequi -->
-            <li class="group flex items-center gap-4 p-5 bg-red-50 dark:bg-brand-darkcard rounded-2xl border border-red-100 dark:border-gray-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-brand-red/50 cursor-default">
-                <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full transition-transform duration-300 group-hover:scale-110">
-                    <i class="fa-solid fa-mobile-screen text-lg"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-900 dark:text-white">Nequi</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">316 318 0459</p>
-                </div>
+            <li class="group flex items-center gap-4 p-5 bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl border border-gray-200 dark:border-[#1e1e1e] transition-all duration-300 hover:shadow-lg hover:border-brand-red/50">
+                <div class="w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full group-hover:scale-110 transition-transform"><i class="fa-solid fa-mobile-screen text-lg"></i></div>
+                <div><h3 class="font-bold text-gray-900 dark:text-white transition-colors duration-300">Nequi</h3><p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">316 318 0459</p></div>
             </li>
         </ul>
     </section>
 
-    <!-- 4. LLAMADO A LA ACCIÓN (Iniciar Sesión) — SOLO SI NO ESTÁ LOGUEADO -->
+    <!-- 5. LLAMADO A LA ACCIÓN -->
     {% if not user.is_authenticated %}
     <section class="mb-0">
-        <!-- Separador rojo centrado -->
-        <div class="w-full max-w-xs h-1 bg-brand-red mx-auto mt-16 mb-10"></div>
+        <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-16 mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
+        
+        <div class="relative overflow-hidden bg-brand-red rounded-3xl p-8 md:p-10 text-center shadow-xl">
+            <div class="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                <div class="absolute -top-20 -left-20 w-80 h-80 bg-red-900 rounded-full opacity-40 blur-3xl"></div>
+                <div class="absolute -bottom-24 -right-16 w-72 h-72 bg-red-800 rounded-full opacity-40 blur-3xl"></div>
+                <div class="absolute top-4 right-12 w-40 h-40 bg-white rounded-full opacity-20 blur-2xl"></div>
+                <div class="absolute top-1/2 left-1/3 w-48 h-48 bg-pink-300 rounded-full opacity-20 blur-3xl"></div>
+            </div>
 
-        <!-- Contenedor sólido -->
-        <div class="bg-brand-red rounded-3xl p-8 md:p-10 text-center shadow-xl">
-            <h3 class="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight">
-                Descubre todo lo que tenemos para ti
-            </h3>
-            <p class="text-white/90 text-lg mb-8 max-w-xl mx-auto">
-                Inicia sesión para ver el catálogo de los productos
-            </p>
-            <a href="{% url 'login' %}" class="inline-flex items-center justify-center gap-3 bg-white text-brand-red hover:bg-gray-100 font-bold py-4 px-10 rounded-full shadow-lg transition transform hover:-translate-y-1 text-lg tracking-wide">
-                <i class="fa-regular fa-user"></i>
-                Iniciar Sesión
-            </a>
+            <div class="relative z-10">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-3">Descubre todo lo que tenemos para ti</h3>
+                <p class="text-white/90 text-lg mb-8">Inicia sesión para ver el catálogo de los productos</p>
+                <a href="{% url 'login' %}" class="inline-flex items-center gap-3 bg-white text-brand-red font-bold py-4 px-10 rounded-full shadow-lg hover:-translate-y-1 transition"><i class="fa-regular fa-user"></i> Iniciar Sesión</a>
+            </div>
         </div>
     </section>
     {% endif %}
 
-    <!-- 5. SOBRE NOSOTROS -->
+    <!-- 6. SOBRE NOSOTROS -->
     <section id="nosotros" class="scroll-mt-24 mb-20">
-        <!-- Separador rojo centrado -->
-        <div class="w-full max-w-xs h-1 bg-brand-red mx-auto mt-16 mb-16"></div>
-
-        <!-- Título llamativo -->
+        <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-16 mb-16 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
         <div class="text-center md:text-left mb-10">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
-                Sobre <span class="text-brand-red">Nosotros</span>
-            </h2>
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 transition-colors duration-500 ease-in-out">Sobre <span class="text-brand-red">Nosotros</span></h2>
         </div>
-
         <div class="space-y-12">
-            <!-- Historia -->
             <div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Historia
-                </h3>
-                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
-                    Fundada el <strong class="text-gray-900 dark:text-white">19 de enero de 1998</strong> bajo el nombre de <strong class="text-gray-900 dark:text-white">Tienda FEMA</strong>, hoy en día somos conocidos como <strong class="text-gray-900 dark:text-white">Tienda Nueva</strong>. Desde nuestros inicios, hemos crecido y evolucionado, manteniendo siempre nuestro compromiso con la calidad y el buen servicio a nuestra comunidad.
-                </p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3 transition-colors duration-500 ease-in-out"><span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Historia</h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg transition-colors duration-500 ease-in-out">Fundada el <strong class="text-gray-900 dark:text-white">19 de enero de 1998</strong> bajo el nombre de <strong class="text-gray-900 dark:text-white">Tienda FEMA</strong>, hoy en día somos conocidos como <strong class="text-gray-900 dark:text-white">Tienda Nueva</strong>. Mantenemos siempre nuestro compromiso con la calidad y el buen servicio.</p>
             </div>
-
-            <!-- Equipo -->
             <div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestro Equipo
-                </h3>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3 transition-colors duration-500 ease-in-out"><span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestro Equipo</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
-                        <h4 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Fundadores</h4>
-                        <p class="text-lg font-medium text-gray-900 dark:text-white">Carlos Fernando Andrade & Luz Marina Rodríguez</p>
-                    </div>
-                    <div class="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
-                        <h4 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Dueño Actual</h4>
-                        <p class="text-lg font-medium text-gray-900 dark:text-white">Oscar Daniel Andrade</p>
-                    </div>
+                    <div class="border-l-2 border-gray-200 dark:border-[#1e1e1e] pl-4 transition-colors duration-500 ease-in-out"><h4 class="text-sm font-bold text-gray-500 uppercase mb-2 transition-colors duration-500 ease-in-out">Fundadores</h4><p class="text-lg text-gray-900 dark:text-white transition-colors duration-500 ease-in-out">Carlos Fernando Andrade & Luz Marina Rodríguez</p></div>
+                    <div class="border-l-2 border-gray-200 dark:border-[#1e1e1e] pl-4 transition-colors duration-500 ease-in-out"><h4 class="text-sm font-bold text-gray-500 uppercase mb-2 transition-colors duration-500 ease-in-out">Dueño Actual</h4><p class="text-lg text-gray-900 dark:text-white transition-colors duration-500 ease-in-out">Oscar Daniel Andrade</p></div>
                 </div>
-                <p class="mt-6 text-gray-600 dark:text-gray-400 italic text-lg">
-                    "Agradecemos a cada persona que ha confiado en nosotros a lo largo de estos años. Su preferencia es nuestro mayor compromiso."
-                </p>
+                <p class="mt-6 text-gray-600 dark:text-gray-400 italic text-lg transition-colors duration-500 ease-in-out">"Agradecemos a cada persona que ha confiado en nosotros a lo largo de estos años."</p>
             </div>
-
-            <!-- Misión / Visión -->
             <div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Misión
-                </h3>
-                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
-                    Proveer productos de calidad a precios justos, sirviendo a nuestra comunidad con la calidez de siempre.
-                </p>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3 transition-colors duration-500 ease-in-out"><span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Misión</h3>
+                <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg transition-colors duration-500 ease-in-out">Proveer productos de calidad a precios justos, sirviendo a nuestra comunidad con la calidez de siempre.</p>
             </div>
         </div>
     </section>
-
 </div>
-
-<style>
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    .animate-fade-in-up {
-        animation: fadeInUp 0.8s ease-out forwards;
-    }
-
-    /* Transición suave para el cambio de página del libro */
-    .book-transition {
-        animation: bookFade 0.35s ease-out;
-    }
-    @keyframes bookFade {
-        from {
-            opacity: 0;
-            transform: translateX(12px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    /* ============================================================
-       ÁREA DE SCROLL INTERNO DEL LIBRO
-       ============================================================ */
-    .book-scroll-area {
-        max-height: 340px;            /* Límite de altura visible */
-        overflow-y: auto;             /* Scroll vertical cuando se desborda */
-        padding-right: 0.5rem;        /* Espacio para que la barra no pegue al texto */
-        scroll-behavior: smooth;      /* Desplazamiento suave dentro del área */
-    }
-
-    /* Barra de scroll personalizada (WebKit: Chrome, Edge, Safari) */
-    .book-scroll-area::-webkit-scrollbar {
-        width: 8px;
-    }
-    .book-scroll-area::-webkit-scrollbar-track {
-        background: #f3f4f6;          /* Gris claro */
-        border-radius: 8px;
-    }
-    .book-scroll-area::-webkit-scrollbar-thumb {
-        background: #b91c1c;          /* Rojo de marca */
-        border-radius: 8px;
-        transition: background 0.2s;
-    }
-    .book-scroll-area::-webkit-scrollbar-thumb:hover {
-        background: #991b1b;          /* Rojo más oscuro al pasar el ratón */
-    }
-
-    /* Barra de scroll personalizada (Firefox) */
-    .book-scroll-area {
-        scrollbar-width: thin;
-        scrollbar-color: #b91c1c #f3f4f6;
-    }
-
-    /* Modo oscuro */
-    .dark .book-scroll-area::-webkit-scrollbar-track {
-        background: #1f2937;
-    }
-    .dark .book-scroll-area::-webkit-scrollbar-thumb {
-        background: #b91c1c;
-    }
-    .dark .book-scroll-area {
-        scrollbar-color: #b91c1c #1f2937;
-    }
-
-    /* Estilo para listas dentro del libro */
-    .book-list {
-        columns: 2;
-        column-gap: 1.5rem;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    .book-list li {
-        break-inside: avoid;
-        padding: 0.2rem 0;
-        color: #4b5563;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: baseline;
-        gap: 0.4rem;
-    }
-    .book-list li::before {
-        content: "•";
-        color: #b91c1c;
-        font-weight: bold;
-        font-size: 1.2rem;
-        line-height: 1;
-    }
-    .dark .book-list li {
-        color: #9ca3af;
-    }
-
-    @media (max-width: 640px) {
-        .book-list {
-            columns: 1;
-        }
-        .book-scroll-area {
-            max-height: 280px;
-        }
-    }
-
-    /* ============================================================
-       SOMBRAS INTERIORES (INSET) — SOLO PARA EL LIBRO
-       ============================================================ */
-
-    /* Sombra interior grande para el contenedor principal del libro */
-    .shadow-inset-lg {
-        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.08),
-                    inset 0 2px 4px rgba(0, 0, 0, 0.04);
-    }
-    .dark .shadow-inset-lg {
-        box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.35),
-                    inset 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Sombra interior sutil para la cabecera roja */
-    .shadow-inset-sm {
-        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-    .dark .shadow-inset-sm {
-        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
-    }
-</style>
 
 <script>
     // ============================================================
-    // DATOS DEL LIBRO: PÁGINAS CON TÍTULO Y CONTENIDO
+    // ANIMACIÓN FADE-IN-UP INICIAL (0.5s)
+    // ============================================================
+    (function animarEntrada() {
+        const hero = document.querySelector('section.relative.w-full');
+        if (!hero) return;
+        hero.style.opacity = '0';
+        hero.style.transform = 'translateY(20px)';
+        void hero.offsetWidth;
+        hero.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+        requestAnimationFrame(() => {
+            hero.style.opacity = '1';
+            hero.style.transform = 'translateY(0)';
+        });
+    })();
+
+    // ============================================================
+    // NUEVO: MANTENER SCROLL EN EL PANEL DE ADMINISTRACIÓN
+    // ============================================================
+    (function mantenerScrollAdmin() {
+        // Si hay mensajes del sistema (lo que indica que se acaba de hacer una acción POST)
+        // o si la URL tiene algún parámetro de acción, hacemos scroll al panel.
+        const tieneMensajes = document.querySelector('.mb-6 .p-4.rounded-lg'); 
+        
+        if (tieneMensajes) {
+            const adminPanel = document.getElementById('adminPanel');
+            if (adminPanel) {
+                // Hacemos scroll suave hacia el panel de administración
+                setTimeout(() => {
+                    adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100); // Pequeño timeout para asegurar que la página terminó de cargar
+            }
+        }
+    })();
+
+    // ============================================================
+    // SCROLL HORIZONTAL ADMIN
+    // ============================================================
+    (function configurarScrollAdmin() {
+        const gallery = document.getElementById('adminGallery');
+        const btnLeft = document.getElementById('btnScrollLeft');
+        const btnRight = document.getElementById('btnScrollRight');
+        
+        if (gallery && btnLeft && btnRight) {
+            btnLeft.addEventListener('click', () => {
+                gallery.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+            btnRight.addEventListener('click', () => {
+                gallery.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+        }
+    })();
+
+    // ============================================================
+    // SCROLLBAR DEL LIBRO
+    // ============================================================
+    (function aplicarEstilosLibro() {
+        const content = document.getElementById('bookPageContent');
+        if (!content) return;
+        content.style.maxHeight = '340px';
+        content.style.overflowY = 'auto';
+        content.style.paddingRight = '0.5rem';
+        content.style.scrollBehavior = 'smooth';
+        content.style.scrollbarWidth = 'thin';
+        content.style.scrollbarColor = '#b91c1c #f3f4f6';
+
+        const sheet = document.createElement('style');
+        sheet.textContent = `
+            #bookPageContent::-webkit-scrollbar { width: 6px; }
+            #bookPageContent::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
+            #bookPageContent::-webkit-scrollbar-thumb { background: #b91c1c; border-radius: 8px; }
+            .dark #bookPageContent::-webkit-scrollbar-track { background: #374151; }
+            .dark #bookPageContent { scrollbar-color: #b91c1c #374151; }
+        `;
+        document.head.appendChild(sheet);
+
+        const ajustarResponsive = () => {
+            if (window.innerWidth <= 640) {
+                content.style.maxHeight = '280px';
+            } else {
+                content.style.maxHeight = '340px';
+            }
+        };
+        ajustarResponsive();
+        window.addEventListener('resize', ajustarResponsive);
+    })();
+
+    // ============================================================
+    // SOMBRAS INSET
+    // ============================================================
+    (function aplicarSombrasInset() {
+        const bookContainer = document.getElementById('bookContainer');
+        const bookHeader = document.getElementById('bookHeader');
+        if (bookContainer) {
+            const aplicar = () => {
+                const esDark = document.documentElement.classList.contains('dark');
+                bookContainer.style.boxShadow = esDark
+                    ? 'inset 0 4px 12px rgba(0, 0, 0, 0.35)'
+                    : 'inset 0 4px 12px rgba(0, 0, 0, 0.08)';
+            };
+            aplicar();
+            new MutationObserver(aplicar).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        }
+        if (bookHeader) {
+            const aplicar = () => {
+                const esDark = document.documentElement.classList.contains('dark');
+                bookHeader.style.boxShadow = esDark
+                    ? 'inset 0 2px 6px rgba(0, 0, 0, 0.4)'
+                    : 'inset 0 2px 6px rgba(0, 0, 0, 0.2)';
+            };
+            aplicar();
+            new MutationObserver(aplicar).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        }
+    })();
+
+    // ============================================================
+    // ANIMACIÓN BOOK-FADE
+    // ============================================================
+    function animarCambioPagina(elemento) {
+        elemento.style.opacity = '0';
+        elemento.style.transform = 'translateX(12px)';
+        void elemento.offsetWidth;
+        elemento.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
+        requestAnimationFrame(() => {
+            elemento.style.opacity = '1';
+            elemento.style.transform = 'translateX(0)';
+        });
+    }
+
+    // ============================================================
+    // LÓGICA DEL HERO CARRUSEL
+    // ============================================================
+    (function iniciarHeroCarrusel() {
+        const imagenes = document.querySelectorAll('.carrusel-hero-img');
+        if (imagenes.length <= 1) return;
+
+        let currentIndex = 0;
+        const INTERVALO_MS = 6000;
+
+        setInterval(() => {
+            imagenes[currentIndex].classList.remove('opacity-100');
+            imagenes[currentIndex].classList.add('opacity-0');
+
+            currentIndex = (currentIndex + 1) % imagenes.length;
+
+            imagenes[currentIndex].classList.remove('opacity-0');
+            imagenes[currentIndex].classList.add('opacity-100');
+        }, INTERVALO_MS);
+    })();
+
+    // ============================================================
+    // DATOS DEL LIBRO
     // ============================================================
     const bookPages = [
-        {
-            title: "Abarrotes",
-            items: [
-                "Aceites", "Granos", "Azúcar", "Sal", "Panela", "Mantequilla", "Galletas",
-                "Enlatados", "Papel higiénico", "Toallas de cocina", "Servilletas",
-                "Café instantáneo y molido", "Condimentos", "Kelloggs", "Dulcería",
-                "Harina para arepas", "Harina de trigo", "Avena en hojuelas", "Chocolate",
-                "Milo", "Mermeladas", "Aderezos", "Miel de abejas", "Vinagre",
-                "Cremas de leche", "Papel aluminio", "Papel vinipel", "Veladoras",
-                "Pañales desechables", "Refrescos en polvo", "Conservas", "Fósforos",
-                "Mecheras", "Pastillas raid", "Raid aerosoles"
-            ]
-        },
-        {
-            title: "Aseo Personal",
-            items: [
-                "Jabones", "Crema dental", "Shampoo", "Cepillos", "Desodorante",
-                "Gel para el cabello", "Bloqueador solar", "Listerine",
-                "Toallas higiénicas", "Afeitadoras", "Seda dental", "Pañitos húmedos",
-                "Pañuelos faciales", "Copitos"
-            ]
-        },
-        {
-            title: "Aseo General",
-            items: [
-                "Jabones en polvo", "Jabones en barra", "Jabón líquido", "Límpido",
-                "Aromatizantes para baño", "Aromatizantes para piso", "Varsol",
-                "Ácido muriático", "Guantes", "Esponjas", "Escobas", "Traperos",
-                "Recogedores", "Cepillos de lavar ropa", "Bolsas para la basura",
-                "Pastas de cloro", "Productos de plaza", "Productos de panadería",
-                "Concentrado para animales"
-            ]
-        },
-        {
-            title: "Bebidas",
-            items: [
-                "Gaseosas", "Whisky", "Crema de Whisky", "Vinos", "Aguardiente",
-                "Ron", "Tequila", "Sabajón", "Piña colada", "Cervezas", "Cócteles",
-                "Bebidas energizantes", "Sueros", "Jugos", "Yogur", "Kumis"
-            ]
-        },
-        {
-            title: "Medicamentos",
-            items: [
-                "Para la gripe", "Dolores en general", "Malestar estomacal",
-                "Reflujo gástrico", "Para la tos", "Diarrea", "Cólicos menstruales",
-                "Curas", "Crema yodora", "Piedra alumbre", "Aceite de almendra",
-                "Vaselina", "Talcos", "Preservativos", "Suero en sobres"
-            ]
-        },
-        {
-            title: "Cacharrería y Papelería",
-            items: [
-                "Metros de modistería", "Cortauñas", "Ganchos para el cabello",
-                "Nodriza", "Guantes de látex", "Lluvia de sobres", "Bombillos",
-                "Cinta dorada", "Canicas", "Caucho olla exprés", "Cartas españolas",
-                "Dominó", "Ajedrez", "Parqués", "Fichas para parqués", "Tapa bocas",
-                "Memorias USB", "Agujas", "Hilos", "Cinta de enmascarar",
-                "Cinta aislante", "Cinta teflón", "Tarritos para muestra médica",
-                "Algodón", "Gasa", "Micropore", "Esparadrapo", "Jeringas", "Pilas",
-                "Medias para colegio", "Medias para fútbol", "Talonario de rifas",
-                "Recibo de caja", "Factureros", "Silicona barra", "Silicona líquida",
-                "Palo pincho", "Gancho legajador", "Cordones", "Bolas de icopor",
-                "Vasos de icopor", "Vasos plásticos", "Platos de icopor",
-                "Bandejas de icopor", "Cubiertos plásticos", "Bandejas para lasaña",
-                "Alcancías", "Lupas", "Velas de parafina", "Velas de cebo",
-                "Vela volcán", "Platillas para zapatos", "Toallas para cocina",
-                "Bolsas de regalo", "Limas", "Cauchitos para el cabello", "Bombas",
-                "Peinetas", "Palo para helado", "Esmaltes", "Removedor",
-                "Tiras para brasieres"
-            ]
-        },
-        {
-            title: "Papelería (continuación)",
-            items: [
-                "Papel calcante", "Cuadernos", "Lapiceros", "Borradores",
-                "Taja lápiz", "Marcadores", "Crayones", "Forros para cuadernos",
-                "Clips", "Correctores", "Pegantes en barra", "Pegantes líquidos",
-                "Reglas", "Grapadoras", "Bisturí", "Cartón paja", "Fomi",
-                "Block carta", "Carpeta de presentación", "Resma oficio",
-                "Resma carta", "Cartulinas", "Papel crepé", "Papel seda",
-                "Témperas", "Sobre de manila", "Sobre de carta"
-            ]
-        }
+        { title: "Abarrotes", items: ["Aceites", "Granos", "Azúcar", "Sal", "Panela", "Mantequilla", "Galletas", "Enlatados", "Papel higiénico", "Toallas de cocina", "Servilletas", "Café instantáneo y molido", "Condimentos", "Kelloggs", "Dulcería", "Harina para arepas", "Harina de trigo", "Avena en hojuelas", "Chocolate", "Milo", "Mermeladas", "Aderezos", "Miel de abejas", "Vinagre", "Cremas de leche", "Papel aluminio", "Papel vinipel", "Veladoras", "Pañales desechables", "Refrescos en polvo", "Conservas", "Fósforos", "Mecheras", "Pastillas raid", "Raid aerosoles"] },
+        { title: "Aseo Personal", items: ["Jabones", "Crema dental", "Shampoo", "Cepillos", "Desodorante", "Gel para el cabello", "Bloqueador solar", "Listerine", "Toallas higiénicas", "Afeitadoras", "Seda dental", "Pañitos húmedos", "Pañuelos faciales", "Copitos"] },
+        { title: "Aseo General", items: ["Jabones en polvo", "Jabones en barra", "Jabón líquido", "Límpido", "Aromatizantes para baño", "Aromatizantes para piso", "Varsol", "Ácido muriático", "Guantes", "Esponjas", "Escobas", "Traperos", "Recogedores", "Cepillos de lavar ropa", "Bolsas para la basura", "Pastas de cloro", "Productos de plaza", "Productos de panadería", "Concentrado para animales"] },
+        { title: "Bebidas", items: ["Gaseosas", "Whisky", "Crema de Whisky", "Vinos", "Aguardiante", "Ron", "Tequila", "Sabajón", "Piña colada", "Cervezas", "Cócteles", "Bebidas energizantes", "Sueros", "Jugos", "Yogur", "Kumis"] },
+        { title: "Medicamentos", items: ["Para la gripe", "Dolores en general", "Malestar estomacal", "Reflujo gástrico", "Para la tos", "Diarrea", "Cólicos menstruales", "Curas", "Crema yodora", "Piedra alumbre", "Aceite de almendra", "Vaselina", "Talcos", "Preservativos", "Suero en sobres"] },
+        { title: "Cacharrería y Papelería", items: ["Metros de modistería", "Cortauñas", "Ganchos para el cabello", "Nodriza", "Guantes de látex", "Lluvia de sobres", "Bombillos", "Cinta dorada", "Canicas", "Caucho olla exprés", "Cartas españolas", "Dominó", "Ajedrez", "Parqués", "Fichas para parqués", "Tapa bocas", "Memorias USB", "Agujas", "Hilos", "Cinta de enmascarar", "Cinta aislante", "Cinta teflón", "Tarritos para muestra médica", "Algodón", "Gasa", "Micropore", "Esparadrapo", "Jeringas", "Pilas", "Medias para colegio", "Medias para fútbol", "Talonario de rifas", "Recibo de caja", "Factureros", "Silicona barra", "Silicona líquida", "Palo pincho", "Gancho legajador", "Cordones", "Bolas de icopor", "Vasos de icopor", "Vasos plásticos", "Platos de icopor", "Bandejas de icopor", "Cubiertos plásticos", "Bandejas para lasaña", "Alcancías", "Lupas", "Velas de parafina", "Velas de cebo", "Vela volcán", "Platillas para zapatos", "Toallas para cocina", "Bolsas de regalo", "Limas", "Cauchitos para el cabello", "Bombas", "Peinetas", "Palo para helado", "Esmaltes", "Removedor", "Tiras para brasieres"] },
+        { title: "Papelería (continuación)", items: ["Papel calcante", "Cuadernos", "Lapiceros", "Borradores", "Taja lápiz", "Marcadores", "Crayones", "Forros para cuadernos", "Clips", "Correctores", "Pegantes en barra", "Pegantes líquidos", "Reglas", "Grapadoras", "Bisturí", "Cartón paja", "Fomi", "Block carta", "Carpeta de presentación", "Resma oficio", "Resma carta", "Cartulinas", "Papel crepé", "Papel seda", "Témperas", "Sobre de manila", "Sobre de carta"] }
     ];
 
-    // ============================================================
-    // LÓGICA DEL LIBRO PAGINADO
-    // ============================================================
     let currentPage = 0;
     const totalPages = bookPages.length;
-
-    // Elementos del DOM
     const pageTitleEl = document.getElementById('bookPageTitle');
     const pageContentEl = document.getElementById('bookPageContent');
     const pageIndicatorEl = document.getElementById('pageIndicator');
@@ -414,94 +397,92 @@
     const btnLast = document.getElementById('btnLast');
     const bookHeaderEl = document.getElementById('bookHeader');
 
-    /**
-     * Renderiza la página actual del libro.
-     * @param {boolean} scrollToBook - Si es true, hace scroll hasta el título del libro.
-     *                                 Solo debe ser true cuando se navega con los botones,
-     *                                 nunca en la carga inicial de la página.
-     */
     function renderPage(scrollToBook = false) {
         const page = bookPages[currentPage];
-
-        // Actualizar título
         pageTitleEl.textContent = page.title;
 
-        // Construir lista de items
-        let html = '<ul class="book-list">';
+        const ul = document.createElement('ul');
+        ul.style.columns = window.innerWidth <= 640 ? '1' : '2';
+        ul.style.columnGap = '1.5rem';
+        ul.style.listStyle = 'none';
+        ul.style.padding = '0';
+        ul.style.margin = '0';
+
+        const esDark = document.documentElement.classList.contains('dark');
+
         page.items.forEach(item => {
-            html += `<li>${item}</li>`;
+            const li = document.createElement('li');
+            li.textContent = item;
+            li.style.breakInside = 'avoid';
+            li.style.padding = '0.2rem 0';
+            li.style.color = esDark ? '#9ca3af' : '#4b5563';
+            li.style.fontSize = '0.95rem';
+            li.style.display = 'flex';
+            li.style.alignItems = 'baseline';
+            li.style.gap = '0.4rem';
+
+            const punto = document.createElement('span');
+            punto.textContent = '•';
+            punto.style.color = '#b91c1c';
+            punto.style.fontWeight = 'bold';
+            punto.style.fontSize = '1.2rem';
+            punto.style.lineHeight = '1';
+            li.prepend(punto);
+
+            ul.appendChild(li);
         });
-        html += '</ul>';
 
-        // Insertar contenido con animación
-        pageContentEl.innerHTML = html;
-        pageContentEl.classList.remove('book-transition');
-        void pageContentEl.offsetWidth;
-        pageContentEl.classList.add('book-transition');
+        pageContentEl.innerHTML = '';
+        pageContentEl.appendChild(ul);
 
-        // Resetear el scroll interno del área de contenido al inicio
+        animarCambioPagina(pageContentEl);
         pageContentEl.scrollTop = 0;
 
-        // Actualizar indicador de página
         pageIndicatorEl.textContent = `Página ${currentPage + 1} de ${totalPages}`;
-
-        // Actualizar estado de botones
         btnFirst.disabled = currentPage === 0;
         btnPrev.disabled = currentPage === 0;
         btnNext.disabled = currentPage === totalPages - 1;
         btnLast.disabled = currentPage === totalPages - 1;
 
-        // ============================================================
-        // SCROLL AUTOMÁTICO AL TÍTULO DEL LIBRO (SOLO AL NAVEGAR)
-        // ============================================================
         if (scrollToBook) {
-            // Calculamos la posición del header del libro relativa al documento.
-            // Añadimos un margen superior (HEADER_OFFSET) para compensar el header
-            // fijo del sitio (la barra roja "TIENDA NUEVA"), de modo que el título
-            // del libro quede completamente visible justo debajo.
-            const HEADER_OFFSET = 90; // Altura aproximada de la barra fija + margen
-
+            const HEADER_OFFSET = 90;
             const headerRect = bookHeaderEl.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = headerRect.top + scrollTop - HEADER_OFFSET;
-
-            window.scrollTo({
-                top: targetPosition,
-                behavior: 'smooth'
-            });
+            window.scrollTo({ top: headerRect.top + scrollTop - HEADER_OFFSET, behavior: 'smooth' });
         }
     }
 
-    // Event listeners
-    btnFirst.addEventListener('click', () => {
-        if (currentPage > 0) {
-            currentPage = 0;
-            renderPage(true);
-        }
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => renderPage(false), 200);
     });
 
-    btnPrev.addEventListener('click', () => {
-        if (currentPage > 0) {
-            currentPage--;
-            renderPage(true);
-        }
-    });
+    new MutationObserver(() => renderPage(false)).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-    btnNext.addEventListener('click', () => {
-        if (currentPage < totalPages - 1) {
-            currentPage++;
-            renderPage(true);
-        }
-    });
-
-    btnLast.addEventListener('click', () => {
-        if (currentPage < totalPages - 1) {
-            currentPage = totalPages - 1;
-            renderPage(true);
-        }
-    });
-
-    // Inicializar SIN hacer scroll al libro (la página carga desde arriba)
+    btnFirst.addEventListener('click', () => { if (currentPage > 0) { currentPage = 0; renderPage(true); } });
+    btnPrev.addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderPage(true); } });
+    btnNext.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage++; renderPage(true); } });
+    btnLast.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage = totalPages - 1; renderPage(true); } });
     renderPage(false);
+
+    // ============================================================
+    // CONTROL DEL FORMULARIO DE ADMIN
+    // ============================================================
+    const btnMostrarForm = document.getElementById('btnMostrarFormularioCarrusel');
+    const formulario = document.getElementById('formularioCarrusel');
+    const btnCancelarForm = document.getElementById('btnCancelarFormularioCarrusel');
+
+    if (btnMostrarForm && formulario) {
+        btnMostrarForm.addEventListener('click', () => {
+            formulario.classList.toggle('hidden');
+        });
+        if (btnCancelarForm) {
+            btnCancelarForm.addEventListener('click', () => {
+                formulario.classList.add('hidden');
+            });
+        }
+    }
 </script>
+
 {% endblock %}

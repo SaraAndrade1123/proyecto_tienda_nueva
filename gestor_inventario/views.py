@@ -1,3 +1,19 @@
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import Max
+from .models import ImagenCarrusel
+
+def es_administrador(user):
+    return user.is_authenticated and user.is_staff
+
+def ordenar_imagenes():
+    imagenes = ImagenCarrusel.objects.order_by('orden', 'fecha_creacion', 'id')
+    for posicion, imagen in enumerate(imagenes, start=1):
+        if imagen.orden != posicion:
+            imagen.orden = posicion
+            imagen.save(update_fields=['orden'])
+
 def informacion_tienda(request):
     if request.method == 'POST':
         if not es_administrador(request.user):
@@ -55,3 +71,6 @@ def informacion_tienda(request):
 
     imagenes = ImagenCarrusel.objects.all()
     return render(request, 'informacion.html', {'imagenes': imagenes})
+
+def ver_consumo(request):
+    pass

@@ -14,7 +14,7 @@ urlpatterns = [
 
     path('productos/', include('productos.urls')),
 
-    path('', lambda request: redirect('informacion_tienda')), 
+        path('', lambda request: redirect('informacion_tienda')), 
 ]
 
 if settings.DEBUG:
