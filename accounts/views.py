@@ -7,10 +7,6 @@ from gestor_inventario.models import Perfil
 from django.contrib.auth.models import Group, Permission
 from django.urls import reverse
 
-
-def home(request):
-    return redirect('lista_productos')
-
 def es_superadmin(user):
     return user.is_authenticated and user.is_superuser
 
