@@ -13,6 +13,6 @@ urlpatterns = [
     path('proveedores/<int:id>/desactivar/',views.desactivar_proveedor,name='desactivar_proveedor'),
     path('proveedores/<int:id>/activar/',views.activar_proveedor,name='activar_proveedor'),
     path('proveedores/<int:id>/visitas/nueva/',views.agregar_visita_proveedor,name='agregar_visita_proveedor'),
-    
+
     path('consumo/', views.ver_consumo, name='ver_consumo'),
 ]
