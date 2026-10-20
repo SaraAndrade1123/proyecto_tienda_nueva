@@ -15,7 +15,7 @@ class Proveedor(models.Model):
     proxima_visita = models.DateField(null=True, blank=True, verbose_name="Próxima visita")
 
     def __str__(self):
-<<<<<<< HEAD
+
         return f"{self.nombre} ({self.nit})"
 
     def proxima_visita(self):
@@ -25,11 +25,9 @@ class Proveedor(models.Model):
         hoy = timezone.now().date()
         return self.visitas.filter(fecha__gte=hoy).order_by('fecha').first()
 
-#errrer
-=======
+
         return self.nombre_empresa
 
->>>>>>> db44a495e58ded81e1636a154f6fa9299bbfedd5
 class VisitaProveedor(models.Model):
     proveedor = models.ForeignKey(
         Proveedor,
