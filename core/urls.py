@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.shortcuts import redirect
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
