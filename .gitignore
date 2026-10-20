@@ -2,12 +2,28 @@
 venv/
 .venv/
 
-# Base de datos local
+# Base de datos local y respaldos
 db.sqlite3
+db.sqlite3-journal
+respaldo.json
+*.sql
+*.dump
 
-# Caché
+# Archivos subidos por usuarios
+media/
+
+# Archivos estáticos generados por collectstatic
+staticfiles/
+
+# Caché de Python
 __pycache__/
 *.py[cod]
-*.pyc
-*$spy.class
-media/
+
+# Registros
+*.log
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

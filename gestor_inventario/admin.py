@@ -5,7 +5,7 @@ from .models import Proveedor, VisitaProveedor
 class VisitaProveedorInline(admin.TabularInline):
     model = VisitaProveedor
     extra = 1
-
+#
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):

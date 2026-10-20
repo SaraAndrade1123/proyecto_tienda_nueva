@@ -50,17 +50,44 @@
             </div>
 
 
-            {% if user.is_superuser %}
+            <!-- ZONA DERECHA: FILTRO + NUEVO PRODUCTO -->
+            <div class="shrink-0 flex items-center gap-3">
 
-                <a
-                    href="{% url 'crear_producto' %}"
-                    class="shrink-0 h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95"
+                <!-- BOTÓN FILTRO -->
+                <button
+                    type="button"
+                    id="btnFiltro"
+                    onclick="toggleFiltro()"
+                    aria-expanded="{% if busqueda or categoria_seleccionada %}true{% else %}false{% endif %}"
+                    aria-controls="panelFiltro"
+                    title="Mostrar filtros"
+                    aria-label="Mostrar filtros"
+                    class="relative h-12 w-12 inline-flex items-center justify-center bg-white/15 hover:bg-white/25 border border-white/30 text-white rounded-2xl shadow-md transition-all duration-200 active:scale-95"
                 >
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Nuevo producto</span>
-                </a>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="4" y1="6" x2="20" y2="6"></line>
+                        <line x1="4" y1="12" x2="20" y2="12"></line>
+                        <line x1="4" y1="18" x2="20" y2="18"></line>
+                    </svg>
 
-            {% endif %}
+                    {% if busqueda or categoria_seleccionada %}
+                        <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-white ring-2 ring-red-600"></span>
+                    {% endif %}
+                </button>
+
+                {% if user.is_superuser %}
+
+                    <a
+                        href="{% url 'crear_producto' %}"
+                        class="h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95"
+                    >
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Nuevo producto</span>
+                    </a>
+
+                {% endif %}
+
+            </div>
 
         </div>
 
@@ -118,116 +145,133 @@
     {% endif %}
 
 
-    <!-- BUSCADOR Y FILTROS -->
-    <section class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
+    <!-- BUSCADOR Y FILTROS (EXPANSIÓN EN CASCADA) -->
+    <div
+        id="panelFiltro"
+        style="margin-top: 0;"
+        class="grid transition-[grid-template-rows,opacity] duration-500 ease-in-out
+            {% if busqueda or categoria_seleccionada %}grid-rows-[1fr] opacity-100{% else %}grid-rows-[0fr] opacity-0{% endif %}"
+    >
 
-        <form method="GET" action="{% url 'lista_productos' %}">
+        <div
+            id="contenidoFiltro"
+            class="min-h-0 overflow-hidden"
+            {% if not busqueda and not categoria_seleccionada %}inert{% endif %}
+        >
 
-            <div class="grid grid-cols-1 md:grid-cols-[1fr_280px_auto] gap-4 items-end">
+            <section class="mt-8 mx-1 mb-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
 
-                <!-- BUSCAR -->
-                <div>
+                <form method="GET" action="{% url 'lista_productos' %}">
 
-                    <label
-                        for="buscar"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Buscar producto
-                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px_auto] gap-4 items-end">
 
-                    <div class="relative">
+                        <!-- BUSCAR -->
+                        <div>
 
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-sm"></i>
+                            <label
+                                for="buscar"
+                                class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                            >
+                                Buscar producto
+                            </label>
 
-                        <input
-                            type="text"
-                            id="buscar"
-                            name="buscar"
-                            value="{{ busqueda }}"
-                            placeholder="Escribe el nombre del producto..."
-                            class="w-full h-12 pl-11 pr-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
-                        >
+                            <div class="relative">
 
-                    </div>
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-sm"></i>
 
-                </div>
-
-
-                <!-- CATEGORÍA -->
-                <div>
-
-                    <label
-                        for="categoria"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Categoría
-                    </label>
-
-                    <div class="relative">
-
-                        <select
-                            id="categoria"
-                            name="categoria"
-                            class="appearance-none w-full h-12 px-4 pr-10 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-200 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 cursor-pointer transition-all"
-                        >
-
-                            <option value="">
-                                Todas las categorías
-                            </option>
-
-                            {% for categoria in categorias %}
-
-                                <option
-                                    value="{{ categoria.id }}"
-                                    {% if categoria_seleccionada == categoria.id|stringformat:"s" %}
-                                        selected
-                                    {% endif %}
+                                <input
+                                    type="text"
+                                    id="buscar"
+                                    name="buscar"
+                                    value="{{ busqueda }}"
+                                    placeholder="Escribe el nombre del producto..."
+                                    class="w-full h-12 pl-11 pr-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
                                 >
-                                    {{ categoria.nombre }}
-                                </option>
 
-                            {% endfor %}
+                            </div>
 
-                        </select>
+                        </div>
 
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
+
+                        <!-- CATEGORÍA -->
+                        <div>
+
+                            <label
+                                for="categoria"
+                                class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
+                            >
+                                Categoría
+                            </label>
+
+                            <div class="relative">
+
+                                <select
+                                    id="categoria"
+                                    name="categoria"
+                                    class="appearance-none w-full h-12 px-4 pr-10 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-200 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 cursor-pointer transition-all"
+                                >
+
+                                    <option value="">
+                                        Todas las categorías
+                                    </option>
+
+                                    {% for categoria in categorias %}
+
+                                        <option
+                                            value="{{ categoria.id }}"
+                                            {% if categoria_seleccionada == categoria.id|stringformat:"s" %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            {{ categoria.nombre }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BOTONES -->
+                        <div class="flex items-center gap-2">
+
+                            <button
+                                type="submit"
+                                class="h-12 px-6 flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-md shadow-red-600/20"
+                            >
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                <span>Buscar</span>
+                            </button>
+
+
+                            {% if busqueda or categoria_seleccionada %}
+
+                                <a
+                                    href="{% url 'lista_productos' %}"
+                                    title="Limpiar filtros"
+                                    class="w-12 h-12 inline-flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-2xl transition-all active:scale-95"
+                                >
+                                    <i class="fa-solid fa-xmark"></i>
+                                </a>
+
+                            {% endif %}
+
+                        </div>
 
                     </div>
 
-                </div>
+                </form>
 
+            </section>
 
-                <!-- BOTONES -->
-                <div class="flex items-center gap-2">
+        </div>
 
-                    <button
-                        type="submit"
-                        class="h-12 px-6 flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-md shadow-red-600/20"
-                    >
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        <span>Buscar</span>
-                    </button>
-
-
-                    {% if busqueda or categoria_seleccionada %}
-
-                        <a
-                            href="{% url 'lista_productos' %}"
-                            title="Limpiar filtros"
-                            class="w-12 h-12 inline-flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-2xl transition-all active:scale-95"
-                        >
-                            <i class="fa-solid fa-xmark"></i>
-                        </a>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-        </form>
-
-    </section>
+    </div>
 
 
     <!-- CATÁLOGO -->
@@ -675,5 +719,35 @@
 </script>
 
 {% endif %}
+
+
+<!-- SCRIPT DEL FILTRO (disponible para todos los usuarios) -->
+<script>
+
+    function toggleFiltro() {
+
+        const panel = document.getElementById("panelFiltro");
+        const contenido = document.getElementById("contenidoFiltro");
+        const boton = document.getElementById("btnFiltro");
+        const abierto = boton.getAttribute("aria-expanded") === "true";
+
+        if (abierto) {
+            panel.classList.remove("grid-rows-[1fr]", "opacity-100");
+            panel.classList.add("grid-rows-[0fr]", "opacity-0");
+            contenido.setAttribute("inert", "");
+        } else {
+            panel.classList.remove("grid-rows-[0fr]", "opacity-0");
+            panel.classList.add("grid-rows-[1fr]", "opacity-100");
+            contenido.removeAttribute("inert");
+
+            setTimeout(function () {
+                document.getElementById("buscar").focus();
+            }, 500);
+        }
+
+        boton.setAttribute("aria-expanded", String(!abierto));
+    }
+
+</script>
 
 {% endblock %}
