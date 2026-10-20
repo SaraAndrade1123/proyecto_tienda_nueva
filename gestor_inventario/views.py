@@ -20,7 +20,6 @@ from accounts.views import es_superadmin as es_admin
 def home(request):
     return render(request, 'home.html')
 
-
 @login_required
 def acerda_de(request):
     return render(request, 'acerca-de.html')
@@ -106,10 +105,12 @@ def nuevo_proveedor(request):
 
             if not error_fecha:
                 proveedor = Proveedor.objects.create(
-                    nombre=nombre,
+                    nombre_empresa=nombre_empresa,
                     nit=nit,
-                    telefono_contacto=telefono_contacto,
-                    correo=correo,
+                    contacto_nombre=contacto_nombre,
+                    telefono=telefono,
+                    email=email,
+                    direccion=direccion or None,
                 )
 
                 if fecha_visita:
@@ -157,10 +158,12 @@ def editar_proveedor(request, id):
             error_nit = True
 
         else:
-            proveedor.nombre = nombre
+            proveedor.nombre_empresa = nombre_empresa
             proveedor.nit = nit
-            proveedor.telefono_contacto = telefono_contacto
-            proveedor.correo = correo
+            proveedor.contacto_nombre = contacto_nombre
+            proveedor.telefono = telefono
+            proveedor.email = email
+            proveedor.direccion = direccion or None
             proveedor.save()
 
             return redirect('proveedores')
