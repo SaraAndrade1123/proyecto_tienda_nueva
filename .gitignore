@@ -10,7 +10,7 @@ respaldo.json
 *.dump
 
 # Archivos subidos por usuarios
-media/
+
 
 # Archivos estáticos generados por collectstatic
 staticfiles/

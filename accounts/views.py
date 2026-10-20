@@ -18,7 +18,6 @@ def home(request):
 def es_superadmin(user):
     return user.is_authenticated and user.is_superuser
 
-
 def registro(request):
     datos = ''
     errors = []
@@ -27,7 +26,7 @@ def registro(request):
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
-        document = request.POST.get('document')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento') or None
         phone = request.POST.get('phone')
         email = request.POST.get('email')
         password1 = request.POST.get('password1')
@@ -41,19 +40,16 @@ def registro(request):
         if User.objects.filter(username=username).exists():
             errors.append('El nombre de usuario ya existe')
 
-        if User.objects.filter(document=document).exists():
-            errors.append('El documento ya esta registrado')
+        if phone and User.objects.filter(phone=phone).exists():
+            errors.append('El número de teléfono ya existe')
 
-        if User.objects.filter(phone=phone).exists():
-            errors.append('El numero de telefono ya existe')
-
-        if User.objects.filter(email=email).exists():
-            errors.append('El correo electronico ya esta registrado')
+        if email and User.objects.filter(email=email).exists():
+            errors.append('El correo electrónico ya está registrado')
 
         if not errors:
             user = User.objects.create_user(
                 username=username,
-                document=document,
+                fecha_nacimiento=fecha_nacimiento,
                 phone=phone,
                 email=email,
                 password=password1,
@@ -256,15 +252,14 @@ def editar_perfil(request):
     perfil, _ = Perfil.objects.get_or_create(user=user)
 
     if request.method == 'POST':
-        # Recoger datos del POST
-        user.first_name = request.POST.get('first_name', '').strip()
-        user.last_name  = request.POST.get('last_name', '').strip()
-        user.document   = request.POST.get('document', '').strip()
-        user.username   = request.POST.get('username', '').strip()
-        user.phone      = request.POST.get('phone', '').strip()
-        user.email      = request.POST.get('email', '').strip()
+        user.first_name       = request.POST.get('first_name', '').strip()
+        user.last_name        = request.POST.get('last_name', '').strip()
+        user.username         = request.POST.get('username', '').strip()
+        user.phone            = request.POST.get('phone', '').strip()
+        user.email            = request.POST.get('email', '').strip()
+        fecha_nac             = request.POST.get('fecha_nacimiento', '').strip()
+        user.fecha_nacimiento = fecha_nac if fecha_nac else None
 
-        # Validaciones básicas
         errores = []
         if not user.first_name:
             errores.append('El nombre es obligatorio.')
@@ -277,16 +272,12 @@ def editar_perfil(request):
         if User.objects.filter(username=user.username).exclude(pk=user.pk).exists():
             errores.append('Ese nombre de usuario ya está en uso.')
 
-        # Verificar que el documento no esté usado por OTRO usuario
-        if User.objects.filter(document=user.document).exclude(pk=user.pk).exists():
-            errores.append('Ese documento ya está registrado.')
-
         # Verificar que el email no esté usado por OTRO usuario
         if User.objects.filter(email=user.email).exclude(pk=user.pk).exists():
             errores.append('Ese correo ya está registrado.')
 
         # Verificar que el teléfono no esté usado por OTRO usuario
-        if User.objects.filter(phone=user.phone).exclude(pk=user.pk).exists():
+        if user.phone and User.objects.filter(phone=user.phone).exclude(pk=user.pk).exists():
             errores.append('Ese teléfono ya está registrado.')
 
         if errores:
@@ -298,7 +289,7 @@ def editar_perfil(request):
             # Eliminar foto si el usuario presionó el botón
             if request.POST.get('eliminar_foto'):
                 if perfil.foto:
-                    perfil.foto.delete(save=False)  # borra el archivo físico del disco
+                    perfil.foto.delete(save=False)
                     perfil.foto = None
                     perfil.save()
                 messages.success(request, 'Foto de perfil eliminada.')
