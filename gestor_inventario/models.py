@@ -6,10 +6,10 @@ class Proyecto(models.Model):
     '''
     Modelo que representa un proyecto
     '''
-    nombre = models.CharField(max_length=100) #Campo de texto (varchar)
-    descripcion = models.TextField() #texto largo
-    duracion = models.IntegerField() #entero
-    imagen = models.ImageField(upload_to = 'img/', default = 'img/logo.png')
+    nombre = models.CharField(max_length=100, blank=True, default='') #Campo de texto (varchar)
+    descripcion = models.TextField(blank=True, default='') #texto largo
+    duracion = models.IntegerField(blank=True, default='') #entero
+    imagen = models.ImageField(upload_to = 'img/', default = '')
     def __str__(self):
         return self.nombre
 
@@ -54,12 +54,10 @@ class Proveedor(models.Model):
     Modelo que representa un proveedor que surte productos.
     HU_008: CRUD_PROVEEDOR
     '''
-    nombre = models.CharField(max_length=150)
-    # unique=True hace que la BD rechace un NIT repetido (criterio: "si el NIT ya existe no se guarda")
-    nit = models.CharField(max_length=20, unique=True)
-    telefono_contacto = models.CharField(max_length=20)
-    correo = models.EmailField()
-    # desactivar en vez de borrar: no aparece en activos pero conserva su historial
+    nombre = models.CharField(max_length=150, blank=True, default='')
+    nit = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    telefono_contacto = models.CharField(max_length=20, blank=True, default='')
+    correo = models.EmailField(blank=True, default='')
     activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
@@ -67,14 +65,16 @@ class Proveedor(models.Model):
         ordering = ['nombre']
 
     def __str__(self):
-        return f"{self.nombre} ({self.nit})"
+        return f"{self.nombre} ({self.nit or 'Sin NIT'})"
 
     def proxima_visita(self):
         '''
-        Devuelve la próxima visita (fecha más cercana, hoy o en el futuro) o None si no hay.
+        Devuelve la próxima visita o None si no hay.
         '''
         hoy = timezone.now().date()
-        return self.visitas.filter(fecha__gte=hoy).order_by('fecha').first()
+        return self.visitas.filter(
+            fecha__gte=hoy
+        ).order_by('fecha').first()
 
 
 class VisitaProveedor(models.Model):
