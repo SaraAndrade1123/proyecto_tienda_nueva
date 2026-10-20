@@ -6,7 +6,6 @@ urlpatterns = [
     path('login/', views.iniciar_sesion, name='login'),
     path('recuperar-password/', views.recuperar_password, name='recuperar_password'),
     path('logout/', views.cerrar_sesion, name='logout'),
-    path('home/', views.home, name='home'),
     path('grupos/', views.grupos, name='grupos'),
     path('editar-grupo/<int:id_grupo>/', views.editar_grupo, name='editar_grupo'),
     path('agregar-usuario-grupo/<int:id_grupo>/', views.agregar_usuario_grupo, name='agregar_usuario_grupo'),
