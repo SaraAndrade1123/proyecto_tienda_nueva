@@ -6,7 +6,6 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("gestor_inventario", "0005_visitaproveedor"),
         (
             "gestor_inventario",
             "0007_alter_proveedor_options_remove_proveedor_correo_and_more",
