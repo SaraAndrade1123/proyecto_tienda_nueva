@@ -73,4 +73,5 @@ def informacion_tienda(request):
     return render(request, 'informacion.html', {'imagenes': imagenes})
 
 def ver_consumo(request):
-    pass
+    
+    return render(request, 'consumo.html')
