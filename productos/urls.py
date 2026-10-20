@@ -19,4 +19,5 @@ urlpatterns = [
     path('categorias/editar/<int:id>/',views.editar_categoria,name='editar_categoria'),
     path('categorias/eliminar/<int:id>/',views.eliminar_categoria,name='eliminar_categoria'),
     path('catalogo/', views.catalogo_productos, name='catalogo_productos'),
+    path('informacion/', views.informacion_tienda, name='informacion_tienda'),
 ]   

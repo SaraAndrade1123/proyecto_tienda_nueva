@@ -1,76 +1,229 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.db import transaction
-from django.db.models import Max
-from .models import ImagenCarrusel
+from datetime import timedelta
 
-def es_administrador(user):
-    return user.is_authenticated and user.is_staff
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
+from django.utils import timezone
+from django.utils.dateparse import parse_date
 
-def ordenar_imagenes():
-    imagenes = ImagenCarrusel.objects.order_by('orden', 'fecha_creacion', 'id')
-    for posicion, imagen in enumerate(imagenes, start=1):
-        if imagen.orden != posicion:
-            imagen.orden = posicion
-            imagen.save(update_fields=['orden'])
+from .models import Proveedor, VisitaProveedor
+from accounts.views import es_superadmin as es_admin
 
-def informacion_tienda(request):
+
+# =========================================================
+# INICIO Y ACERCA DE
+# =========================================================
+
+@login_required
+def home(request):
+    return render(request, 'home.html')
+
+
+@login_required
+def acerda_de(request):
+    return render(request, 'acerca-de.html')
+
+
+# =========================================================
+# HU_008: CRUD DE PROVEEDORES
+# =========================================================
+
+DIAS_AVISO_VISITA = 3
+
+
+@login_required
+@user_passes_test(es_admin)
+def mostrar_proveedores(request):
+    query = request.GET.get('q', '').strip()
+    mostrar_inactivos = request.GET.get('inactivos') == '1'
+
+    proveedores = Proveedor.objects.all()
+
+    if not mostrar_inactivos:
+        proveedores = proveedores.filter(activo=True)
+
+    if query:
+        proveedores = proveedores.filter(
+            Q(nombre__icontains=query) |
+            Q(nit__icontains=query)
+        )
+
+    hoy = timezone.localdate()
+    limite_aviso = hoy + timedelta(days=DIAS_AVISO_VISITA)
+
+    datos = {
+        'proveedores': proveedores,
+        'query': query,
+        'mostrar_inactivos': mostrar_inactivos,
+        'hoy': hoy,
+        'limite_aviso': limite_aviso,
+    }
+
+    return render(request, 'proveedores/lista.html', datos)
+
+
+@login_required
+@user_passes_test(es_admin)
+def nuevo_proveedor(request):
+    error_nit = False
+    error_campos = False
+    error_fecha = False
+    datos_form = {}
+
     if request.method == 'POST':
-        if not es_administrador(request.user):
-            messages.error(request, 'No tienes permisos para modificar el carrusel.')
-            return redirect('informacion_tienda')
+        nombre = request.POST.get('nombre', '').strip()
+        nit = request.POST.get('nit', '').strip()
+        telefono_contacto = request.POST.get(
+            'telefono_contacto', ''
+        ).strip()
+        correo = request.POST.get('correo', '').strip()
+        fecha_visita_texto = request.POST.get(
+            'fecha_visita', ''
+        ).strip()
 
-        accion = request.POST.get('accion')
+        datos_form = request.POST
 
-        if accion == 'agregar':
-            # Aquí recibimos las imágenes directamente, sin forms.py
-            archivos = request.FILES.getlist('imagenes')
-            if not archivos:
-                messages.warning(request, 'Selecciona al menos una imagen.')
-                return redirect('informacion_tienda')
+        # Todos los campos principales son obligatorios.
+        if not all([nombre, nit, telefono_contacto, correo]):
+            error_campos = True
 
-            ultimo_orden = ImagenCarrusel.objects.aggregate(mayor=Max('orden'))['mayor'] or 0
-            for archivo in archivos:
-                ultimo_orden += 1
-                ImagenCarrusel.objects.create(imagen=archivo, orden=ultimo_orden)
-            messages.success(request, 'Las imágenes se agregaron correctamente.')
+        # Comprobar que el NIT no esté registrado.
+        elif Proveedor.objects.filter(nit=nit).exists():
+            error_nit = True
 
-        elif accion == 'eliminar':
-            imagen_id = request.POST.get('imagen_id')
-            try:
-                imagen = ImagenCarrusel.objects.get(pk=imagen_id)
-                imagen.imagen.delete(save=False)
-                imagen.delete()
-                ordenar_imagenes()
-                messages.success(request, 'La imagen se eliminó correctamente.')
-            except (ImagenCarrusel.DoesNotExist, ValueError, TypeError):
-                messages.error(request, 'No se encontró la imagen seleccionada.')
+        else:
+            fecha_visita = None
 
-        elif accion == 'mover':
-            imagen_id = request.POST.get('imagen_id')
-            direccion = request.POST.get('direccion')
+            fecha_visita = None
 
-            if direccion not in ('izquierda', 'derecha'):
-                messages.error(request, 'Dirección no válida.')
-                return redirect('informacion_tienda')
+            if fecha_visita_texto:
+                fecha_visita = parse_date(fecha_visita_texto)
 
-            with transaction.atomic():
-                imagenes = list(ImagenCarrusel.objects.select_for_update().order_by('orden', 'fecha_creacion', 'id'))
-                indice = next((i for i, img in enumerate(imagenes) if str(img.pk) == str(imagen_id)), None)
+                if fecha_visita is None:
+                    error_fecha = True
 
-                if indice is not None:
-                    nuevo_indice = indice - 1 if direccion == 'izquierda' else indice + 1
-                    if 0 <= nuevo_indice < len(imagenes):
-                        imagenes[indice], imagenes[nuevo_indice] = imagenes[nuevo_indice], imagenes[indice]
-                        for posicion, img in enumerate(imagenes, start=1):
-                            if img.orden != posicion:
-                                img.orden = posicion
-                                img.save(update_fields=['orden'])
+            if not error_fecha:
+                proveedor = Proveedor.objects.create(
+                    nombre=nombre,
+                    nit=nit,
+                    telefono_contacto=telefono_contacto,
+                    correo=correo,
+                )
 
-        return redirect('informacion_tienda')
+                if fecha_visita:
+                    VisitaProveedor.objects.create(
+                        proveedor=proveedor,
+                        fecha=fecha_visita
+                    )
 
-    imagenes = ImagenCarrusel.objects.all()
-    return render(request, 'informacion.html', {'imagenes': imagenes})
+                return redirect('proveedores')
 
-def ver_consumo(request):
-    pass
+    return render(
+        request,
+        'proveedores/registro_y_edicion.html',
+        {
+            'error_nit': error_nit,
+            'error_campos': error_campos,
+            'error_fecha': error_fecha,
+            'datos': datos_form,
+        }
+    )
+
+
+@login_required
+@user_passes_test(es_admin)
+def editar_proveedor(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    error_nit = False
+    error_campos = False
+
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        nit = request.POST.get('nit', '').strip()
+        telefono_contacto = request.POST.get(
+            'telefono_contacto', ''
+        ).strip()
+        correo = request.POST.get('correo', '').strip()
+
+        if not all([nombre, nit, telefono_contacto, correo]):
+            error_campos = True
+
+        elif Proveedor.objects.filter(nit=nit).exclude(
+            id=proveedor.id
+        ).exists():
+            error_nit = True
+
+        else:
+            proveedor.nombre = nombre
+            proveedor.nit = nit
+            proveedor.telefono_contacto = telefono_contacto
+            proveedor.correo = correo
+            proveedor.save()
+
+            return redirect('proveedores')
+
+    return render(
+        request,
+        'proveedores/registro_y_edicion.html',
+        {
+            'proveedor': proveedor,
+            'error_nit': error_nit,
+            'error_campos': error_campos,
+        }
+    )
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_proveedor(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+    proveedor.delete()
+
+    return redirect('proveedores')
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def desactivar_proveedor(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    proveedor.activo = False
+    proveedor.save(update_fields=['activo'])
+
+    # Las visitas se conservan al desactivar el proveedor.
+    return redirect('proveedores')
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def activar_proveedor(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    proveedor.activo = True
+    proveedor.save(update_fields=['activo'])
+
+    return redirect('proveedores')
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def agregar_visita_proveedor(request, id):
+    proveedor = get_object_or_404(Proveedor, id=id)
+
+    fecha_texto = request.POST.get('fecha', '').strip()
+    fecha = parse_date(fecha_texto)
+
+    if fecha:
+        VisitaProveedor.objects.create(
+            proveedor=proveedor,
+            fecha=fecha
+        )
+
+    return redirect('proveedores')

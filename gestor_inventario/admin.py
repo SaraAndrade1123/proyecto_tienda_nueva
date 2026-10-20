@@ -13,7 +13,3 @@ class ProveedorAdmin(admin.ModelAdmin):
     list_filter = ('activo',)
     search_fields = ('nombre', 'nit')
     inlines = [VisitaProveedorInline]
-
-
-admin.site.register(Proyecto)
-admin.site.register(Tarea)
