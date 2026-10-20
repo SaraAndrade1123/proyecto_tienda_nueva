@@ -5,11 +5,10 @@ from .models import Proveedor, VisitaProveedor
 class VisitaProveedorInline(admin.TabularInline):
     model = VisitaProveedor
     extra = 1
-
+#
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'nit', 'telefono_contacto', 'correo', 'activo', 'fecha_registro')
+    list_display = ('nombre_empresa', 'nit', 'contacto_nombre', 'telefono', 'email', 'activo')
+    search_fields = ('nombre_empresa', 'nit', 'email')
     list_filter = ('activo',)
-    search_fields = ('nombre', 'nit')
-    inlines = [VisitaProveedorInline]

@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +32,16 @@ SECRET_KEY = 'django-insecure-mvo+1j_a52ohd9huee%5_4+$oav&e8s9=+y-wkbnl4u!8*mq0j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# MODIFICADO: Permitir todos los hosts (necesario para Codespaces y túneles)
+ALLOWED_HOSTS = ['*']
+
+# MODIFICADO: Agregar la URL de tu Codespace y localhost para evitar el error 403 CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://obscure-space-telegram-qvqgpjirq7x6fr.wp-8000.app.github.dev',
+]
 
 
 # Application definition
@@ -36,8 +52,10 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
-    
+
+ 
     'accounts',
     'gestor_inventario',
     'productos',
@@ -119,19 +137,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATICFFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+# configuracion del correo electronico de las pruebas
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'lopezreyeskarensofia@gmail.com'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
@@ -139,7 +171,6 @@ LOGIN_URL = 'login'
 
 AUTH_USER_MODEL = "accounts.User"
 # Sesión de Django activa
-SESSION_COOKIE_AGE = 7200 # 2 horas
+SESSION_COOKIE_AGE = 600 
 SESSION_SAVE_EVERY_REQUEST = True # renueva la expiración con cada request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegador
-

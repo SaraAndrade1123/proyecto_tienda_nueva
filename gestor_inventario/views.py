@@ -1,4 +1,3 @@
-
 from datetime import timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -12,27 +11,23 @@ from django.utils.dateparse import parse_date
 from .models import Proveedor, VisitaProveedor
 from accounts.views import es_superadmin as es_admin
 
-
-# =========================================================
-# INICIO Y ACERCA DE
 # =========================================================
 
 @login_required
+
+def informacion_tienda(request):
+    return render(request, 'informacion.html')
+
 def home(request):
     return render(request, 'home.html')
-
 
 @login_required
 def acerda_de(request):
     return render(request, 'acerca-de.html')
 
-
-# =========================================================
-# HU_008: CRUD DE PROVEEDORES
 # =========================================================
 
 DIAS_AVISO_VISITA = 3
-
 
 @login_required
 @user_passes_test(es_admin)
@@ -47,7 +42,7 @@ def mostrar_proveedores(request):
 
     if query:
         proveedores = proveedores.filter(
-            Q(nombre__icontains=query) |
+            Q(nombre_empresa__icontains=query) |
             Q(nit__icontains=query)
         )
 
@@ -74,43 +69,37 @@ def nuevo_proveedor(request):
     datos_form = {}
 
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
+        nombre_empresa = request.POST.get('nombre', '').strip()
         nit = request.POST.get('nit', '').strip()
-        telefono_contacto = request.POST.get(
-            'telefono_contacto', ''
-        ).strip()
-        correo = request.POST.get('correo', '').strip()
-        fecha_visita_texto = request.POST.get(
-            'fecha_visita', ''
-        ).strip()
+        contacto_nombre = request.POST.get('telefono_contacto', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        email = request.POST.get('correo', '').strip()
+        direccion = request.POST.get('direccion', '').strip()
+        fecha_visita_texto = request.POST.get('fecha_visita', '').strip()
 
         datos_form = request.POST
 
-        # Todos los campos principales son obligatorios.
-        if not all([nombre, nit, telefono_contacto, correo]):
+        if not all([nombre_empresa, nit, contacto_nombre, email]):
             error_campos = True
 
-        # Comprobar que el NIT no esté registrado.
         elif Proveedor.objects.filter(nit=nit).exists():
             error_nit = True
 
         else:
             fecha_visita = None
-
-            fecha_visita = None
-
             if fecha_visita_texto:
                 fecha_visita = parse_date(fecha_visita_texto)
-
                 if fecha_visita is None:
                     error_fecha = True
 
             if not error_fecha:
                 proveedor = Proveedor.objects.create(
-                    nombre=nombre,
+                    nombre_empresa=nombre_empresa,
                     nit=nit,
-                    telefono_contacto=telefono_contacto,
-                    correo=correo,
+                    contacto_nombre=contacto_nombre,
+                    telefono=telefono,
+                    email=email,
+                    direccion=direccion or None,
                 )
 
                 if fecha_visita:
@@ -142,26 +131,26 @@ def editar_proveedor(request, id):
     error_campos = False
 
     if request.method == 'POST':
-        nombre = request.POST.get('nombre', '').strip()
+        nombre_empresa = request.POST.get('nombre', '').strip()
         nit = request.POST.get('nit', '').strip()
-        telefono_contacto = request.POST.get(
-            'telefono_contacto', ''
-        ).strip()
-        correo = request.POST.get('correo', '').strip()
+        contacto_nombre = request.POST.get('telefono_contacto', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        email = request.POST.get('correo', '').strip()
+        direccion = request.POST.get('direccion', '').strip()
 
-        if not all([nombre, nit, telefono_contacto, correo]):
+        if not all([nombre_empresa, nit, contacto_nombre, email]):
             error_campos = True
 
-        elif Proveedor.objects.filter(nit=nit).exclude(
-            id=proveedor.id
-        ).exists():
+        elif Proveedor.objects.filter(nit=nit).exclude(id=proveedor.id).exists():
             error_nit = True
 
         else:
-            proveedor.nombre = nombre
+            proveedor.nombre_empresa = nombre_empresa
             proveedor.nit = nit
-            proveedor.telefono_contacto = telefono_contacto
-            proveedor.correo = correo
+            proveedor.contacto_nombre = contacto_nombre
+            proveedor.telefono = telefono
+            proveedor.email = email
+            proveedor.direccion = direccion or None
             proveedor.save()
 
             return redirect('proveedores')
@@ -183,7 +172,6 @@ def editar_proveedor(request, id):
 def eliminar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
     proveedor.delete()
-
     return redirect('proveedores')
 
 
@@ -192,11 +180,8 @@ def eliminar_proveedor(request, id):
 @require_POST
 def desactivar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
-
     proveedor.activo = False
     proveedor.save(update_fields=['activo'])
-
-    # Las visitas se conservan al desactivar el proveedor.
     return redirect('proveedores')
 
 
@@ -205,10 +190,8 @@ def desactivar_proveedor(request, id):
 @require_POST
 def activar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
-
     proveedor.activo = True
     proveedor.save(update_fields=['activo'])
-
     return redirect('proveedores')
 
 
@@ -217,7 +200,6 @@ def activar_proveedor(request, id):
 @require_POST
 def agregar_visita_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
-
     fecha_texto = request.POST.get('fecha', '').strip()
     fecha = parse_date(fecha_texto)
 
@@ -226,5 +208,9 @@ def agregar_visita_proveedor(request, id):
             proveedor=proveedor,
             fecha=fecha
         )
-
     return redirect('proveedores')
+
+#=================================================
+
+def ver_consumo(request):
+    return render(request, 'consumo.html')
