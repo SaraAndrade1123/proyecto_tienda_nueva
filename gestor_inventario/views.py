@@ -15,7 +15,57 @@ from accounts.views import es_superadmin as es_admin
 
 @login_required
 def informacion_tienda(request):
-    return render(request, 'informacion.html')
+        imagenes = ImagenCarrusel.objects.all()
+
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+
+        if accion == 'agregar':
+            imagenes_subidadas = request.FILES.getlist('imagenes')
+
+        if imagenes_subidadas:
+            for img in imagenes_subidadas:
+                ImagenCarrusel.objects.create(imagen=img)
+
+            messages.success(request, 'Imagenes subidas correctamente.')
+        else:
+            messages.error(request, 'No se selecciono ninguna imagen.')
+
+        return redirect('informacion_tienda')
+
+    elif accion == 'eliminar':
+        imagne_id = request.POST.get('imagen_id')
+        imagen = get_object_or_404(ImagenCarrusel, id=imagen_id)
+        imagen.delete
+
+        messages.success(request, 'Imagen eliminada correctamente')
+
+        return redirect('informacion_tienda')
+
+    elif accion == 'mover':
+        imagen_id = request.POST.get('imagen_id')
+        direccion = request.POST.get('direccion')
+
+        if direccion == 'izquierda':
+            imagen_vecina =ImagenCarrusel.objects.filter(orden_lt=imagen_actual.orden)order_by('-orden').first()
+        else:
+            imagen_vecina = ImagenCarrusel.objects.filter(orden_gt=imagen_actual).order_by('orden').first()
+
+        if imagen_vecina:
+            imagen_actual.orden, imagen_vecina.orden = imagen_actual.orden
+
+            imagen_actual.save()
+            imagen_vecina.save()
+
+            return redirect('informacion_tienda')
+
+    # Diccionario
+    context = {
+        'imagenes': imagenes
+    }
+    return render(request, 'infomacion.html', context)
+
+
 
 def home(request):
     return render(request, 'home.html')
