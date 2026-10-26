@@ -20,7 +20,8 @@
         --ink: #1c1917;
         --muted: #6b645e;
         --red: #b91c1c;
-        --red-hero: #dc2626;
+        --red-hero: #b91c1c;   /* brand-red de base.html (barra superior y pie) */
+        --red-deep: #7f1d1d;   /* brand-darkred de base.html */
         --price: #b91c1c;
         --link: #b91c1c;
         --warn: #92400e;
@@ -68,7 +69,7 @@
         position: relative;
         color: #fff;
         background: var(--red-hero);
-        padding: 2.5rem 1.25rem 5.25rem;
+        padding: 2.5rem 1.25rem 12.5rem;
     }
     .cat-hero__bg {
         position: absolute; inset: 0;
@@ -77,27 +78,42 @@
     }
     .cat-hero__bg::before {
         content: "";
-        position: absolute; inset: -40%;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
-        background-size: 320px 72px;
-        transform: rotate(-9deg);
+        position: absolute; inset: 0;
+        /* Cuatro círculos planos, cuatro tonos de la familia del rojo de base.html:
+           dos claros (blanco translúcido) y dos oscuros (granate y vino). El primero queda arriba. */
+        --claro-1: rgba(254, 205, 205, .17);
+        --claro-2: rgba(254, 205, 205, .1);
+        --vino:    rgba(69, 10, 10, .28);
+        --granate: rgba(127, 29, 29, .55);
+        background:
+            radial-gradient(circle 2.25rem at 84% 35%, var(--claro-1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at 96% -3%, var(--claro-2) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 93% 76%, var(--vino) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
     }
     .cat-hero__in {
-        position: relative;
-        max-width: 80rem;
+        position: relative; z-index: 1;
+        max-width: 96rem;
         margin: 0 auto;
-        display: grid;
-        gap: 2rem;
-        align-items: center;
     }
     @media (min-width: 900px) {
-        .cat-hero { padding: 3.5rem 2.5rem 6.5rem; }
-        .cat-hero__in { grid-template-columns: 1.15fr .85fr; gap: 3.5rem; }
+        .cat-hero { padding: 2.75rem 2.5rem 5.25rem; }
+        .cat-hero__in { min-height: 14.5rem; display: flex; align-items: center; }
+
+        /* En escritorio los círculos se anclan al borde izquierdo del texto, no al de la ventana */
+        .cat-hero__bg::before {
+            --izq: max(2.5rem, calc(50% - 48rem));
+            background:
+                radial-gradient(circle 2.75rem at calc(var(--izq) + 26rem) 26%, var(--claro-1) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 9.5rem at calc(var(--izq) + 30rem) -20%, var(--claro-2) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 5rem at calc(var(--izq) + 20rem) 100%, var(--vino) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 12rem at calc(var(--izq) - 3rem) 120%, var(--granate) calc(100% - 1px), transparent 100%);
+        }
     }
 
     .cat-hero h1 {
         margin: 0;
-        font-size: clamp(3rem, 1.4rem + 6vw, 5.5rem);
+        font-size: clamp(2.75rem, 1.1rem + 4.2vw, 4rem);
         font-weight: 800;
         font-stretch: 110%;
         line-height: .92;
@@ -111,17 +127,24 @@
         color: #fff;
     }
 
+    /* Buscador: texto + desplegable de categoría + botón (una sola píldora) */
+    .cat-hero__txt { container: hero-txt / inline-size; width: 100%; min-width: 0; max-width: 40rem; }
     .cat-search {
-        display: flex; align-items: center; gap: .5rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas: "q btn" "cat cat";
+        align-items: center; gap: .25rem .5rem;
         margin-top: 1.75rem;
-        max-width: 32rem;
+        max-width: 42rem;
         padding: .375rem .375rem .375rem 1.15rem;
         color: #1c1917;
         background: #fff;
-        border-radius: 999px;
+        border-radius: 1.75rem;
     }
+    .cat-search--solo { grid-template-areas: "q btn"; }
     .cat-search:focus-within { outline: 3px solid #450a0a; outline-offset: 3px; }
-    .cat-search > svg { flex: none; width: 1.1rem; height: 1.1rem; color: #78716c; }
+    .cat-search__q { grid-area: q; display: flex; align-items: center; gap: .5rem; min-width: 0; }
+    .cat-search__q svg { flex: none; width: 1.1rem; height: 1.1rem; color: #78716c; }
     .cat-search input {
         flex: 1 1 auto; min-width: 0;
         height: 2.75rem;
@@ -132,8 +155,21 @@
         border: 0; outline: 0;
     }
     .cat-search input::placeholder { color: #78716c; }
+    .cat-search__cat { grid-area: cat; min-width: 0; margin-right: .75rem; border-top: 2px solid #f0eeec; }
+    .cat-search select {
+        display: block; width: 100%; height: 2.75rem;
+        padding: 0 2rem 0 0;
+        font: inherit; font-size: .9375rem; font-weight: 600;
+        color: #1c1917; color-scheme: light;
+        text-overflow: ellipsis;
+        background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right .1rem center / .8rem;
+        border: 0; outline: 0; border-radius: 999px;
+        appearance: none; -webkit-appearance: none;
+        cursor: pointer;
+    }
+    .cat-search select:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
     .cat-search button {
-        flex: none;
+        grid-area: btn;
         height: 2.75rem; padding: 0 1.4rem;
         font: inherit; font-weight: 700;
         color: #fff; background: #1c1917;
@@ -143,20 +179,32 @@
     }
     .cat-search button:hover { background: #000; }
     .cat-search button:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
-
-    .cat-hero__photo {
-        margin: 0;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-        border-radius: 5rem .75rem .75rem .75rem;
-        background: #b91c1c;
+    /* Con espacio suficiente todo va en una sola fila */
+    @container hero-txt (min-width: 36rem) {
+        .cat-search { grid-template-columns: minmax(0, 1fr) minmax(0, 13.5rem) auto; grid-template-areas: "q cat btn"; border-radius: 999px; }
+        .cat-search--solo { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "q btn"; }
+        .cat-search__cat { margin-right: 0; padding-left: .9rem; border-top: 0; border-left: 2px solid #f0eeec; }
     }
-    .cat-hero__photo img {
-        display: block; width: 100%; height: 100%;
-        object-fit: cover; object-position: 50% 35%;
+
+    /* Foto de fondo: se desvanece hacia el rojo de base.html (a la izquierda en escritorio, hacia arriba en móvil) */
+    .cat-hero__photo {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 14rem;
+        pointer-events: none;
+        background:
+            linear-gradient(0deg, rgba(127, 29, 29, .12), rgba(185, 28, 28, .45)),
+            var(--foto) 50% 40% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+                mask-image: linear-gradient(to top, #000 30%, transparent 100%);
     }
     @media (min-width: 900px) {
-        .cat-hero__photo { aspect-ratio: 4 / 3; border-radius: 8rem .75rem .75rem .75rem; }
+        .cat-hero__photo {
+            left: auto; top: 0; height: auto; width: min(62%, 64rem);
+            background:
+                linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%),
+                var(--foto) 50% 22% / cover no-repeat;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+        }
     }
 
     /* Círculo que muerde el borde inferior del banner */
@@ -182,7 +230,7 @@
 
     /* ---------- Contenedor del catálogo ---------- */
     .cat-wrap {
-        max-width: 80rem;
+        max-width: 96rem;
         margin: 0 auto;
         padding: 3.75rem .75rem 2.5rem;
     }
@@ -225,29 +273,7 @@
         background: var(--red);
     }
 
-    /* ---------- Categorías ---------- */
-    .cat-cats { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.75rem; }
-    .cat-cat {
-        display: inline-flex; align-items: center; gap: .5rem;
-        min-height: 2.5rem;
-        padding: 0 1.1rem 0 .8rem;
-        font-size: .9375rem; font-weight: 600;
-        color: var(--ink);
-        background: var(--soft);
-        border-radius: 999px;
-        text-decoration: none;
-        transition: background-color .15s, color .15s;
-    }
-    .cat-cat i {
-        width: .8rem; height: .8rem; border-radius: 50%;
-        background: var(--strong);
-        box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18);
-    }
-    .cat-cat.is-all { padding-left: 1.1rem; }
-    .cat-cat:hover { background: var(--strong); }
-    .cat-cat.is-on { color: #fff; background: var(--red); }
-    .cat-cat.is-on i { background: #fff; box-shadow: none; }
-    .cat-cat:focus-visible, .cat-clear:focus-visible, .cat-btn:focus-visible {
+    .cat-clear:focus-visible, .cat-btn:focus-visible {
         outline: 2px solid var(--red); outline-offset: 2px;
     }
 
@@ -259,6 +285,10 @@
         gap: 1.25rem .75rem;
     }
     @media (min-width: 560px)  { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 1.75rem 1.25rem; } }
+    /* Pantallas anchas: cinco por fila, con las tarjetas un poco más compactas para que quepan */
+    @media (min-width: 1320px) {
+        .cat-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
 
     .cat-card {
         --c-bg: var(--soft);
@@ -391,6 +421,16 @@
     .cat-more:focus-visible { outline: none; }
     .cat-more:focus-visible::after { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 1.75rem; }
 
+    /* Con cinco por fila las tarjetas miden unos 225–265 px: se ajusta su interior (va después de las reglas base) */
+    @media (min-width: 1320px) {
+        .cat-card { padding: 1.1rem 1rem 1.25rem; }
+        .cat-stage { height: 11.75rem; margin-bottom: .875rem; }
+        .cat-disc { width: 8.25rem; height: 8.25rem; }
+        .cat-img { max-height: 10.75rem; }
+        .cat-name { font-size: 1.125rem; }
+        .cat-price { font-size: 1.85rem; }
+    }
+
     /* Producto agotado */
     .cat-card.is-out .cat-img { filter: grayscale(1); opacity: .45; }
     .cat-card.is-out { --c-disc: var(--tc-strong); }
@@ -448,38 +488,47 @@
 <div class="cat">
 
     <header class="cat-hero">
-        <div class="cat-hero__bg" aria-hidden="true"></div>
+        <div class="cat-hero__bg" aria-hidden="true">
+            <div class="cat-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
+        </div>
 
         <div class="cat-hero__in">
-            <div>
+            <div class="cat-hero__txt">
                 <h1>Productos</h1>
                 <p>Lo que hay en la tienda, con su precio y cuánto queda.</p>
 
-                <form class="cat-search" role="search" method="get" action="{% url 'catalogo_productos' %}">
-                    {% if categoria_seleccionada %}
-                        <input type="hidden" name="categoria" value="{{ categoria_seleccionada }}">
+                <form class="cat-search{% if not categorias %} cat-search--solo{% endif %}" role="search" method="get" action="{% url 'catalogo_productos' %}">
+                    <div class="cat-search__q">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                        </svg>
+                        <label class="cat-sr" for="buscar">Buscar producto por nombre</label>
+                        <input
+                            type="search"
+                            id="buscar"
+                            name="buscar"
+                            value="{{ busqueda }}"
+                            placeholder="Buscar por nombre"
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    {% if categorias %}
+                        <div class="cat-search__cat">
+                            <label class="cat-sr" for="categoria">Filtrar por categoría</label>
+                            <select id="categoria" name="categoria">
+                                <option value="">Todas las categorías</option>
+                                {% for categoria in categorias %}
+                                    <option value="{{ categoria.id }}"{% if categoria_seleccionada == categoria.id|stringformat:'s' %} selected{% endif %}>{{ categoria.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     {% endif %}
 
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-                    </svg>
-                    <label class="cat-sr" for="buscar">Buscar producto por nombre</label>
-                    <input
-                        type="search"
-                        id="buscar"
-                        name="buscar"
-                        value="{{ busqueda }}"
-                        placeholder="Buscar por nombre"
-                        autocomplete="off"
-                    >
                     <button type="submit">Buscar</button>
                 </form>
             </div>
-
-            <figure class="cat-hero__photo" aria-hidden="true">
-                <img src="{% static 'img/tienda.jpg' %}" alt="">
-            </figure>
         </div>
 
         <a class="cat-notch" href="#catalogo" aria-label="Ir al catálogo">
@@ -501,7 +550,7 @@
 
                 <div class="cat-head__side">
                     <p class="cat-count" role="status">
-                        {% if busqueda %}Resultados para «{{ busqueda }}»: {% endif %}<strong>{{ productos|length }}</strong> producto{{ productos|length|pluralize }}
+                        {% if busqueda or categoria_seleccionada %}Resultados{% if busqueda %} para «{{ busqueda }}»{% endif %}{% if categoria_seleccionada %}{% for categoria in categorias %}{% if categoria_seleccionada == categoria.id|stringformat:'s' %} en {{ categoria.nombre }}{% endif %}{% endfor %}{% endif %}: {% endif %}<strong>{{ productos|length }}</strong> producto{{ productos|length|pluralize }}
                     </p>
 
                     {% if busqueda or categoria_seleccionada %}
@@ -509,26 +558,6 @@
                     {% endif %}
                 </div>
             </div>
-
-
-            {% if categorias %}
-                <nav class="cat-cats" aria-label="Filtrar por categoría">
-                    <a
-                        class="cat-cat is-all{% if not categoria_seleccionada %} is-on{% endif %}"
-                        href="{% url 'catalogo_productos' %}{% if busqueda %}?buscar={{ busqueda|urlencode }}{% endif %}"
-                        {% if not categoria_seleccionada %}aria-current="true"{% endif %}
-                    >Todas</a>
-
-                    {% for categoria in categorias %}
-                        <a
-                            class="cat-cat{% if categoria_seleccionada == categoria.id|stringformat:'s' %} is-on{% endif %}"
-                            data-tono="{{ categoria.id }}"
-                            href="{% url 'catalogo_productos' %}?categoria={{ categoria.id }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}"
-                            {% if categoria_seleccionada == categoria.id|stringformat:'s' %}aria-current="true"{% endif %}
-                        ><i aria-hidden="true"></i>{{ categoria.nombre }}</a>
-                    {% endfor %}
-                </nav>
-            {% endif %}
 
 
             {% if productos %}
