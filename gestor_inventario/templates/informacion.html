@@ -4,12 +4,8 @@
 
 {% block content %}
 
-<!-- 1. HERO EN DOS COLUMNAS (PC) / APILADO (MÓVIL) -->
 <section class="relative w-full mb-8 md:mb-12 overflow-hidden bg-white dark:bg-[#0f0f0f] transition-colors duration-500 ease-in-out">
-
     <div class="relative w-full grid grid-cols-1 md:grid-cols-[1.6fr_1fr] min-h-[60vh] md:min-h-[70vh] transition-all duration-500 ease-in-out">
-
-        <!-- COLUMNA IZQUIERDA: IMAGEN / CARRUSEL -->
         <div class="relative w-full h-[45vh] md:h-full min-h-[300px] md:min-h-full overflow-hidden">
             {% if imagenes %}
                 <div id="carruselHero" class="relative w-full h-full">
@@ -25,18 +21,14 @@
             {% endif %}
 
             <div class="absolute inset-0 bg-black/20 dark:bg-black/40 transition-colors duration-500 ease-in-out"></div>
-
             <div class="hidden md:block absolute top-0 right-0 bottom-0 w-32 lg:w-48 bg-gradient-to-r from-transparent to-white transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"></div>
             <div class="hidden md:block absolute top-0 right-0 bottom-0 w-32 lg:w-48 bg-gradient-to-r from-transparent to-[#0f0f0f] transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
-
             <div class="hidden md:block absolute bottom-0 left-0 right-0 h-24 lg:h-32 bg-gradient-to-t from-white to-transparent transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"></div>
             <div class="hidden md:block absolute bottom-0 left-0 right-0 h-24 lg:h-32 bg-gradient-to-t from-[#0f0f0f] to-transparent transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
-
             <div class="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"></div>
             <div class="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0f0f0f] to-transparent transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
         </div>
 
-        <!-- COLUMNA DERECHA: TEXTO -->
         <div class="relative w-full flex items-center justify-start md:justify-end px-6 md:px-10 lg:px-14 py-4 md:py-16 bg-gray-100 dark:bg-[#0a0a0a] transition-colors duration-500 ease-in-out">
             <div class="w-full max-w-lg text-left md:text-right transition-colors duration-500 ease-in-out">
                 <h1 class="text-5xl md:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight font-sans mb-6 transition-colors duration-500 ease-in-out">
@@ -48,14 +40,10 @@
                 </p>
             </div>
         </div>
-
     </div>
 </section>
 
-<!-- CONTENIDO PRINCIPAL (limitado a max-w-3xl) -->
 <div class="max-w-3xl mx-auto px-4">
-
-    <!-- CONTROLES DE ADMINISTRADOR (ID agregado para el scroll) -->
     {% if user.is_authenticated and user.is_staff %}
     <section id="adminPanel" class="mb-12 p-6 rounded-2xl border border-gray-200 dark:border-[#1e1e1e] bg-gray-50 dark:bg-[#1e1e1e] transition-colors duration-500 ease-in-out scroll-mt-24">
         <div class="flex items-center justify-between mb-4">
@@ -81,18 +69,15 @@
         </div>
 
         {% if imagenes %}
-        <!-- NUEVO CONTENEDOR: Fila horizontal con botones de desplazamiento -->
         <div class="relative mt-4">
-            <!-- Botón Izquierda -->
             <button id="btnScrollLeft" type="button" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-brand-red text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-700 transition opacity-80 hover:opacity-100">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
 
-            <!-- Contenedor con scroll horizontal -->
             <div id="adminGallery" class="flex overflow-x-auto gap-4 py-2 px-10 scroll-smooth snap-x snap-mandatory" style="scrollbar-width: none; -ms-overflow-style: none;">
                 {% for imagen in imagenes %}
                 <div class="snap-start shrink-0 relative group rounded-lg overflow-hidden border border-gray-300 dark:border-[#1e1e1e] w-32 h-24">
-                    <img src="{{ imagen.imagen.url }}" class="w-full h-full object-cover">
+                    <img src="{{ imagen.imagen.url }}" class="w-full h-full object-cover" alt="Imagen del carrusel">
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
                         <div class="flex gap-1">
                             <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="izquierda"><button type="submit" class="w-6 h-6 rounded bg-white text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center" {% if forloop.first %}disabled{% endif %}><i class="fa-solid fa-arrow-left text-[10px]"></i></button></form>
@@ -104,12 +89,10 @@
                 {% endfor %}
             </div>
 
-            <!-- Botón Derecha -->
             <button id="btnScrollRight" type="button" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-brand-red text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-700 transition opacity-80 hover:opacity-100">
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
         </div>
-        <!-- Ocultar la barra de scroll visualmente -->
         <style>
             #adminGallery::-webkit-scrollbar { display: none; }
         </style>
@@ -117,7 +100,6 @@
     </section>
     {% endif %}
 
-    <!-- MENSAJES DEL SISTEMA -->
     {% if messages %}
         <div class="mb-6">
             {% for message in messages %}
@@ -130,7 +112,6 @@
 
     <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-8 md:mt-16 mb-8 md:mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
 
-    <!-- 3. ¿QUÉ ENCUENTRAS AQUÍ? -->
     <section class="mb-20">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3 transition-colors duration-500 ease-in-out">
             <span class="w-8 h-1 bg-brand-red inline-block"></span> ¿Qué encuentras aquí?
@@ -156,7 +137,6 @@
         </div>
     </section>
 
-    <!-- 4. MEDIOS DE PAGO -->
     <section class="mb-0">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3 transition-colors duration-500 ease-in-out">
             <span class="w-8 h-1 bg-brand-red inline-block"></span> Medios de Pago
@@ -173,11 +153,9 @@
         </ul>
     </section>
 
-    <!-- 5. LLAMADO A LA ACCIÓN -->
     {% if not user.is_authenticated %}
     <section class="mb-0">
         <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-16 mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
-        
         <div class="relative overflow-hidden bg-brand-red rounded-3xl p-8 md:p-10 text-center shadow-xl">
             <div class="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
                 <div class="absolute -top-20 -left-20 w-80 h-80 bg-red-900 rounded-full opacity-40 blur-3xl"></div>
@@ -185,7 +163,6 @@
                 <div class="absolute top-4 right-12 w-40 h-40 bg-white rounded-full opacity-20 blur-2xl"></div>
                 <div class="absolute top-1/2 left-1/3 w-48 h-48 bg-pink-300 rounded-full opacity-20 blur-3xl"></div>
             </div>
-
             <div class="relative z-10">
                 <h3 class="text-2xl md:text-3xl font-bold text-white mb-3">Descubre todo lo que tenemos para ti</h3>
                 <p class="text-white/90 text-lg mb-8">Inicia sesión para ver el catálogo de los productos</p>
@@ -195,7 +172,6 @@
     </section>
     {% endif %}
 
-    <!-- 6. SOBRE NOSOTROS -->
     <section id="nosotros" class="scroll-mt-24 mb-20">
         <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-16 mb-16 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
         <div class="text-center md:text-left mb-10">
@@ -223,9 +199,6 @@
 </div>
 
 <script>
-    // ============================================================
-    // ANIMACIÓN FADE-IN-UP INICIAL (0.5s)
-    // ============================================================
     (function animarEntrada() {
         const hero = document.querySelector('section.relative.w-full');
         if (!hero) return;
@@ -239,33 +212,23 @@
         });
     })();
 
-    // ============================================================
-    // NUEVO: MANTENER SCROLL EN EL PANEL DE ADMINISTRACIÓN
-    // ============================================================
     (function mantenerScrollAdmin() {
-        // Si hay mensajes del sistema (lo que indica que se acaba de hacer una acción POST)
-        // o si la URL tiene algún parámetro de acción, hacemos scroll al panel.
-        const tieneMensajes = document.querySelector('.mb-6 .p-4.rounded-lg'); 
-        
+        const tieneMensajes = document.querySelector('.mb-6 .p-4.rounded-lg');
         if (tieneMensajes) {
             const adminPanel = document.getElementById('adminPanel');
             if (adminPanel) {
-                // Hacemos scroll suave hacia el panel de administración
                 setTimeout(() => {
                     adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100); // Pequeño timeout para asegurar que la página terminó de cargar
+                }, 100);
             }
         }
     })();
 
-    // ============================================================
-    // SCROLL HORIZONTAL ADMIN
-    // ============================================================
     (function configurarScrollAdmin() {
         const gallery = document.getElementById('adminGallery');
         const btnLeft = document.getElementById('btnScrollLeft');
         const btnRight = document.getElementById('btnScrollRight');
-        
+
         if (gallery && btnLeft && btnRight) {
             btnLeft.addEventListener('click', () => {
                 gallery.scrollBy({ left: -200, behavior: 'smooth' });
@@ -276,9 +239,6 @@
         }
     })();
 
-    // ============================================================
-    // SCROLLBAR DEL LIBRO
-    // ============================================================
     (function aplicarEstilosLibro() {
         const content = document.getElementById('bookPageContent');
         if (!content) return;
@@ -310,9 +270,6 @@
         window.addEventListener('resize', ajustarResponsive);
     })();
 
-    // ============================================================
-    // SOMBRAS INSET
-    // ============================================================
     (function aplicarSombrasInset() {
         const bookContainer = document.getElementById('bookContainer');
         const bookHeader = document.getElementById('bookHeader');
@@ -338,9 +295,6 @@
         }
     })();
 
-    // ============================================================
-    // ANIMACIÓN BOOK-FADE
-    // ============================================================
     function animarCambioPagina(elemento) {
         elemento.style.opacity = '0';
         elemento.style.transform = 'translateX(12px)';
@@ -352,9 +306,6 @@
         });
     }
 
-    // ============================================================
-    // LÓGICA DEL HERO CARRUSEL
-    // ============================================================
     (function iniciarHeroCarrusel() {
         const imagenes = document.querySelectorAll('.carrusel-hero-img');
         if (imagenes.length <= 1) return;
@@ -365,17 +316,12 @@
         setInterval(() => {
             imagenes[currentIndex].classList.remove('opacity-100');
             imagenes[currentIndex].classList.add('opacity-0');
-
             currentIndex = (currentIndex + 1) % imagenes.length;
-
             imagenes[currentIndex].classList.remove('opacity-0');
             imagenes[currentIndex].classList.add('opacity-100');
         }, INTERVALO_MS);
     })();
 
-    // ============================================================
-    // DATOS DEL LIBRO
-    // ============================================================
     const bookPages = [
         { title: "Abarrotes", items: ["Aceites", "Granos", "Azúcar", "Sal", "Panela", "Mantequilla", "Galletas", "Enlatados", "Papel higiénico", "Toallas de cocina", "Servilletas", "Café instantáneo y molido", "Condimentos", "Kelloggs", "Dulcería", "Harina para arepas", "Harina de trigo", "Avena en hojuelas", "Chocolate", "Milo", "Mermeladas", "Aderezos", "Miel de abejas", "Vinagre", "Cremas de leche", "Papel aluminio", "Papel vinipel", "Veladoras", "Pañales desechables", "Refrescos en polvo", "Conservas", "Fósforos", "Mecheras", "Pastillas raid", "Raid aerosoles"] },
         { title: "Aseo Personal", items: ["Jabones", "Crema dental", "Shampoo", "Cepillos", "Desodorante", "Gel para el cabello", "Bloqueador solar", "Listerine", "Toallas higiénicas", "Afeitadoras", "Seda dental", "Pañitos húmedos", "Pañuelos faciales", "Copitos"] },
@@ -428,13 +374,11 @@
             punto.style.fontSize = '1.2rem';
             punto.style.lineHeight = '1';
             li.prepend(punto);
-
             ul.appendChild(li);
         });
 
         pageContentEl.innerHTML = '';
         pageContentEl.appendChild(ul);
-
         animarCambioPagina(pageContentEl);
         pageContentEl.scrollTop = 0;
 
@@ -466,9 +410,6 @@
     btnLast.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage = totalPages - 1; renderPage(true); } });
     renderPage(false);
 
-    // ============================================================
-    // CONTROL DEL FORMULARIO DE ADMIN
-    // ============================================================
     const btnMostrarForm = document.getElementById('btnMostrarFormularioCarrusel');
     const formulario = document.getElementById('formularioCarrusel');
     const btnCancelarForm = document.getElementById('btnCancelarFormularioCarrusel');
