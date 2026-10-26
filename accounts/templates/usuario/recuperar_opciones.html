@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Qué necesitas recuperar? | Tienda Nueva</title>
+
+    <link rel="icon" href="{% static 'img/logo.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = { darkMode: 'class' };
+
+        (() => {
+            const tema = localStorage.getItem('theme');
+            if (tema === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-gray-800 dark:bg-[#0f0f0f] dark:text-white transition-colors">
+
+    <header class="w-full max-w-md text-center mb-6">
+        <img src="{% static 'img/logo.png' %}"
+             alt="Logo Tienda Nueva"
+             class="w-28 h-28 object-contain rounded-full mx-auto mb-4">
+
+        <h1 class="text-3xl font-bold mb-2">¿Qué necesitas recuperar?</h1>
+        <p class="text-gray-500 dark:text-gray-400">
+            Elige una opción para volver a entrar a tu cuenta
+        </p>
+
+        <button type="button" id="theme-toggle"
+                class="mt-5 text-red-600 dark:text-red-500 font-semibold hover:opacity-80">
+            <i id="theme-icon" class="fa-solid fa-sun mr-2"></i>
+            <span id="theme-text">Modo claro</span>
+        </button>
+    </header>
+
+    <main class="w-full max-w-md bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8">
+
+        <div class="space-y-4">
+
+            <!-- Recuperar contraseña -->
+            <a href="{% url 'recuperar_password' %}"
+               class="flex items-center gap-4 p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#191919] hover:border-red-600 dark:hover:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 transition">
+                <span class="flex items-center justify-center w-11 h-11 shrink-0 rounded-full bg-red-600 text-white">
+                    <i class="fa-solid fa-lock"></i>
+                </span>
+                <span>
+                    <span class="block font-semibold">Recuperar mi contraseña</span>
+                    <span class="block text-sm text-gray-500 dark:text-gray-400">
+                        Recuerdo mi correo, pero no mi contraseña
+                    </span>
+                </span>
+            </a>
+
+            <!-- Recuperar correo -->
+            <a href="{% url 'recuperar_correo' %}"
+               class="flex items-center gap-4 p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#191919] hover:border-red-600 dark:hover:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 transition">
+                <span class="flex items-center justify-center w-11 h-11 shrink-0 rounded-full bg-red-600 text-white">
+                    <i class="fa-solid fa-envelope"></i>
+                </span>
+                <span>
+                    <span class="block font-semibold">Recuperar mi correo</span>
+                    <span class="block text-sm text-gray-500 dark:text-gray-400">
+                        No recuerdo con qué correo me registré
+                    </span>
+                </span>
+            </a>
+
+        </div>
+
+        <div class="text-center mt-6 pt-5 border-t border-gray-300 dark:border-gray-800">
+            <a href="{% url 'login' %}"
+               class="text-red-600 dark:text-red-500 hover:underline font-medium">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Volver al inicio de sesión
+            </a>
+        </div>
+    </main>
+
+    <p class="text-xs text-gray-500 mt-6 text-center">
+        &copy; 2026 Tienda Nueva. Todos los derechos reservados.
+    </p>
+
+    <script>
+        const boton = document.getElementById('theme-toggle');
+        const icono = document.getElementById('theme-icon');
+        const texto = document.getElementById('theme-text');
+
+        function actualizarTema() {
+            const oscuro = document.documentElement.classList.contains('dark');
+            icono.className = oscuro
+                ? 'fa-solid fa-sun mr-2'
+                : 'fa-solid fa-moon mr-2';
+            texto.textContent = oscuro ? 'Modo claro' : 'Modo oscuro';
+        }
+
+        boton.addEventListener('click', () => {
+            const oscuro = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', oscuro ? 'dark' : 'light');
+            actualizarTema();
+        });
+
+        actualizarTema();
+    </script>
+
+</body>
+</html>

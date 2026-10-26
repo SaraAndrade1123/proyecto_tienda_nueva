@@ -65,6 +65,66 @@ def registro(request):
 
     return render(request, 'usuario/registro.html', {'errors': errors, 'datos': datos})
 
+MAX_INTENTOS_CORREO = 5
+BLOQUEO_CORREO_MINUTOS = 10
+
+
+def enmascarar_correo(correo):
+    """juan.perez@gmail.com -> ju*********@gmail.com"""
+    local, _, dominio = correo.partition('@')
+    visibles = local[:2] if len(local) > 2 else local[:1]
+    ocultos = '*' * max(3, len(local) - len(visibles))
+    return f'{visibles}{ocultos}@{dominio}'
+
+
+def recuperar_opciones(request):
+    """Pantalla intermedia: elegir si recupera contraseña o correo."""
+    return render(request, 'usuario/recuperar_opciones.html')
+
+
+def recuperar_correo(request):
+    """Muestra el correo (parcialmente oculto) si documento + celular coinciden."""
+    plantilla = 'usuario/recuperar_correo.html'
+
+    # --- ¿Está bloqueado por demasiados intentos? ---
+    bloqueo = request.session.get('recuperar_correo_bloqueo')
+    if bloqueo:
+        hasta = timezone.datetime.fromisoformat(bloqueo)
+        if timezone.now() < hasta:
+            minutos = max(1, int((hasta - timezone.now()).total_seconds() // 60) + 1)
+            return render(request, plantilla, {
+                'error': f'Demasiados intentos. Vuelve a intentarlo en {minutos} minuto(s).'
+            })
+        request.session.pop('recuperar_correo_bloqueo', None)
+        request.session.pop('recuperar_correo_intentos', None)
+
+    if request.method == 'POST':
+        documento = request.POST.get('document', '').strip()
+        celular = request.POST.get('phone', '').strip()
+
+        usuario = User.objects.filter(document=documento, phone=celular).first()
+
+        if usuario:
+            request.session.pop('recuperar_correo_intentos', None)
+            return render(request, plantilla, {
+                'correo_enmascarado': enmascarar_correo(usuario.email)
+            })
+
+        # --- Falló: sumar intento y bloquear si llegó al máximo ---
+        intentos = request.session.get('recuperar_correo_intentos', 0) + 1
+        request.session['recuperar_correo_intentos'] = intentos
+
+        if intentos >= MAX_INTENTOS_CORREO:
+            request.session['recuperar_correo_bloqueo'] = (
+                timezone.now() + timedelta(minutes=BLOQUEO_CORREO_MINUTOS)
+            ).isoformat()
+
+        return render(request, plantilla, {
+            # Mensaje genérico: no revela qué dato falló
+            'error': 'Los datos no coinciden con ninguna cuenta. Revisa e inténtalo de nuevo.'
+        })
+
+    return render(request, plantilla)
 
 def recuperar_password(request):
     if request.method == 'POST':
