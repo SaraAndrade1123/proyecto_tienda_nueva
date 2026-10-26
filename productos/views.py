@@ -1,23 +1,12 @@
 from functools import wraps
-
-from django.shortcuts import (
-    render,
-    redirect,
-    get_object_or_404
-)
-
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.db.models import ProtectedError
-
 from .models import Producto, Categoria
 from .forms import ProductoForm, CategoriaForm
 
-
-# ============================================================
-# DECORADOR PARA FUNCIONES EXCLUSIVAS DEL SUPERUSUARIO
-# ============================================================
 
 def solo_superusuario(vista):
 
@@ -39,45 +28,27 @@ def solo_superusuario(vista):
     return envoltura
 
 
-# ============================================================
-# PRODUCTOS
-# ============================================================
 
 @login_required
 def lista_productos(request):
 
-    busqueda = request.GET.get(
-        'buscar',
-        ''
-    ).strip()
+    busqueda = request.GET.get('buscar', '').strip()
 
-    categoria_seleccionada = request.GET.get(
-        'categoria',
-        ''
-    ).strip()
+    categoria_seleccionada = request.GET.get('categoria', '').strip()
 
-    productos = Producto.objects.select_related(
-        'categoria'
-    ).all()
+    productos = Producto.objects.select_related('categoria').all()
 
     if busqueda:
 
-        productos = productos.filter(
-            Q(nombre__icontains=busqueda)
-        )
+        productos = productos.filter(nombre__icontains=busqueda)
 
     if categoria_seleccionada:
 
-        productos = productos.filter(
-            categoria_id=categoria_seleccionada
-        )
+        productos = productos.filter(categoria_id=categoria_seleccionada)
 
     categorias = Categoria.objects.all()
 
-    return render(
-        request,
-        'productos/lista_productos.html',
-        {
+    return render(request, 'productos/lista_productos.html', {
             'productos': productos,
             'busqueda': busqueda,
             'categoria_seleccionada': categoria_seleccionada,
@@ -238,22 +209,11 @@ def disminuir_stock(request, id):
 @login_required
 def detalle_producto(request, id):
 
-    producto = Producto.objects.select_related(
-        'categoria'
-    ).filter(
-        id=id
-    ).first()
+    producto = Producto.objects.select_related('categoria').filter(id=id).first()
 
     if producto is None:
 
-        return render(
-            request,
-            'productos/detalle_producto.html',
-            {
-                'producto': None
-            },
-            status=404
-        )
+        return render(request, 'productos/detalle_producto.html', {'producto': None},status=404)
 
     return render(
         request,
@@ -262,11 +222,6 @@ def detalle_producto(request, id):
             'producto': producto
         }
     )
-
-
-# ============================================================
-# CATEGORÍAS
-# ============================================================
 
 @solo_superusuario
 def lista_categorias(request):

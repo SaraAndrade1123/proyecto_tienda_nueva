@@ -1,761 +1,1012 @@
 {% extends 'layouts/base.html' %}
+{% load static i18n %}
 
-{% block title %}Crear Producto - Tienda Nueva{% endblock %}
+{% block title %}Crear producto - Tienda Nueva{% endblock %}
 
 {% block content %}
 
-<div class="min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 py-6 px-4 sm:px-6 lg:px-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
 
-<div class="w-full max-w-6xl mx-auto">
+<style>
+/* =====================================================================
+   Tienda Nueva · Pantallas de productos
+   ---------------------------------------------------------------------
+   CÓMO ESTÁ ORGANIZADO ESTE CSS (léelo antes de tocar nada)
 
-    <!-- ===================================================== -->
-    <!-- ENCABEZADO -->
-    <!-- ===================================================== -->
+   1. TOKENS en tres niveles:
+        primitivos  --red-700, --white …   valores crudos, sin significado
+        semánticos  --color-brand, --color-text …  el "para qué" de cada valor
+        componente  --card-bg, --card-price …  viven en el componente y las
+                                              variantes solo los reasignan
+      Los componentes usan tokens semánticos o de componente, nunca primitivos.
+      El modo oscuro (.dark) redefine SOLO los semánticos.
+   2. NOMBRES con BEM:  cat-bloque__elemento  y estados  is-activo.
+      Todo cuelga de .cat para no chocar con Tailwind ni con base.html.
+   3. ORDEN: tokens → base → layout → componentes → pantallas → preferencias
+      del usuario (movimiento reducido, contraste forzado, impresión).
+   4. SIN @layer a propósito: Tailwind (CDN) escribe CSS sin capas y las capas
+      del navegador perderían contra él.
+   ===================================================================== */
 
-    <section class="relative overflow-hidden bg-red-600 rounded-3xl p-6 sm:p-8 mb-6 shadow-xl shadow-red-600/10 dark:shadow-red-950/20">
 
-        <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/10 rounded-full"></div>
-        <div class="absolute -right-6 -bottom-20 w-40 h-40 bg-black/10 rounded-full"></div>
+/* ===== 1. TOKENS ================================================== */
 
-        <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+.cat {
+    /* 1a · Primitivos */
+    --red-950: #450a0a;
+    --red-900: #7f1d1d;
+    --red-800: #991b1b;
+    --red-700: #b91c1c;
+    --red-600: #dc2626;
+    --red-400: #f87171;
+    --white: #ffffff;
 
+    /* 1b · Escalas (no cambian con el tema) */
+    --space-1: .25rem;  --space-2: .5rem;  --space-3: .75rem; --space-4: 1rem;
+    --space-5: 1.5rem;  --space-6: 2rem;   --space-7: 3rem;
+    --radius-md: 1.25rem; --radius-lg: 1.75rem; --radius-xl: 2.5rem; --radius-pill: 999px;
+    --dur-fast: .15s; --dur-base: .25s;
+    --font-sans: "Archivo", Verdana, Tahoma, sans-serif;
+
+    /* 1c · Semánticos (modo claro) */
+    --color-page: #ffffff;
+    --color-board: #fbf6f5;
+    --color-field: #ffffff;
+    --color-border: #e7ddda;
+    --color-text: #1c1917;
+    --color-muted: #6b645e;
+    --color-brand: var(--red-700);        /* rellenos: botones, chips activos */
+    --color-brand-text: var(--red-700);   /* texto y enlaces sobre superficies */
+    --color-brand-hero: var(--red-600);
+    --color-brand-deep: var(--red-900);   /* hover de rellenos */
+    --color-brand-ink: var(--red-950);
+    --color-on-brand: var(--white);
+    --color-ok: #15803d;
+    --color-warn: #92400e;
+    --color-ok-bg: #e4f4e8;
+    --color-warn-bg: #fdf0d2;
+    --color-maroon: #4a0e0e;               /* bloque oscuro de texto */
+    --color-on-maroon: #fff1e6;
+
+    /* Tonos de categoría (suave = fondo, fuerte = disco/borde) */
+    --tone-a-soft: #ffe8e5;  --tone-a-strong: #ffc7c0;
+    --tone-b-soft: #fff0e6;  --tone-b-strong: #ffd3b8;
+    --tone-c-soft: #f4f1ef;  --tone-c-strong: #e3ddd9;
+    --tone-d-soft: #fde7ec;  --tone-d-strong: #f8b9c9;
+    --tone-soft: var(--tone-c-soft);
+    --tone-strong: var(--tone-c-strong);
+
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: var(--color-page);
+}
+
+.dark .cat {
+    --color-page: #0f0f0f;
+    --color-board: #151515;
+    --color-field: #1e1e1e;
+    --color-border: #3a3532;
+    --color-text: #f5f5f4;
+    --color-muted: #a8a29e;
+    --color-brand-text: var(--red-400);
+    --color-ok: #4ade80;
+    --color-warn: #fbbf24;
+    --color-ok-bg: #14281b;
+    --color-warn-bg: #2e2410;
+    --color-maroon: #2a0b0b;
+    --color-on-maroon: #f5e6dc;
+
+    --tone-a-soft: #2b1816;  --tone-a-strong: #45221f;
+    --tone-b-soft: #2b1d15;  --tone-b-strong: #47291a;
+    --tone-c-soft: #242221;  --tone-c-strong: #373331;
+    --tone-d-soft: #2b1720;  --tone-d-strong: #46212f;
+}
+
+/* El tono lo decide el id de la categoría: cada categoría conserva su color */
+.cat [data-tono$="1"], .cat [data-tono$="5"], .cat [data-tono$="9"] { --tone-soft: var(--tone-a-soft); --tone-strong: var(--tone-a-strong); }
+.cat [data-tono$="2"], .cat [data-tono$="6"]                         { --tone-soft: var(--tone-b-soft); --tone-strong: var(--tone-b-strong); }
+.cat [data-tono$="3"], .cat [data-tono$="7"]                         { --tone-soft: var(--tone-c-soft); --tone-strong: var(--tone-c-strong); }
+.cat [data-tono$="0"], .cat [data-tono$="4"], .cat [data-tono$="8"] { --tone-soft: var(--tone-d-soft); --tone-strong: var(--tone-d-strong); }
+
+
+/* ===== 2. BASE ==================================================== */
+
+.cat, .cat * { box-sizing: border-box; }
+:where(.cat) :where(h1, h2, h3, p, ul, ol, dl, dd) { margin: 0; }   /* :where() = especificidad 0: cualquier clase .cat-* lo puede sobrescribir */
+:where(.cat) :where(ul, ol) { padding: 0; list-style: none; }
+.cat a { text-decoration: none; }
+.cat [hidden] { display: none !important; }
+
+.cat-sr {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Foco visible en todo lo interactivo (WCAG 2.4.7) */
+.cat a:focus-visible, .cat button:focus-visible, .cat input:focus-visible,
+.cat select:focus-visible, .cat textarea:focus-visible, .cat summary:focus-visible {
+    outline: 3px solid var(--color-brand-text); outline-offset: 2px;
+}
+.cat-hero a:focus-visible, .cat-hero button:focus-visible, .cat-band a:focus-visible { outline-color: var(--white); }
+
+
+/* ===== 3. LAYOUT ================================================== */
+
+/* 3a · Banner */
+.cat-hero {
+    position: relative;
+    padding: 2.5rem 1.25rem 5.25rem;
+    color: var(--white);
+    background: var(--color-brand-hero);
+}
+@media (min-width: 900px) { .cat-hero { padding: 3.25rem 2.5rem 6rem; } }
+
+.cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.cat-hero__bg::before {
+    content: ""; position: absolute; inset: -40%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 320px 72px;
+    transform: rotate(-9deg);
+}
+.cat-hero__in {
+    position: relative;
+    max-width: 80rem; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+}
+.cat-hero__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
+.cat-hero h1 {
+    font-size: clamp(2.5rem, 1.3rem + 4.6vw, 4.5rem);
+    font-weight: 800; font-stretch: 110%; line-height: .95; letter-spacing: -.035em;
+}
+.cat-hero--name h1 {
+    max-width: 22ch; text-wrap: balance; overflow-wrap: anywhere;
+    font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem); line-height: 1.02;
+}
+.cat-hero p { margin-top: .9rem; max-width: 34ch; font-size: 1.0625rem; line-height: 1.45; }
+.cat-hero p strong { font-weight: 800; }
+
+.cat-eyebrow {
+    display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: .75rem;
+    font-size: .8125rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+}
+.cat-eyebrow::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: currentColor; }
+
+/* Migas de pan */
+.cat-crumbs { margin-bottom: .75rem; }
+.cat-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; font-size: .875rem; font-weight: 600; }
+.cat-crumbs li { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
+.cat-crumbs li + li::before { content: "/"; opacity: .7; }
+.cat-crumbs a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, .55); }
+.cat-crumbs a:hover { text-decoration-color: var(--white); }
+.cat-crumbs [aria-current] { max-width: 18ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .92; }
+
+/* 3b · Contenedores */
+.cat-wrap { position: relative; max-width: 80rem; margin: -2.75rem auto 0; padding: 0 .75rem 2.5rem; }
+@media (min-width: 640px)  { .cat-wrap { padding: 0 1.5rem 3rem; } }
+@media (min-width: 1024px) { .cat-wrap { padding: 0 2.5rem 3.5rem; } }
+.cat-wrap--narrow { max-width: 62rem; }
+.cat-wrap--wide { max-width: 76rem; }
+
+.cat-board {
+    position: relative;
+    padding: 1.25rem .875rem 1.5rem;
+    background: var(--color-board); border-radius: var(--radius-lg);
+}
+@media (min-width: 640px) {
+    .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: var(--radius-xl); }
+}
+
+/* Banda de cierre (como la franja de suscripción de la referencia) */
+.cat-band {
+    position: relative; overflow: hidden;
+    padding: 2.25rem 1.25rem; color: var(--color-on-maroon); background: var(--color-maroon);
+}
+.cat-band::before {
+    content: ""; position: absolute; inset: -40%; transform: rotate(-9deg); opacity: .6; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%23b91c1c' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 320px 72px;
+}
+.cat-band__in {
+    position: relative; max-width: 80rem; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-6);
+}
+.cat-band h2 { max-width: 26ch; font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.15; }
+.cat-band p { margin-top: .35rem; max-width: 44ch; color: var(--color-on-maroon); opacity: .9; }
+@media (min-width: 900px) { .cat-band { padding: 2.75rem 2.5rem; } }
+
+
+/* ===== 4. COMPONENTES ============================================= */
+
+/* 4a · Botón  (variantes: --light --ghost --danger) */
+.cat-btn {
+    --btn-bg: var(--color-brand); --btn-ink: var(--color-on-brand); --btn-border: var(--color-brand);
+    --btn-bg-hover: var(--color-brand-deep); --btn-ink-hover: var(--color-on-brand); --btn-border-hover: var(--color-brand-deep);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+    height: 2.75rem; padding: 0 1.5rem;
+    font: inherit; font-weight: 700; font-size: .9375rem; white-space: nowrap;
+    color: var(--btn-ink); background: var(--btn-bg);
+    border: 2px solid var(--btn-border); border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.cat-btn svg { width: 1.05rem; height: 1.05rem; flex: none; }
+.cat-btn:hover { color: var(--btn-ink-hover); background: var(--btn-bg-hover); border-color: var(--btn-border-hover); }
+.cat-btn[disabled], .cat-btn[aria-busy="true"] { opacity: .75; cursor: progress; }
+.cat-btn--light { --btn-bg: var(--white); --btn-ink: var(--color-brand-deep); --btn-border: var(--white);
+                  --btn-bg-hover: var(--color-brand-ink); --btn-border-hover: var(--color-brand-ink); }
+.cat-btn--ghost { --btn-bg: transparent; --btn-ink: var(--color-text); --btn-border: var(--color-border);
+                  --btn-bg-hover: var(--tone-soft); --btn-ink-hover: var(--color-text); --btn-border-hover: var(--tone-strong); }
+.cat-hero .cat-btn--ghost, .cat-band .cat-btn--ghost { --btn-ink: var(--white); --btn-border: rgba(255, 255, 255, .7);
+                  --btn-bg-hover: var(--white); --btn-ink-hover: var(--color-brand-deep); --btn-border-hover: var(--white); }
+.cat-btn--danger { --btn-bg: var(--red-800); --btn-border: var(--red-800); --btn-bg-hover: var(--red-950); --btn-border-hover: var(--red-950); }
+.cat-spin {
+    width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent;
+    animation: cat-spin .7s linear infinite;
+}
+@keyframes cat-spin { to { transform: rotate(360deg); } }
+
+/* 4b · Mensajes (success / warning / error) */
+.cat-msgs { display: grid; gap: .625rem; margin-bottom: 1.25rem; }
+.cat-msg {
+    display: flex; align-items: flex-start; gap: var(--space-3); padding: .85rem 1.1rem;
+    font-size: .9375rem; font-weight: 600; line-height: 1.4;
+    color: var(--color-text); background: var(--tone-c-soft);
+    border-radius: 1.1rem 1.1rem 1.1rem .3rem;
+}
+.cat-msg::before { content: ""; flex: none; width: .7rem; height: .7rem; margin-top: .3rem; border-radius: 50%; background: var(--color-muted); }
+.cat-msg.is-success { background: var(--color-ok-bg); }
+.cat-msg.is-success::before { background: #16a34a; }
+.cat-msg.is-warning { background: var(--color-warn-bg); }
+.cat-msg.is-warning::before { background: #d97706; }
+.cat-msg.is-error { background: var(--tone-a-soft); }
+.cat-msg.is-error::before { background: var(--color-brand-text); }
+
+/* 4c · Chips de categoría */
+.cat-cats { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: 1.5rem; }
+.cat-cat {
+    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.5rem; padding: 0 1.1rem 0 .8rem;
+    font-size: .9375rem; font-weight: 600; color: var(--color-text); background: var(--tone-soft);
+    border-radius: var(--radius-pill);
+    transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+}
+.cat-cat i { width: .8rem; height: .8rem; border-radius: 50%; background: var(--tone-strong); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18); }
+.cat-cat.is-all { padding-left: 1.1rem; }
+.cat-cat:hover { background: var(--tone-strong); }
+.cat-cat.is-on { color: var(--color-on-brand); background: var(--color-brand); }
+.cat-cat.is-on i { background: var(--white); box-shadow: none; }
+
+
+/* 4d · Tarjeta de producto  (estados: :hover/:focus-within activa, .is-out agotado) */
+.cat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem .75rem; }
+@media (min-width: 560px) { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr)); gap: 1.75rem 1.25rem; } }
+.cat-grid > li { min-width: 0; }
+
+.cat-card {
+    --card-bg: var(--tone-soft); --card-ink: var(--color-text); --card-mute: var(--color-muted); --card-disc: var(--tone-strong);
+    --card-price: var(--color-brand-text);
+    --card-btn: var(--color-brand); --card-btn-ink: var(--color-on-brand); --card-warn: var(--color-warn); --card-line: var(--color-border);
+    position: relative; isolation: isolate; height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1rem .75rem 1.1rem; text-align: center;
+    color: var(--card-ink); background: var(--card-bg); border-radius: 1.5rem;
+    transition: background-color var(--dur-base), color var(--dur-base), transform var(--dur-base), box-shadow var(--dur-base);
+}
+@media (min-width: 560px) { .cat-card { padding: 1.25rem 1.25rem 1.4rem; border-radius: var(--radius-lg); } }
+
+.cat-card:hover, .cat-card:focus-within {
+    --card-bg: var(--red-700); --card-ink: var(--white); --card-mute: rgba(255, 255, 255, .86); --card-disc: rgba(255, 255, 255, .16);
+    --card-price: var(--white); --card-btn: var(--white); --card-btn-ink: var(--red-700); --card-warn: var(--white); --card-line: rgba(255, 255, 255, .6);
+    transform: translateY(-.4rem); box-shadow: 0 1.25rem 1.75rem -1rem rgba(127, 29, 29, .55);
+}
+
+/* El producto es ~30 % más grande que el círculo: el disco queda centrado detrás y la imagen sobresale. */
+.cat-stage { position: relative; width: 100%; height: 10rem; display: flex; align-items: center; justify-content: center; margin-bottom: .875rem; }
+@media (min-width: 560px) { .cat-stage { height: 13rem; margin-bottom: 1rem; } }
+.cat-disc {
+    position: absolute; left: 50%; top: 50%; width: 6.25rem; height: 6.25rem; border-radius: 50%;
+    background: var(--card-disc); transform: translate(-50%, -50%); transition: background-color var(--dur-base);
+}
+@media (min-width: 560px) { .cat-disc { width: 9.25rem; height: 9.25rem; } }
+.cat-img { position: relative; display: block; max-width: 94%; max-height: 8.25rem; object-fit: contain; border-radius: .5rem; transition: transform var(--dur-base); }
+@media (min-width: 560px) { .cat-img { max-width: 84%; max-height: 12rem; } }
+.cat-card:hover .cat-img, .cat-card:focus-within .cat-img { transform: translateY(-.5rem) scale(1.07); }
+.cat-none { position: relative; display: flex; flex-direction: column; align-items: center; gap: .35rem; font-size: .875rem; color: var(--card-mute); }
+.cat-none svg { width: 2rem; height: 2rem; }
+
+.cat-card__cat {
+    display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; margin-bottom: .3rem;
+    font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--card-mute);
+}
+.cat-card__cat::before { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+.cat-card__cat span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-name { max-width: 100%; font-size: 1rem; font-weight: 700; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+@media (min-width: 560px) { .cat-name { font-size: 1.1875rem; } }
+.cat-size { margin-top: .25rem; font-size: .875rem; color: var(--card-mute); }
+.cat-price {
+    margin-top: .625rem; display: inline-flex; align-items: baseline; gap: .1rem; max-width: 100%;
+    font-size: 1.625rem; font-weight: 800; font-stretch: 75%; line-height: 1; letter-spacing: .005em;
+    font-variant-numeric: tabular-nums; color: var(--card-price);
+}
+.cat-price small { font-size: .95rem; font-weight: 700; font-stretch: 100%; }
+@media (min-width: 560px) { .cat-price { font-size: 2rem; } }
+.cat-stock { margin-top: .6rem; display: inline-flex; align-items: center; gap: .4rem; font-size: .875rem; font-weight: 600; color: var(--card-mute); }
+.cat-stock::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: #16a34a; }
+.cat-stock.is-low, .cat-stock.is-out { color: var(--card-warn); }
+.cat-stock.is-low::before, .cat-stock.is-out::before { background: currentColor; }
+.cat-card:hover .cat-stock::before, .cat-card:focus-within .cat-stock::before { background: var(--white); }
+
+.cat-more {
+    margin-top: 1rem; display: inline-flex; align-items: center; justify-content: center; height: 2.25rem; padding: 0 1.1rem;
+    font-size: .875rem; font-weight: 700; color: var(--card-btn-ink); background: var(--card-btn);
+    border-radius: var(--radius-pill); transition: background-color var(--dur-base), color var(--dur-base);
+}
+@media (min-width: 560px) { .cat-more { height: 2.5rem; padding: 0 1.4rem; font-size: .9375rem; } }
+.cat-more::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }   /* toda la tarjeta es enlace */
+.cat-more:focus-visible { outline: none !important; }
+.cat-more:focus-visible::after { outline: 3px solid var(--color-brand-text); outline-offset: 3px; border-radius: var(--radius-lg); }
+
+.cat-acts { position: relative; z-index: 2; margin-top: .75rem; display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+.cat-act {
+    display: inline-flex; align-items: center; gap: .4rem; height: 2.25rem; padding: 0 .9rem;
+    font: inherit; font-size: .8125rem; font-weight: 700; color: var(--card-ink); background: transparent;
+    border: 2px solid var(--card-line); border-radius: var(--radius-pill); cursor: pointer;
+    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.cat-act svg { width: .95rem; height: .95rem; }
+.cat-act:hover { color: var(--card-btn-ink); background: var(--card-btn); border-color: var(--card-btn); }
+.cat-act--del:hover { color: var(--white); background: var(--red-950); border-color: var(--red-950); }
+.cat-card:hover .cat-act--del:hover, .cat-card:focus-within .cat-act--del:hover { color: var(--red-900); background: var(--white); border-color: var(--white); }
+
+.cat-card.is-out .cat-img { filter: grayscale(1); opacity: .45; }
+.cat-card.is-out { --card-disc: var(--tone-c-strong); }
+.cat-card.is-out:hover, .cat-card.is-out:focus-within { --card-disc: rgba(255, 255, 255, .16); }
+.cat-stamp {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-8deg); padding: .1rem .6rem;
+    font-size: 1.25rem; font-weight: 800; font-stretch: 85%; letter-spacing: .02em;
+    color: var(--color-brand-text); border: 3px solid currentColor; border-radius: .375rem;
+    background: color-mix(in srgb, var(--card-bg) 78%, transparent);
+}
+.cat-card:hover .cat-stamp, .cat-card:focus-within .cat-stamp { color: var(--white); background: transparent; }
+
+/* 4e · Estado vacío y diálogo */
+.cat-empty { padding: 3.5rem 1.5rem 3.75rem; text-align: center; background: var(--tone-c-soft); border-radius: 4.5rem 1.25rem 1.25rem 1.25rem; }
+.cat-empty__disc { width: 5rem; height: 5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-c-strong); color: var(--color-muted); }
+.cat-empty__disc svg { display: block; width: 2.25rem; height: 2.25rem; }
+.cat-empty h3 { margin-top: 1.25rem; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
+.cat-empty p { margin: .5rem auto 0; max-width: 34ch; color: var(--color-muted); line-height: 1.5; }
+.cat-empty .cat-btn { margin-top: var(--space-5); }
+
+.cat-modal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: var(--space-4); background: rgba(15, 15, 15, .6); }
+.cat-modal.is-open { display: flex; }
+.cat-dialog { position: relative; width: 100%; max-width: 26rem; padding: 2rem 1.5rem 1.5rem; text-align: center; color: var(--color-text); background: var(--color-page); border-radius: 4rem 1.25rem 1.25rem 1.25rem; box-shadow: 0 2rem 4rem -1rem rgba(0, 0, 0, .5); }
+.dark .cat-dialog { background: #1a1a1a; }
+.cat-dialog__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-a-strong); color: var(--color-brand-text); }
+.cat-dialog__disc svg { width: 2rem; height: 2rem; }
+.cat-dialog h3 { margin-top: 1.1rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -.015em; }
+.cat-dialog p { margin-top: .6rem; line-height: 1.5; color: var(--color-muted); }
+.cat-dialog p strong { color: var(--color-text); overflow-wrap: anywhere; }
+.cat-dialog__acts { display: flex; gap: .625rem; margin-top: var(--space-5); }
+.cat-dialog__acts > * { flex: 1; padding: 0 .5rem; }
+
+/* 4f · Campos de formulario */
+.cat-field label { display: block; margin-bottom: .4rem; font-size: .875rem; font-weight: 700; }
+.cat-field label .cat-req { color: var(--color-brand-text); }
+.cat-field__box { position: relative; }
+.cat-field input:not([type="file"]), .cat-field select, .cat-field textarea {
+    display: block; width: 100%; height: 3rem; padding: 0 1.1rem;
+    font: inherit; font-size: 1rem; color: var(--color-text); background: var(--color-field);
+    border: 2px solid var(--color-border); border-radius: var(--radius-pill);
+    outline: 0; appearance: none; -webkit-appearance: none;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.cat-field textarea { height: auto; min-height: 8.5rem; padding: .9rem 1.2rem; border-radius: var(--radius-md); resize: vertical; line-height: 1.5; }
+.cat-field select { padding-right: 2.75rem; cursor: pointer; }
+.cat-field input::placeholder, .cat-field textarea::placeholder { color: var(--color-muted); opacity: .8; }
+.cat-field input:focus, .cat-field select:focus, .cat-field textarea:focus {
+    border-color: var(--color-brand-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-text) 18%, transparent); outline: 0 !important;
+}
+.cat-field.has-error input, .cat-field.has-error select, .cat-field.has-error textarea { border-color: var(--color-brand-text); }
+.cat-field--money input:not([type="file"]) { padding-left: 2.4rem; }
+.cat-field__sym { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--color-muted); pointer-events: none; }
+.cat-field__chev { position: absolute; right: 1.1rem; top: 50%; width: 1rem; height: 1rem; transform: translateY(-50%); color: var(--color-muted); pointer-events: none; }
+.cat-hint { display: flex; justify-content: space-between; gap: var(--space-3); margin-top: .4rem; padding-left: .25rem; font-size: .8125rem; color: var(--color-muted); }
+.cat-err { display: flex; align-items: flex-start; gap: .4rem; margin-top: .4rem; padding-left: .25rem; font-size: .875rem; font-weight: 600; color: var(--color-brand-text); }
+.cat-err::before {   /* el error no depende solo del color: lleva un signo */
+    content: "!"; flex: none; display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; margin-top: .1rem;
+    font-size: .7rem; font-weight: 900; color: var(--color-page); background: var(--color-brand-text); border-radius: 50%;
+}
+
+.cat-alert {
+    margin-bottom: var(--space-5); padding: 1.1rem 1.25rem 1.2rem; color: var(--color-text);
+    background: var(--tone-a-soft); border-left: .4rem solid var(--color-brand); border-radius: .5rem 1.25rem 1.25rem .5rem;
+}
+.cat-alert:focus { outline: 3px solid var(--color-brand-text); outline-offset: 3px; }
+.cat-alert h2 { font-size: 1.125rem; font-weight: 800; }
+.cat-alert ul { margin-top: .5rem; display: grid; gap: .25rem; }
+.cat-alert a { color: var(--color-brand-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+
+/* ===== 5. PANTALLAS =============================================== */
+
+/* 5a · Lista */
+.cat-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem var(--space-5); margin-bottom: 1.25rem; }
+.cat-head h2 {
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.1;
+    color: var(--color-brand-text);
+}
+.cat-head__side { display: flex; align-items: baseline; gap: var(--space-4); }
+.cat-count { font-size: .9375rem; color: var(--color-muted); }
+.cat-count strong { color: var(--color-text); font-weight: 700; }
+.cat-clear { display: inline-flex; align-items: center; gap: .4rem; font-size: .9375rem; font-weight: 600; color: var(--color-text); text-decoration: underline !important; text-underline-offset: 3px; }
+.cat-clear::after { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--color-brand); }
+
+/* Resumen (se llena con JS; sin JS queda oculto) */
+.cat-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: 1.25rem; }
+@media (min-width: 720px) { .cat-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.cat-stat {
+    --stat-bg: var(--tone-c-soft);
+    padding: .85rem 1.25rem; background: var(--stat-bg); border-radius: 1.1rem;
+}
+.cat-stat--ok  { --stat-bg: var(--color-ok-bg); }
+.cat-stat--low { --stat-bg: var(--color-warn-bg); }
+.cat-stat--out { --stat-bg: var(--tone-a-soft); }
+.cat-stat__n { display: block; font-size: 1.75rem; font-weight: 800; font-stretch: 80%; line-height: 1; font-variant-numeric: tabular-nums; }
+.cat-stat__l { display: block; margin-top: .25rem; font-size: .8125rem; font-weight: 600; color: var(--color-muted); }
+
+/* Buscador + orden */
+.cat-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: 1rem; }
+.cat-find {
+    flex: 1 1 18rem; min-width: 0; max-width: 34rem; display: flex; align-items: center; gap: var(--space-2);
+    padding: .3rem .3rem .3rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill);
+}
+.cat-find:focus-within { border-color: var(--color-brand-text); }
+.cat-find > svg { flex: none; width: 1.05rem; height: 1.05rem; color: var(--color-muted); }
+.cat-find input { flex: 1 1 auto; width: 0; min-width: 0; height: 2.5rem; padding: 0; font: inherit; font-size: 1rem; color: var(--color-text); background: transparent; border: 0; outline: 0 !important; }
+.cat-find input::placeholder { color: var(--color-muted); }
+.cat-find button { flex: none; height: 2.5rem; padding: 0 1.25rem; font: inherit; font-weight: 700; color: var(--color-on-brand); background: var(--color-brand); border: 0; border-radius: var(--radius-pill); cursor: pointer; }
+.cat-find button:hover { background: var(--color-brand-deep); }
+.cat-sort { position: relative; display: inline-flex; align-items: center; gap: var(--space-2); max-width: 100%; min-width: 0; font-size: .875rem; font-weight: 700; color: var(--color-muted); }
+.cat-sort select {
+    flex: 1 1 auto; min-width: 0; max-width: 100%;
+    height: 2.75rem; padding: 0 2.5rem 0 1.1rem; font: inherit; font-size: .9375rem; font-weight: 600; color: var(--color-text);
+    background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill); appearance: none; -webkit-appearance: none; cursor: pointer;
+}
+.cat-sort svg { position: absolute; right: 1rem; width: .9rem; height: .9rem; pointer-events: none; }
+
+.cat-end { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: 2rem; padding-top: 1rem; border-top: 2px dotted var(--color-border); font-size: .875rem; color: var(--color-muted); }
+.cat-end a { font-weight: 700; color: var(--color-brand-text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* 5b · Detalle */
+.cat-det { display: grid; gap: var(--space-5); align-items: stretch; }
+@media (min-width: 860px) { .cat-det { grid-template-columns: 1.05fr 1fr; gap: 2.5rem; } }
+.cat-det__stage {
+    --card-disc: var(--tone-strong);
+    position: relative; min-height: 20rem; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem;
+    background: var(--tone-soft); border-radius: 5rem 1.25rem 1.25rem 1.25rem; overflow: hidden;
+}
+@media (min-width: 860px) { .cat-det__stage img { max-height: 22rem; } }
+@media (min-width: 860px) { .cat-det__stage { min-height: 28rem; border-radius: 8rem 1.25rem 1.25rem 1.25rem; } }
+.cat-det__stage .cat-disc { width: 11rem; height: 11rem; }
+@media (min-width: 860px) { .cat-det__stage .cat-disc { width: 17rem; height: 17rem; } }
+.cat-det__stage img { position: relative; max-width: 82%; max-height: 14.5rem; object-fit: contain; border-radius: .5rem; transition: transform .35s; }
+.cat-det__stage:hover img { transform: scale(1.04) rotate(-1.5deg); }
+.cat-det__stage.is-out img { filter: grayscale(1); opacity: .45; }
+.cat-det__stage .cat-none { margin: 0; color: var(--color-muted); }
+.cat-det__stage .cat-none svg { width: 3rem; height: 3rem; }
+.cat-det__stage .cat-stamp { top: 50%; font-size: 1.75rem; background: color-mix(in srgb, var(--tone-soft) 78%, transparent); }
+
+.cat-det__body { display: flex; flex-direction: column; justify-content: center; gap: 1.15rem; min-width: 0; }
+.cat-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.cat-pill { display: inline-flex; align-items: center; gap: var(--space-2); padding: .35rem .9rem .35rem .7rem; font-size: .875rem; font-weight: 700; color: var(--color-text); background: var(--tone-soft); border-radius: var(--radius-pill); }
+.cat-pill i { width: .75rem; height: .75rem; border-radius: 50%; background: var(--tone-strong); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18); }
+.cat-pill--ref { font-variant-numeric: tabular-nums; background: transparent; border: 2px solid var(--color-border); color: var(--color-muted); }
+
+.cat-det__price {
+    align-self: flex-start; display: inline-flex; align-items: baseline; gap: .15rem;
+    font-size: clamp(2.75rem, 2rem + 3.5vw, 4.25rem); font-weight: 800; font-stretch: 75%; line-height: 1;
+    font-variant-numeric: tabular-nums; color: var(--color-brand-text);
+}
+.cat-det__price small { font-size: 1.4rem; font-weight: 700; font-stretch: 100%; }
+.cat-det__unit { margin-top: -.5rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-det__unit strong { color: var(--color-text); font-weight: 700; }
+
+.cat-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.cat-fact { padding: .9rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: 1.1rem; }
+.cat-fact dt { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+.cat-fact dd { margin: .3rem 0 0; font-size: 1.125rem; font-weight: 800; }
+.cat-fact dd.is-ok { color: var(--color-ok); }
+.cat-fact dd.is-low, .cat-fact dd.is-out { color: var(--color-warn); }
+.cat-meter { --n: 0; display: block; height: .5rem; margin-top: .6rem; overflow: hidden; background: var(--color-border); border-radius: var(--radius-pill); }
+.cat-meter::before { content: ""; display: block; width: min(100%, calc(var(--n) * 5%)); height: 100%; background: var(--color-ok); border-radius: inherit; }
+.cat-meter.is-low::before, .cat-meter.is-out::before { background: var(--color-warn); }
+
+.cat-spec h2 { font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+.cat-spec dl { margin-top: .5rem; display: grid; gap: .45rem; }
+.cat-spec__row { display: grid; grid-template-columns: auto 1fr auto; column-gap: var(--space-3); align-items: baseline; }
+.cat-spec__row::before { content: ""; grid-column: 2; grid-row: 1; align-self: end; margin-bottom: .3em; border-bottom: 2px dotted var(--color-border); }
+.cat-spec__row dt { grid-column: 1; grid-row: 1; color: var(--color-muted); }
+.cat-spec__row dd { grid-column: 3; grid-row: 1; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+.cat-det__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
+
+.cat-story {
+    position: relative; overflow: hidden; margin-top: 1.5rem; padding: 2rem 1.5rem 2.25rem;
+    color: var(--color-on-maroon); background: var(--color-maroon); border-radius: 3.5rem 1.25rem 1.25rem 1.25rem;
+}
+.cat-story::after { content: ""; position: absolute; right: -3rem; bottom: -4rem; width: 12rem; height: 12rem; border-radius: 50%; background: var(--red-700); opacity: .35; pointer-events: none; }
+@media (min-width: 860px) { .cat-story { padding: 2.5rem 3rem 2.75rem; border-radius: 5rem 1.25rem 1.25rem 1.25rem; } }
+.cat-story h2 { position: relative; font-size: 1.5rem; font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; }
+.cat-story h2::after { content: ""; display: block; width: 2.75rem; height: .3rem; margin-top: .6rem; background: var(--red-400); border-radius: 1rem; }
+.cat-story p { position: relative; margin-top: 1rem; max-width: 62ch; line-height: 1.65; white-space: pre-line; overflow-wrap: anywhere; }
+
+/* 5c · Formulario crear / editar */
+.cat-formgrid { display: grid; gap: var(--space-6); align-items: start; }
+@media (min-width: 1000px) { .cat-formgrid { grid-template-columns: minmax(0, 1fr) 19rem; } }
+.cat-form { display: grid; gap: 1.75rem; min-width: 0; }
+
+.cat-sec { padding: 1.25rem 1.1rem 1.5rem; background: var(--color-page); border-radius: 1.5rem; }
+@media (min-width: 640px) { .cat-sec { padding: 1.75rem 1.75rem 2rem; border-radius: 2rem; } }
+.cat-sec__h { display: flex; align-items: center; gap: .875rem; margin-bottom: 1.25rem; }
+.cat-sec__n { flex: none; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 800; color: var(--color-on-brand); background: var(--color-brand); border-radius: 50%; }
+.cat-sec__h h2 { font-size: 1.375rem; font-weight: 800; letter-spacing: -.015em; line-height: 1.15; }
+.cat-sec__h p { margin-top: .15rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-fields { display: grid; gap: 1.1rem 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cat-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cat-fields .is-wide { grid-column: 1 / -1; }
+
+.cat-drop {
+    position: relative; display: grid; gap: 1.25rem; align-items: center; justify-items: center; padding: 1.5rem 1rem; text-align: center;
+    background: var(--color-field); border: 2px dashed var(--color-border); border-radius: 1.5rem; cursor: pointer;
+    transition: border-color var(--dur-fast), background-color var(--dur-fast);
+}
+.cat-drop:hover, .cat-drop.is-over { background: var(--tone-a-soft); border-color: var(--color-brand-text); }
+.cat-drop__prev { position: relative; width: 100%; max-width: 20rem; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; }
+.cat-drop__prev .cat-disc { --card-disc: var(--tone-a-strong); width: 56%; height: auto; aspect-ratio: 1; }
+.cat-drop__prev img { position: relative; max-width: 84%; max-height: 94%; object-fit: contain; border-radius: .5rem; }
+.cat-drop__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-a-strong); color: var(--color-brand-text); }
+.cat-drop__disc svg { width: 2rem; height: 2rem; }
+.cat-drop h3 { margin-top: 1rem; font-size: 1.125rem; font-weight: 800; }
+.cat-drop p { margin-top: .25rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-drop__file { font-size: .875rem; font-weight: 600; color: var(--color-muted); word-break: break-all; }
+.cat-drop__msg { min-height: 1.25rem; font-size: .875rem; font-weight: 700; color: var(--color-brand-text); }
+.cat-drop__btns { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+
+.cat-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .875rem var(--space-5); }
+.cat-bar p { font-size: .9375rem; color: var(--color-muted); }
+.cat-bar__acts { display: flex; flex-wrap: wrap; gap: .625rem; margin-left: auto; }
+@media (max-width: 520px) { .cat-bar__acts { width: 100%; flex-direction: column-reverse; } .cat-bar__acts .cat-btn { width: 100%; } }
+
+/* Vista previa en vivo */
+.cat-preview { position: sticky; top: 5.5rem; padding: 1.25rem 1.1rem 1.25rem; background: var(--color-page); border-radius: var(--radius-lg); }
+.cat-preview summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); cursor: pointer; list-style: none; font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+.cat-preview summary::-webkit-details-marker { display: none; }
+.cat-preview summary::after { content: ""; width: .6rem; height: .6rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform var(--dur-fast); }
+.cat-preview[open] summary::after { transform: rotate(-135deg); }
+.cat-preview__card { margin-top: 1.5rem; }
+.cat-preview__card .cat-card { cursor: default; }
+.cat-preview__card .cat-card:hover { transform: none; }
+/* La tarjeta de la vista previa siempre es ancha: usa las medidas de escritorio */
+.cat-preview__card .cat-stage { height: 13rem; }
+.cat-preview__card .cat-disc { width: 9.25rem; height: 9.25rem; }
+.cat-preview__card .cat-img { max-width: min(86%, 13rem); max-height: 12rem; }
+.cat-preview__note { display: block; margin-top: var(--space-4); font-size: .8125rem; color: var(--color-muted); text-align: center; }
+@media (max-width: 999px) { .cat-preview { position: static; order: -1; } }
+
+
+/* ===== 6. PREFERENCIAS DEL USUARIO ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
+    .cat-card:hover, .cat-card:focus-within { transform: none; }
+    .cat-card:hover .cat-img, .cat-card:focus-within .cat-img, .cat-det__stage:hover img { transform: none; }
+}
+
+@media (forced-colors: active) {
+    .cat-btn, .cat-cat, .cat-act, .cat-more { border: 2px solid ButtonText; }
+    .cat-stat { forced-color-adjust: none; }
+}
+
+@media print {   /* la ficha del producto imprime limpia */
+    .cat-hero__bg, .cat-band, .cat-det__acts, .cat-acts, .cat-more { display: none !important; }
+    .cat, .cat-board, .cat-story { color: #000 !important; background: #fff !important; }
+    .cat-hero { color: #000; background: #fff; padding: 0 0 1rem; }
+    .cat-hero h1, .cat-crumbs a { color: #000; text-shadow: none; }
+    .cat-story { border: 1px solid #999; } .cat-story h2, .cat-story p { color: #000; }
+    .cat-card { break-inside: avoid; }
+}
+</style>
+
+<div class="cat">
+
+    <header class="cat-hero">
+        <div class="cat-hero__bg" aria-hidden="true"></div>
+
+        <div class="cat-hero__in">
             <div>
-
-                <div class="flex items-center gap-2 mb-3">
-
-                    <div class="flex items-center justify-center w-9 h-9 rounded-xl bg-white/15">
-                        <i class="fa-solid fa-box-open text-white"></i>
-                    </div>
-
-                    <span class="text-xs font-bold uppercase tracking-[0.18em] text-red-100">
-                        Gestión de inventario
-                    </span>
-
-                </div>
-
-                <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white">
-                    Crear producto
-                </h1>
-
-                <p class="mt-2 text-sm text-red-100 max-w-xl">
-                    Registra un nuevo artículo en el catálogo de Tienda Nueva.
-                </p>
-
+                <span class="cat-eyebrow">Gestión de inventario</span>
+                <h1>Crear producto</h1>
+                <p>Registra un nuevo artículo en el catálogo de Tienda Nueva.</p>
             </div>
 
-            <a
-                href="{% url 'lista_productos' %}"
-                class="shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-red-600 rounded-xl font-bold text-sm hover:bg-red-50 transition-all shadow-lg active:scale-95"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-                Volver al catálogo
-            </a>
-
+            <div class="cat-hero__acts">
+                <a class="cat-btn cat-btn--light" href="{% url 'lista_productos' %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg>
+                    Volver al catálogo
+                </a>
+            </div>
         </div>
 
-    </section>
+    </header>
 
+    <div class="cat-wrap cat-wrap--wide">
+        <section class="cat-board">
+<div class="cat-formgrid">
 
-    <!-- ===================================================== -->
-    <!-- FORMULARIO -->
-    <!-- ===================================================== -->
-
-    <form
-        method="POST"
-        enctype="multipart/form-data"
-        class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm dark:shadow-xl overflow-hidden"
-    >
-
+    <form method="POST" enctype="multipart/form-data" class="cat-form" id="formProducto">
         {% csrf_token %}
 
-        <!-- CABECERA -->
+        {# Resumen de errores: recibe el foco al cargar y enlaza a cada campo (WCAG 3.3.1) #}
+        {% if formulario.errors %}
+            <div class="cat-alert" role="alert" tabindex="-1" id="resumenErrores">
+                <h2>Revisa estos campos antes de guardar</h2>
+                <ul>
+                    {% for campo in formulario %}
+                        {% if campo.errors %}<li><a href="#{{ campo.id_for_label }}">{{ campo.label }}: {{ campo.errors.0 }}</a></li>{% endif %}
+                    {% endfor %}
+                    {% for error in formulario.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
 
-        <div class="px-6 sm:px-8 py-5 border-b border-zinc-200 dark:border-zinc-800">
+        <!-- 1. DATOS -->
+        <section class="cat-sec" aria-labelledby="sec-datos">
+            <div class="cat-sec__h">
+                <span class="cat-sec__n" aria-hidden="true">1</span>
+                <div>
+                    <h2 id="sec-datos">Datos del producto</h2>
+                    <p>Lo básico para que aparezca en el catálogo.</p>
+                </div>
+            </div>
 
-            <div class="flex items-center gap-3">
+            <div class="cat-fields">
 
-                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50">
-                    <i class="fa-solid fa-clipboard-list text-red-600 dark:text-red-400"></i>
+                <div class="cat-field is-wide{% if formulario.nombre.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.nombre.id_for_label }}">Nombre del producto{% if formulario.nombre.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">{{ formulario.nombre }}</div>
+                    {% if formulario.nombre.errors %}<p class="cat-err">{{ formulario.nombre.errors.0 }}</p>{% endif %}
                 </div>
 
-                <div>
-                    <h2 class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                        Información del producto
-                    </h2>
+                <div class="cat-field cat-field--money{% if formulario.precio_unitario.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.precio_unitario.id_for_label }}">Precio por unidad{% if formulario.precio_unitario.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">
+                        <span class="cat-field__sym" aria-hidden="true">$</span>
+                        {{ formulario.precio_unitario }}
+                    </div>
+                    {% if formulario.precio_unitario.errors %}<p class="cat-err">{{ formulario.precio_unitario.errors.0 }}</p>{% endif %}
+                    <p class="cat-hint"><span>Solo números, sin puntos ni comas.</span></p>
+                </div>
 
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        Completa los datos necesarios para registrar el artículo.
-                    </p>
+                <div class="cat-field{% if formulario.existencias.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.existencias.id_for_label }}">Existencias{% if formulario.existencias.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">{{ formulario.existencias }}</div>
+                    {% if formulario.existencias.errors %}<p class="cat-err">{{ formulario.existencias.errors.0 }}</p>{% endif %}
+                    <p class="cat-hint"><span>Cuántas unidades hay ahora mismo.</span></p>
+                </div>
+
+                <div class="cat-field{% if formulario.cantidad.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.cantidad.id_for_label }}">Cantidad por presentación{% if formulario.cantidad.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">{{ formulario.cantidad }}</div>
+                    {% if formulario.cantidad.errors %}<p class="cat-err">{{ formulario.cantidad.errors.0 }}</p>{% endif %}
+                    <p class="cat-hint"><span>Lo que trae cada unidad: 500, 1, 250…</span></p>
+                </div>
+
+                <div class="cat-field{% if formulario.unidad_medida.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.unidad_medida.id_for_label }}">Unidad de medida{% if formulario.unidad_medida.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">
+                        {{ formulario.unidad_medida }}
+                        <svg class="cat-field__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                    </div>
+                    {% if formulario.unidad_medida.errors %}<p class="cat-err">{{ formulario.unidad_medida.errors.0 }}</p>{% endif %}
+                </div>
+
+                <div class="cat-field is-wide{% if formulario.categoria.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.categoria.id_for_label }}">Categoría{% if formulario.categoria.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">
+                        {{ formulario.categoria }}
+                        <svg class="cat-field__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                    </div>
+                    {% if formulario.categoria.errors %}<p class="cat-err">{{ formulario.categoria.errors.0 }}</p>{% endif %}
+                    <p class="cat-hint"><span>Define el color con el que se muestra en el catálogo.</span></p>
+                </div>
+
+                <div class="cat-field is-wide{% if formulario.descripcion.errors %} has-error{% endif %}">
+                    <label for="{{ formulario.descripcion.id_for_label }}">Descripción{% if formulario.descripcion.field.required %} <span class="cat-req" aria-hidden="true">*</span>{% endif %}</label>
+                    <div class="cat-field__box">{{ formulario.descripcion }}</div>
+                    {% if formulario.descripcion.errors %}<p class="cat-err">{{ formulario.descripcion.errors.0 }}</p>{% endif %}
+                    <p class="cat-hint"><span>Origen, características, usos…</span><span><span id="contador">0</span> caracteres</span></p>
                 </div>
 
             </div>
-
-        </div>
-
-
-        <!-- CAMPOS -->
-
-        <div class="p-6 sm:p-8">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+        </section>
 
 
-                <!-- NOMBRE -->
-
-                <div class="md:col-span-2">
-
-                    <label
-                        for="{{ formulario.nombre.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Nombre del producto
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div
-                        class="
-                        [&>input]:w-full
-                        [&>input]:h-11
-                        [&>input]:px-4
-                        [&>input]:rounded-xl
-                        [&>input]:border
-                        [&>input]:border-zinc-200
-                        dark:[&>input]:border-zinc-700
-                        [&>input]:bg-zinc-50
-                        dark:[&>input]:bg-zinc-800
-                        [&>input]:text-zinc-900
-                        dark:[&>input]:text-zinc-100
-                        [&>input]:placeholder-zinc-400
-                        dark:[&>input]:placeholder-zinc-500
-                        [&>input]:outline-none
-                        [&>input]:transition-all
-                        [&>input]:focus:border-red-500
-                        [&>input]:focus:ring-2
-                        [&>input]:focus:ring-red-500/20
-                        "
-                    >
-                        {{ formulario.nombre }}
-                    </div>
-
-                    {% if formulario.nombre.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.nombre.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
-
-                <!-- DESCRIPCIÓN -->
-
-                <div class="md:col-span-2">
-
-                    <label
-                        for="{{ formulario.descripcion.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Descripción del producto
-                    </label>
-
-                    <div
-                        class="
-                        [&>textarea]:w-full
-                        [&>textarea]:min-h-[100px]
-                        [&>textarea]:p-4
-                        [&>textarea]:rounded-xl
-                        [&>textarea]:border
-                        [&>textarea]:border-zinc-200
-                        dark:[&>textarea]:border-zinc-700
-                        [&>textarea]:bg-zinc-50
-                        dark:[&>textarea]:bg-zinc-800
-                        [&>textarea]:text-zinc-900
-                        dark:[&>textarea]:text-zinc-100
-                        [&>textarea]:placeholder-zinc-400
-                        dark:[&>textarea]:placeholder-zinc-500
-                        [&>textarea]:outline-none
-                        [&>textarea]:transition-all
-                        [&>textarea]:focus:border-red-500
-                        [&>textarea]:focus:ring-2
-                        [&>textarea]:focus:ring-red-500/20
-                        [&>textarea]:resize-y
-                        "
-                    >
-                        {{ formulario.descripcion }}
-                    </div>
-
-                    {% if formulario.descripcion.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.descripcion.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
-
-                <!-- PRECIO -->
-
+        <!-- 2. FOTO -->
+        <section class="cat-sec" aria-labelledby="sec-imagen">
+            <div class="cat-sec__h">
+                <span class="cat-sec__n" aria-hidden="true">2</span>
                 <div>
-
-                    <label
-                        for="{{ formulario.precio_unitario.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Precio por unidad
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div class="relative">
-
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 font-bold pointer-events-none z-10">
-                            $
-                        </span>
-
-                        <div
-                            class="
-                            [&>input]:w-full
-                            [&>input]:h-11
-                            [&>input]:pl-9
-                            [&>input]:pr-4
-                            [&>input]:rounded-xl
-                            [&>input]:border
-                            [&>input]:border-zinc-200
-                            dark:[&>input]:border-zinc-700
-                            [&>input]:bg-zinc-50
-                            dark:[&>input]:bg-zinc-800
-                            [&>input]:text-zinc-900
-                            dark:[&>input]:text-zinc-100
-                            [&>input]:placeholder-zinc-400
-                            dark:[&>input]:placeholder-zinc-500
-                            [&>input]:outline-none
-                            [&>input]:transition-all
-                            [&>input]:focus:border-red-500
-                            [&>input]:focus:ring-2
-                            [&>input]:focus:ring-red-500/20
-                            "
-                        >
-                            {{ formulario.precio_unitario }}
-                        </div>
-
-                    </div>
-
-                    {% if formulario.precio_unitario.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.precio_unitario.errors.0 }}
-                        </p>
-                    {% endif %}
-
+                    <h2 id="sec-imagen">Foto del producto</h2>
+                    <p>Opcional. PNG o JPG, hasta 5 MB.</p>
                 </div>
-
-
-                <!-- EXISTENCIAS -->
-
-                <div>
-
-                    <label
-                        for="{{ formulario.existencias.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Existencias iniciales
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div
-                        class="
-                        [&>input]:w-full
-                        [&>input]:h-11
-                        [&>input]:px-4
-                        [&>input]:rounded-xl
-                        [&>input]:border
-                        [&>input]:border-zinc-200
-                        dark:[&>input]:border-zinc-700
-                        [&>input]:bg-zinc-50
-                        dark:[&>input]:bg-zinc-800
-                        [&>input]:text-zinc-900
-                        dark:[&>input]:text-zinc-100
-                        [&>input]:placeholder-zinc-400
-                        dark:[&>input]:placeholder-zinc-500
-                        [&>input]:outline-none
-                        [&>input]:transition-all
-                        [&>input]:focus:border-red-500
-                        [&>input]:focus:ring-2
-                        [&>input]:focus:ring-red-500/20
-                        "
-                    >
-                        {{ formulario.existencias }}
-                    </div>
-
-                    {% if formulario.existencias.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.existencias.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
-
-                <!-- CANTIDAD -->
-
-                <div>
-
-                    <label
-                        for="{{ formulario.cantidad.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Cantidad por presentación
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div
-                        class="
-                        [&>input]:w-full
-                        [&>input]:h-11
-                        [&>input]:px-4
-                        [&>input]:rounded-xl
-                        [&>input]:border
-                        [&>input]:border-zinc-200
-                        dark:[&>input]:border-zinc-700
-                        [&>input]:bg-zinc-50
-                        dark:[&>input]:bg-zinc-800
-                        [&>input]:text-zinc-900
-                        dark:[&>input]:text-zinc-100
-                        [&>input]:placeholder-zinc-400
-                        dark:[&>input]:placeholder-zinc-500
-                        [&>input]:outline-none
-                        [&>input]:transition-all
-                        [&>input]:focus:border-red-500
-                        [&>input]:focus:ring-2
-                        [&>input]:focus:ring-red-500/20
-                        "
-                    >
-                        {{ formulario.cantidad }}
-                    </div>
-
-                    {% if formulario.cantidad.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.cantidad.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
-
-                <!-- UNIDAD -->
-
-                <div>
-
-                    <label
-                        for="{{ formulario.unidad_medida.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Unidad de medida
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div class="relative">
-
-                        <div
-                            class="
-                            [&>select]:appearance-none
-                            [&>select]:w-full
-                            [&>select]:h-11
-                            [&>select]:px-4
-                            [&>select]:pr-10
-                            [&>select]:rounded-xl
-                            [&>select]:border
-                            [&>select]:border-zinc-200
-                            dark:[&>select]:border-zinc-700
-                            [&>select]:bg-zinc-50
-                            dark:[&>select]:bg-zinc-800
-                            [&>select]:text-zinc-900
-                            dark:[&>select]:text-zinc-100
-                            [&>select]:outline-none
-                            [&>select]:cursor-pointer
-                            [&>select]:transition-all
-                            [&>select]:focus:border-red-500
-                            [&>select]:focus:ring-2
-                            [&>select]:focus:ring-red-500/20
-                            "
-                        >
-                            {{ formulario.unidad_medida }}
-                        </div>
-
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
-
-                    </div>
-
-                    {% if formulario.unidad_medida.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.unidad_medida.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
-
-                <!-- CATEGORÍA -->
-
-                <div class="md:col-span-2">
-
-                    <label
-                        for="{{ formulario.categoria.id_for_label }}"
-                        class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                    >
-                        Categoría
-                        <span class="text-red-500">*</span>
-                    </label>
-
-                    <div class="relative">
-
-                        <div
-                            class="
-                            [&>select]:appearance-none
-                            [&>select]:w-full
-                            [&>select]:h-11
-                            [&>select]:px-4
-                            [&>select]:pr-10
-                            [&>select]:rounded-xl
-                            [&>select]:border
-                            [&>select]:border-zinc-200
-                            dark:[&>select]:border-zinc-700
-                            [&>select]:bg-zinc-50
-                            dark:[&>select]:bg-zinc-800
-                            [&>select]:text-zinc-900
-                            dark:[&>select]:text-zinc-100
-                            [&>select]:outline-none
-                            [&>select]:cursor-pointer
-                            [&>select]:transition-all
-                            [&>select]:focus:border-red-500
-                            [&>select]:focus:ring-2
-                            [&>select]:focus:ring-red-500/20
-                            "
-                        >
-                            {{ formulario.categoria }}
-                        </div>
-
-                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
-
-                    </div>
-
-                    {% if formulario.categoria.errors %}
-                        <p class="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.categoria.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
-
-                <!-- IMAGEN -->
-
-                <div class="md:col-span-2 mt-2">
-
-                    <div class="flex items-center justify-between mb-3">
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                                Fotografía del producto
-                            </label>
-
-                            <p class="text-xs text-zinc-500 dark:text-zinc-600 mt-1">
-                                PNG, JPG o JPEG. Tamaño máximo: 5 MB.
-                            </p>
-                        </div>
-
-                        <i class="fa-solid fa-image text-zinc-400 dark:text-zinc-600"></i>
-
-                    </div>
-
-
-                    <!-- DROPZONE -->
-
-                    <div
-                        id="contenedorClickImagen"
-                        class="relative overflow-hidden border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl transition-all duration-200 cursor-pointer hover:border-red-500/70 hover:bg-red-50 dark:hover:bg-red-950/10"
-                    >
-
-                        <!-- INPUT REAL DE DJANGO -->
-
-                        <div class="absolute w-px h-px overflow-hidden opacity-0 pointer-events-none">
-                            {{ formulario.imagen }}
-                        </div>
-
-
-                        <!-- ÁREA INICIAL -->
-
-                        <div
-                            id="areaImagen"
-                            class="flex flex-col items-center justify-center text-center px-6 py-10"
-                        >
-
-                            <div class="w-14 h-14 flex items-center justify-center rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 mb-4">
-                                <i class="fa-solid fa-cloud-arrow-up text-xl text-red-600 dark:text-red-500"></i>
-                            </div>
-
-                            <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-200">
-                                Selecciona una imagen
-                            </h3>
-
-                            <p class="text-xs text-zinc-500 mt-1">
-                                Haz clic aquí o arrastra una imagen hasta esta zona
-                            </p>
-
-                            <button
-                                type="button"
-                                id="btnSeleccionarImagen"
-                                class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95"
-                            >
-                                <i class="fa-solid fa-upload"></i>
-                                Seleccionar imagen
-                            </button>
-
-                        </div>
-
-
-                        <!-- PREVIEW -->
-
-                        <div
-                            id="previewContainer"
-                            class="hidden p-5"
-                        >
-
-                            <div class="relative max-w-md mx-auto">
-
-                                <img
-                                    id="previewImagen"
-                                    src=""
-                                    alt="Vista previa"
-                                    class="w-full h-64 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl"
-                                >
-
-                                <button
-                                    type="button"
-                                    id="btnEliminarImagen"
-                                    title="Eliminar imagen"
-                                    class="absolute -top-3 -right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 transition-all active:scale-90"
-                                >
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-
-                            </div>
-
-                            <div class="flex items-center justify-center gap-2 mt-3 text-xs text-zinc-500">
-
-                                <i class="fa-solid fa-file-image"></i>
-
-                                <span
-                                    id="nombreArchivo"
-                                    class="font-medium truncate max-w-xs"
-                                ></span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {% if formulario.imagen.errors %}
-                        <p class="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
-                            {{ formulario.imagen.errors.0 }}
-                        </p>
-                    {% endif %}
-
-                </div>
-
             </div>
 
-        </div>
+            <div class="cat-field{% if formulario.imagen.errors %} has-error{% endif %}">
+                <div class="cat-sr">{{ formulario.imagen }}</div>
+
+                <div id="zonaImagen" class="cat-drop" data-original="">
+
+                    <div id="previewContainer" class="cat-drop__prev" hidden>
+                        <span class="cat-disc" aria-hidden="true"></span>
+                        <img id="previewImagen"  alt="Vista previa de la foto del producto">
+                    </div>
+
+                    <div id="areaInstruccion" >
+                        <div class="cat-drop__disc">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"></path></svg>
+                        </div>
+                        <h3>Arrastra una foto aquí</h3>
+                        <p>o haz clic para elegirla</p>
+                    </div>
+
+                    <p id="nombreArchivo" class="cat-drop__file" hidden></p>
+
+                    <div class="cat-drop__btns">
+                        <button type="button" id="btnSeleccionarImagen" class="cat-btn cat-btn--ghost">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="1.75"></circle><path d="M21 16l-5-5-8 9"></path></svg>
+                            <span id="textoBtnImagen">Elegir foto</span>
+                        </button>
+                        <button type="button" id="btnEliminarImagen" class="cat-btn cat-btn--ghost" hidden>Quitar la nueva foto</button>
+                    </div>
+
+                    <p id="msgImagen" class="cat-drop__msg" role="alert"></p>
+                </div>
+
+                {% if formulario.imagen.errors %}<p class="cat-err">{{ formulario.imagen.errors.0 }}</p>{% endif %}
+            </div>
+        </section>
 
 
-        <!-- FOOTER -->
+        <!-- ACCIONES -->
+        <div class="cat-bar">
+            <p>Los campos con * son obligatorios.</p>
 
-        <div class="px-6 sm:px-8 py-5 bg-zinc-50/70 dark:bg-zinc-950/40 border-t border-zinc-200 dark:border-zinc-800">
-
-            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
-
-                <a
-                    href="{% url 'lista_productos' %}"
-                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold text-sm transition-all active:scale-95"
-                >
-                    <i class="fa-solid fa-xmark"></i>
-                    Cancelar
-                </a>
-
-                <button
-                    type="submit"
-                    class="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-sm hover:shadow-lg hover:shadow-red-600/20 transition-all active:scale-95"
-                >
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Guardar producto
+            <div class="cat-bar__acts">
+                <a class="cat-btn cat-btn--ghost" href="{% url 'lista_productos' %}">Cancelar</a>
+                <button type="submit" class="cat-btn" id="btnGuardar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+                    <span>Crear producto</span>
                 </button>
-
             </div>
-
         </div>
-
     </form>
 
-</div>
+
+    <!-- VISTA PREVIA EN VIVO -->
+    <details class="cat-preview" id="vistaPrevia" open>
+        <summary>Así se verá en el catálogo</summary>
+
+        <div class="cat-preview__card">
+            <article class="cat-card" id="pv" data-tono="0" aria-hidden="true">
+                <div class="cat-stage">
+                    <span class="cat-disc"></span>
+                    <img class="cat-img" id="pvImg" alt="" hidden>
+                    <div class="cat-none" id="pvNone">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="1.75"></circle><path d="M21 16l-5-5-8 9"></path></svg>
+                        <span>Sin foto</span>
+                    </div>
+                    <span class="cat-stamp" id="pvStamp" hidden>Agotado</span>
+                </div>
+                <p class="cat-card__cat" id="pvCat" hidden><span></span></p>
+                <h3 class="cat-name" id="pvNombre">Nombre del producto</h3>
+                <p class="cat-size" id="pvSize" hidden></p>
+                <p class="cat-price"><small>$</small><span id="pvPrecio">0</span></p>
+                <p class="cat-stock" id="pvStock" hidden></p>
+            </article>
+        </div>
+
+        <p class="cat-preview__note">Se actualiza mientras escribes.</p>
+    </details>
 
 </div>
 
-<!-- ============================================================= -->
-<!-- JAVASCRIPT DE IMAGEN -->
-<!-- ============================================================= -->
 
 <script>
+(function () {
+    var form = document.getElementById('formProducto');
+    if (!form) { return; }
+    var $ = function (id) { return document.getElementById(id); };
 
-document.addEventListener("DOMContentLoaded", function () {
+    /* ---------- Accesibilidad: asocia pistas y errores con cada campo ---------- */
+    Array.prototype.forEach.call(form.querySelectorAll('.cat-field'), function (campo) {
+        var control = campo.querySelector('input:not([type="file"]):not([type="checkbox"]), select, textarea');
+        if (!control) { return; }
+        var ids = [];
+        Array.prototype.forEach.call(campo.querySelectorAll('.cat-err, .cat-hint'), function (n, i) {
+            if (!n.id) { n.id = (control.id || 'campo') + '-nota' + i; }
+            ids.push(n.id);
+        });
+        if (ids.length) { control.setAttribute('aria-describedby', ids.join(' ')); }
+        if (campo.classList.contains('has-error')) { control.setAttribute('aria-invalid', 'true'); }
+    });
 
-    const inputImagen = document.querySelector('input[type="file"]');
-    const btnSeleccionarImagen = document.getElementById("btnSeleccionarImagen");
-    const btnEliminarImagen = document.getElementById("btnEliminarImagen");
-    const contenedorDropzone = document.getElementById("contenedorClickImagen");
-    const areaImagen = document.getElementById("areaImagen");
-    const previewContainer = document.getElementById("previewContainer");
-    const previewImagen = document.getElementById("previewImagen");
-    const nombreArchivo = document.getElementById("nombreArchivo");
+    var resumen = $('resumenErrores');
+    if (resumen) { resumen.focus(); }
 
-    if (!inputImagen) {
-        console.error("No se encontró el campo de imagen.");
-        return;
+    /* ---------- Vista previa en vivo ---------- */
+    var campos = {
+        nombre: $('id_nombre'), precio: $('id_precio_unitario'), cantidad: $('id_cantidad'),
+        unidad: $('id_unidad_medida'), categoria: $('id_categoria'), existencias: $('id_existencias'),
+        descripcion: $('id_descripcion')
+    };
+    var pv = { card: $('pv'), img: $('pvImg'), none: $('pvNone'), stamp: $('pvStamp'), cat: $('pvCat'),
+               nombre: $('pvNombre'), size: $('pvSize'), precio: $('pvPrecio'), stock: $('pvStock') };
+    var imagenActual = ($('zonaImagen') && $('zonaImagen').dataset.original) || '';
+    var formatoPesos = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 });
+
+    function unidadTexto(cant, unidad) {
+        var u = (unidad || '').toLowerCase();
+        return (cant === 1 && u !== 'kg' && u.length > 1) ? u.slice(0, -1) : u;
     }
 
-    /* Clases de resaltado al arrastrar (claro y oscuro) */
-    const clasesDrag = ["border-red-500", "bg-red-50", "dark:bg-red-950/20"];
+    function actualizarVistaPrevia() {
+        var nombre = campos.nombre ? campos.nombre.value.trim() : '';
+        pv.nombre.textContent = nombre || 'Nombre del producto';
 
+        var precio = parseFloat(campos.precio ? campos.precio.value : '');
+        pv.precio.textContent = isNaN(precio) ? '0' : formatoPesos.format(precio);
 
-    /* BOTÓN SELECCIONAR */
+        var cant = parseInt(campos.cantidad ? campos.cantidad.value : '', 10);
+        var unidad = campos.unidad ? campos.unidad.value : '';
+        if (!isNaN(cant) && unidad) {
+            pv.size.textContent = cant + ' ' + unidadTexto(cant, unidad);
+            pv.size.hidden = false;
+        } else { pv.size.hidden = true; }
 
-    btnSeleccionarImagen.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        inputImagen.click();
+        var cat = campos.categoria ? campos.categoria.value : '';
+        pv.card.dataset.tono = cat || '0';
+        if (cat) {
+            pv.cat.firstElementChild.textContent = campos.categoria.options[campos.categoria.selectedIndex].text;
+            pv.cat.hidden = false;
+        } else { pv.cat.hidden = true; }
+
+        var ex = parseInt(campos.existencias ? campos.existencias.value : '', 10);
+        pv.stock.className = 'cat-stock';
+        if (isNaN(ex)) { pv.stock.hidden = true; pv.card.classList.remove('is-out'); pv.stamp.hidden = true; }
+        else {
+            pv.stock.hidden = false;
+            if (ex > 5) { pv.stock.textContent = ex + ' disponibles'; }
+            else if (ex > 0) { pv.stock.textContent = 'Quedan ' + ex; pv.stock.classList.add('is-low'); }
+            else { pv.stock.textContent = 'Agotado'; pv.stock.classList.add('is-out'); }
+            pv.card.classList.toggle('is-out', ex <= 0);
+            pv.stamp.hidden = ex > 0;
+        }
+    }
+
+    function fotoVistaPrevia(src) {
+        pv.img.src = src || '';
+        pv.img.hidden = !src;
+        pv.none.hidden = !!src;
+    }
+
+    Object.keys(campos).forEach(function (k) {
+        if (campos[k]) { campos[k].addEventListener('input', actualizarVistaPrevia); campos[k].addEventListener('change', actualizarVistaPrevia); }
     });
 
+    /* Contador de caracteres de la descripción */
+    var contador = $('contador');
+    function contar() { if (contador && campos.descripcion) { contador.textContent = campos.descripcion.value.length; } }
+    if (campos.descripcion) { campos.descripcion.addEventListener('input', contar); }
 
-    /* CLICK EN DROPZONE */
+    /* En pantallas chicas la vista previa empieza cerrada */
+    var detalles = $('vistaPrevia');
+    if (detalles && window.matchMedia('(max-width: 999px)').matches) { detalles.open = false; }
 
-    contenedorDropzone.addEventListener("click", function (e) {
-        if (
-            e.target.closest("#btnSeleccionarImagen") ||
-            e.target.closest("#btnEliminarImagen")
-        ) {
-            return;
-        }
-        inputImagen.click();
-    });
+    /* ---------- Zona de foto: elegir, arrastrar, validar ---------- */
+    var input = form.querySelector('input[type="file"]');
+    var zona = $('zonaImagen');
+    if (input && zona) {
+        var preview = $('previewContainer'), img = $('previewImagen'), instruccion = $('areaInstruccion'),
+            nombreArchivo = $('nombreArchivo'), btnElegir = $('btnSeleccionarImagen'),
+            btnQuitar = $('btnEliminarImagen'), textoBtn = $('textoBtnImagen'), msg = $('msgImagen');
 
-
-    /* MOSTRAR IMAGEN */
-
-    function mostrarImagen(archivo) {
-
-        if (!archivo) {
-            return;
-        }
-
-        const tiposPermitidos = ["image/png", "image/jpeg"];
-        const maximo = 5 * 1024 * 1024;
-
-        if (!tiposPermitidos.includes(archivo.type)) {
-            alert("Solo se permiten imágenes PNG, JPG o JPEG.");
-            inputImagen.value = "";
-            return;
-        }
-
-        if (archivo.size > maximo) {
-            alert("La imagen no puede superar los 5 MB.");
-            inputImagen.value = "";
-            return;
-        }
-
-        const lector = new FileReader();
-
-        lector.onload = function (evento) {
-            previewImagen.src = evento.target.result;
-            nombreArchivo.textContent = archivo.name;
-            areaImagen.classList.add("hidden");
-            previewContainer.classList.remove("hidden");
+        var mostrar = function (src, texto, esNueva) {
+            var hay = !!src;
+            img.src = src || '';
+            preview.hidden = !hay;
+            instruccion.hidden = hay;
+            nombreArchivo.hidden = !hay;
+            nombreArchivo.textContent = texto || '';
+            btnQuitar.hidden = !esNueva;
+            textoBtn.textContent = hay ? 'Cambiar foto' : 'Elegir foto';
+            fotoVistaPrevia(src);
         };
 
-        lector.readAsDataURL(archivo);
+        var valida = function (archivo) {
+            if (['image/jpeg', 'image/png'].indexOf(archivo.type) === -1) { msg.textContent = 'Solo se permiten imágenes JPG, JPEG o PNG.'; return false; }
+            if (archivo.size > 5 * 1024 * 1024) { msg.textContent = 'La imagen no puede superar los 5 MB.'; return false; }
+            msg.textContent = '';
+            return true;
+        };
+
+        var cargar = function (archivo) {
+            if (!valida(archivo)) { input.value = ''; return; }
+            var lector = new FileReader();
+            lector.onload = function (ev) { mostrar(ev.target.result, archivo.name, true); dirty = true; };
+            lector.readAsDataURL(archivo);
+        };
+
+        btnElegir.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); input.click(); });
+        zona.addEventListener('click', function (e) { if (!e.target.closest('button')) { input.click(); } });
+        input.addEventListener('change', function () { if (this.files && this.files[0]) { cargar(this.files[0]); } });
+        btnQuitar.addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            input.value = ''; msg.textContent = '';
+            mostrar(imagenActual, imagenActual ? 'Foto actual' : '', false);
+        });
+
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            zona.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); zona.classList.add('is-over'); });
+        });
+        zona.addEventListener('dragleave', function (e) { e.preventDefault(); e.stopPropagation(); zona.classList.remove('is-over'); });
+        zona.addEventListener('drop', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            zona.classList.remove('is-over');
+            var archivos = e.dataTransfer.files;
+            if (!archivos || !archivos.length) { return; }
+            try { var dt = new DataTransfer(); dt.items.add(archivos[0]); input.files = dt.files; }
+            catch (err) { console.error('No se pudo asignar el archivo:', err); }
+            cargar(archivos[0]);
+        });
+
+        fotoVistaPrevia(imagenActual);
     }
 
+    actualizarVistaPrevia();
+    contar();
 
-    /* CAMBIO DE ARCHIVO */
+    /* ---------- Guardado seguro: sin doble envío y aviso al salir con cambios ---------- */
+    var dirty = false, enviando = false;
+    form.addEventListener('input', function () { dirty = true; });
+    form.addEventListener('change', function () { dirty = true; });
 
-    inputImagen.addEventListener("change", function () {
-        if (this.files.length > 0) {
-            mostrarImagen(this.files[0]);
+    var guardar = $('btnGuardar');
+    var textoGuardar = guardar.querySelector('span');
+    var textoOriginal = textoGuardar.textContent;
+
+    form.addEventListener('submit', function () {
+        enviando = true;
+        setTimeout(function () {
+            guardar.disabled = true;
+            guardar.setAttribute('aria-busy', 'true');
+            textoGuardar.textContent = 'Guardando…';
+        }, 0);
+    });
+    window.addEventListener('pageshow', function (e) {     /* volver atrás con el botón del navegador */
+        if (e.persisted) {
+            enviando = false; guardar.disabled = false; guardar.removeAttribute('aria-busy'); textoGuardar.textContent = textoOriginal;
         }
     });
-
-
-    /* ELIMINAR IMAGEN */
-
-    btnEliminarImagen.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        inputImagen.value = "";
-        previewImagen.src = "";
-        nombreArchivo.textContent = "";
-
-        previewContainer.classList.add("hidden");
-        areaImagen.classList.remove("hidden");
+    window.addEventListener('beforeunload', function (e) {
+        if (dirty && !enviando) { e.preventDefault(); e.returnValue = ''; }
     });
-
-
-    /* DRAG */
-
-    ["dragenter", "dragover"].forEach(function (evento) {
-        contenedorDropzone.addEventListener(evento, function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            contenedorDropzone.classList.add(...clasesDrag);
-        });
-    });
-
-
-    /* DRAG LEAVE */
-
-    contenedorDropzone.addEventListener("dragleave", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        contenedorDropzone.classList.remove(...clasesDrag);
-    });
-
-
-    /* DROP */
-
-    contenedorDropzone.addEventListener("drop", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        contenedorDropzone.classList.remove(...clasesDrag);
-
-        const archivos = e.dataTransfer.files;
-
-        if (!archivos || archivos.length === 0) {
-            return;
-        }
-
-        const archivo = archivos[0];
-
-        try {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(archivo);
-            inputImagen.files = dataTransfer.files;
-        } catch (error) {
-            console.error("No se pudo asignar el archivo:", error);
-        }
-
-        mostrarImagen(archivo);
-    });
-
-});
-
+})();
 </script>
+        </section>
+    </div>
+
+</div>
 
 {% endblock %}
