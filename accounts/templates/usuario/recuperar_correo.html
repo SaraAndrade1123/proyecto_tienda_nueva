@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar correo | Tienda Nueva</title>
+
+    <link rel="icon" href="{% static 'img/logo.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = { darkMode: 'class' };
+
+        (() => {
+            const tema = localStorage.getItem('theme');
+            if (tema === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-gray-800 dark:bg-[#0f0f0f] dark:text-white transition-colors">
+
+    <header class="w-full max-w-md text-center mb-6">
+        <img src="{% static 'img/logo.png' %}"
+             alt="Logo Tienda Nueva"
+             class="w-28 h-28 object-contain rounded-full mx-auto mb-4">
+
+        <h1 class="text-3xl font-bold mb-2">Recuperar correo</h1>
+        <p class="text-gray-500 dark:text-gray-400">
+            Descubre con qué correo te registraste
+        </p>
+
+        <button type="button" id="theme-toggle"
+                class="mt-5 text-red-600 dark:text-red-500 font-semibold hover:opacity-80">
+            <i id="theme-icon" class="fa-solid fa-sun mr-2"></i>
+            <span id="theme-text">Modo claro</span>
+        </button>
+    </header>
+
+    <main class="w-full max-w-md bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8">
+
+        {% if error %}
+        <div class="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 p-3 rounded-lg mb-5">
+            <i class="fa-solid fa-circle-exclamation mr-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        {% if correo_enmascarado %}
+            <div class="bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 p-3 rounded-lg mb-5">
+                <i class="fa-solid fa-circle-check mr-2"></i>Encontramos tu cuenta.
+            </div>
+
+            <p class="text-gray-600 dark:text-gray-300 text-center mb-3">
+                Te registraste con este correo:
+            </p>
+
+            <p class="text-center text-xl font-bold mb-6 break-all">
+                {{ correo_enmascarado }}
+            </p>
+
+            <a href="{% url 'login' %}"
+               class="block text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition mb-3">
+                <i class="fa-solid fa-right-to-bracket mr-2"></i>Iniciar sesión
+            </a>
+
+            <a href="{% url 'recuperar_password' %}"
+               class="block text-center border border-red-600 text-red-600 dark:text-red-500 hover:bg-red-600 hover:text-white dark:hover:text-white font-semibold py-3 rounded-lg transition">
+                <i class="fa-solid fa-lock mr-2"></i>También olvidé mi contraseña
+            </a>
+
+        {% else %}
+            <p class="text-gray-600 dark:text-gray-300 text-center mb-6">
+                Ingresa tu documento y tu número de celular tal como los registraste en Tienda Nueva.
+            </p>
+
+            <form method="POST" action="{% url 'recuperar_correo' %}">
+                {% csrf_token %}
+
+                <label for="document" class="block font-semibold mb-2">Documento</label>
+                <div class="relative mb-5">
+                    <i class="fa-solid fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="document" name="document"
+                           inputmode="numeric"
+                           placeholder="Número de documento"
+                           required
+                           class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#191919] focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+
+                <label for="phone" class="block font-semibold mb-2">Número de celular</label>
+                <div class="relative mb-6">
+                    <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="tel" id="phone" name="phone"
+                           inputmode="tel" autocomplete="tel"
+                           placeholder="Ej: 3001234567"
+                           required
+                           class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#191919] focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i>Buscar mi correo
+                </button>
+            </form>
+        {% endif %}
+
+        <div class="text-center mt-6 pt-5 border-t border-gray-300 dark:border-gray-800">
+            <a href="{% url 'recuperar_opciones' %}"
+               class="text-red-600 dark:text-red-500 hover:underline font-medium">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Volver a las opciones
+            </a>
+        </div>
+    </main>
+
+    <p class="text-xs text-gray-500 mt-6 text-center">
+        &copy; 2026 Tienda Nueva. Todos los derechos reservados.
+    </p>
+
+    <script>
+        const boton = document.getElementById('theme-toggle');
+        const icono = document.getElementById('theme-icon');
+        const texto = document.getElementById('theme-text');
+
+        function actualizarTema() {
+            const oscuro = document.documentElement.classList.contains('dark');
+            icono.className = oscuro
+                ? 'fa-solid fa-sun mr-2'
+                : 'fa-solid fa-moon mr-2';
+            texto.textContent = oscuro ? 'Modo claro' : 'Modo oscuro';
+        }
+
+        boton.addEventListener('click', () => {
+            const oscuro = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', oscuro ? 'dark' : 'light');
+            actualizarTema();
+        });
+
+        actualizarTema();
+    </script>
+
+</body>
+</html>
