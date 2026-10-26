@@ -14,7 +14,6 @@ from accounts.views import es_superadmin as es_admin
 # =========================================================
 
 @login_required
-
 def informacion_tienda(request):
     return render(request, 'informacion.html')
 
@@ -214,3 +213,6 @@ def agregar_visita_proveedor(request, id):
 
 def ver_consumo(request):
     return render(request, 'consumo.html')
+
+def agregar_consumo(request):
+    pass
