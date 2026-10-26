@@ -1,753 +1,956 @@
 {% extends 'layouts/base.html' %}
+{% load static i18n %}
 
 {% block title %}Productos - Tienda Nueva{% endblock %}
 
 {% block content %}
 
-<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
 
-<div class="w-full max-w-7xl mx-auto space-y-8">
+<style>
+/* =====================================================================
+   Tienda Nueva · Pantallas de productos
+   ---------------------------------------------------------------------
+   CÓMO ESTÁ ORGANIZADO ESTE CSS (léelo antes de tocar nada)
 
-    <!-- ENCABEZADO -->
-    <section class="w-full bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8">
+   1. TOKENS en tres niveles:
+        primitivos  --red-700, --white …   valores crudos, sin significado
+        semánticos  --color-brand, --color-text …  el "para qué" de cada valor
+        componente  --card-bg, --card-price …  viven en el componente y las
+                                              variantes solo los reasignan
+      Los componentes usan tokens semánticos o de componente, nunca primitivos.
+      El modo oscuro (.dark) redefine SOLO los semánticos.
+   2. NOMBRES con BEM:  cat-bloque__elemento  y estados  is-activo.
+      Todo cuelga de .cat para no chocar con Tailwind ni con base.html.
+   3. ORDEN: tokens → base → layout → componentes → pantallas → preferencias
+      del usuario (movimiento reducido, contraste forzado, impresión).
+   4. SIN @layer a propósito: Tailwind (CDN) escribe CSS sin capas y las capas
+      del navegador perderían contra él.
+   ===================================================================== */
 
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 
+/* ===== 1. TOKENS ================================================== */
+
+.cat {
+    /* 1a · Primitivos */
+    --red-950: #450a0a;
+    --red-900: #7f1d1d;
+    --red-800: #991b1b;
+    --red-700: #b91c1c;
+    --red-600: #dc2626;
+    --red-400: #f87171;
+    --white: #ffffff;
+
+    /* 1b · Escalas (no cambian con el tema) */
+    --space-1: .25rem;  --space-2: .5rem;  --space-3: .75rem; --space-4: 1rem;
+    --space-5: 1.5rem;  --space-6: 2rem;   --space-7: 3rem;
+    --radius-md: 1.25rem; --radius-lg: 1.75rem; --radius-xl: 2.5rem; --radius-pill: 999px;
+    --dur-fast: .15s; --dur-base: .25s;
+    --font-sans: "Archivo", Verdana, Tahoma, sans-serif;
+
+    /* 1c · Semánticos (modo claro) */
+    --color-page: #ffffff;
+    --color-board: #fbf6f5;
+    --color-field: #ffffff;
+    --color-border: #e7ddda;
+    --color-text: #1c1917;
+    --color-muted: #6b645e;
+    --color-brand: var(--red-700);        /* rellenos: botones, chips activos */
+    --color-brand-text: var(--red-700);   /* texto y enlaces sobre superficies */
+    --color-brand-hero: var(--red-600);
+    --color-brand-deep: var(--red-900);   /* hover de rellenos */
+    --color-brand-ink: var(--red-950);
+    --color-on-brand: var(--white);
+    --color-ok: #15803d;
+    --color-warn: #92400e;
+    --color-ok-bg: #e4f4e8;
+    --color-warn-bg: #fdf0d2;
+    --color-maroon: #4a0e0e;               /* bloque oscuro de texto */
+    --color-on-maroon: #fff1e6;
+
+    /* Tonos de categoría (suave = fondo, fuerte = disco/borde) */
+    --tone-a-soft: #ffe8e5;  --tone-a-strong: #ffc7c0;
+    --tone-b-soft: #fff0e6;  --tone-b-strong: #ffd3b8;
+    --tone-c-soft: #f4f1ef;  --tone-c-strong: #e3ddd9;
+    --tone-d-soft: #fde7ec;  --tone-d-strong: #f8b9c9;
+    --tone-soft: var(--tone-c-soft);
+    --tone-strong: var(--tone-c-strong);
+
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: var(--color-page);
+}
+
+.dark .cat {
+    --color-page: #0f0f0f;
+    --color-board: #151515;
+    --color-field: #1e1e1e;
+    --color-border: #3a3532;
+    --color-text: #f5f5f4;
+    --color-muted: #a8a29e;
+    --color-brand-text: var(--red-400);
+    --color-ok: #4ade80;
+    --color-warn: #fbbf24;
+    --color-ok-bg: #14281b;
+    --color-warn-bg: #2e2410;
+    --color-maroon: #2a0b0b;
+    --color-on-maroon: #f5e6dc;
+
+    --tone-a-soft: #2b1816;  --tone-a-strong: #45221f;
+    --tone-b-soft: #2b1d15;  --tone-b-strong: #47291a;
+    --tone-c-soft: #242221;  --tone-c-strong: #373331;
+    --tone-d-soft: #2b1720;  --tone-d-strong: #46212f;
+}
+
+/* El tono lo decide el id de la categoría: cada categoría conserva su color */
+.cat [data-tono$="1"], .cat [data-tono$="5"], .cat [data-tono$="9"] { --tone-soft: var(--tone-a-soft); --tone-strong: var(--tone-a-strong); }
+.cat [data-tono$="2"], .cat [data-tono$="6"]                         { --tone-soft: var(--tone-b-soft); --tone-strong: var(--tone-b-strong); }
+.cat [data-tono$="3"], .cat [data-tono$="7"]                         { --tone-soft: var(--tone-c-soft); --tone-strong: var(--tone-c-strong); }
+.cat [data-tono$="0"], .cat [data-tono$="4"], .cat [data-tono$="8"] { --tone-soft: var(--tone-d-soft); --tone-strong: var(--tone-d-strong); }
+
+
+/* ===== 2. BASE ==================================================== */
+
+.cat, .cat * { box-sizing: border-box; }
+:where(.cat) :where(h1, h2, h3, p, ul, ol, dl, dd) { margin: 0; }   /* :where() = especificidad 0: cualquier clase .cat-* lo puede sobrescribir */
+:where(.cat) :where(ul, ol) { padding: 0; list-style: none; }
+.cat a { text-decoration: none; }
+.cat [hidden] { display: none !important; }
+
+.cat-sr {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Foco visible en todo lo interactivo (WCAG 2.4.7) */
+.cat a:focus-visible, .cat button:focus-visible, .cat input:focus-visible,
+.cat select:focus-visible, .cat textarea:focus-visible, .cat summary:focus-visible {
+    outline: 3px solid var(--color-brand-text); outline-offset: 2px;
+}
+.cat-hero a:focus-visible, .cat-hero button:focus-visible, .cat-band a:focus-visible { outline-color: var(--white); }
+
+
+/* ===== 3. LAYOUT ================================================== */
+
+/* 3a · Banner */
+.cat-hero {
+    position: relative;
+    padding: 2.5rem 1.25rem 5.25rem;
+    color: var(--white);
+    background: var(--color-brand-hero);
+}
+@media (min-width: 900px) { .cat-hero { padding: 3.25rem 2.5rem 6rem; } }
+
+.cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.cat-hero__bg::before {
+    content: ""; position: absolute; inset: -40%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 320px 72px;
+    transform: rotate(-9deg);
+}
+.cat-hero__in {
+    position: relative;
+    max-width: 80rem; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+}
+.cat-hero__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
+.cat-hero h1 {
+    font-size: clamp(2.5rem, 1.3rem + 4.6vw, 4.5rem);
+    font-weight: 800; font-stretch: 110%; line-height: .95; letter-spacing: -.035em;
+}
+.cat-hero--name h1 {
+    max-width: 22ch; text-wrap: balance; overflow-wrap: anywhere;
+    font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem); line-height: 1.02;
+}
+.cat-hero p { margin-top: .9rem; max-width: 34ch; font-size: 1.0625rem; line-height: 1.45; }
+.cat-hero p strong { font-weight: 800; }
+
+.cat-eyebrow {
+    display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: .75rem;
+    font-size: .8125rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+}
+.cat-eyebrow::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: currentColor; }
+
+/* Migas de pan */
+.cat-crumbs { margin-bottom: .75rem; }
+.cat-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; font-size: .875rem; font-weight: 600; }
+.cat-crumbs li { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
+.cat-crumbs li + li::before { content: "/"; opacity: .7; }
+.cat-crumbs a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, .55); }
+.cat-crumbs a:hover { text-decoration-color: var(--white); }
+.cat-crumbs [aria-current] { max-width: 18ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .92; }
+
+/* 3b · Contenedores */
+.cat-wrap { position: relative; max-width: 80rem; margin: -2.75rem auto 0; padding: 0 .75rem 2.5rem; }
+@media (min-width: 640px)  { .cat-wrap { padding: 0 1.5rem 3rem; } }
+@media (min-width: 1024px) { .cat-wrap { padding: 0 2.5rem 3.5rem; } }
+.cat-wrap--narrow { max-width: 62rem; }
+.cat-wrap--wide { max-width: 76rem; }
+
+.cat-board {
+    position: relative;
+    padding: 1.25rem .875rem 1.5rem;
+    background: var(--color-board); border-radius: var(--radius-lg);
+}
+@media (min-width: 640px) {
+    .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: var(--radius-xl); }
+}
+
+/* Banda de cierre (como la franja de suscripción de la referencia) */
+.cat-band {
+    position: relative; overflow: hidden;
+    padding: 2.25rem 1.25rem; color: var(--color-on-maroon); background: var(--color-maroon);
+}
+.cat-band::before {
+    content: ""; position: absolute; inset: -40%; transform: rotate(-9deg); opacity: .6; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%23b91c1c' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 320px 72px;
+}
+.cat-band__in {
+    position: relative; max-width: 80rem; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-6);
+}
+.cat-band h2 { max-width: 26ch; font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.15; }
+.cat-band p { margin-top: .35rem; max-width: 44ch; color: var(--color-on-maroon); opacity: .9; }
+@media (min-width: 900px) { .cat-band { padding: 2.75rem 2.5rem; } }
+
+
+/* ===== 4. COMPONENTES ============================================= */
+
+/* 4a · Botón  (variantes: --light --ghost --danger) */
+.cat-btn {
+    --btn-bg: var(--color-brand); --btn-ink: var(--color-on-brand); --btn-border: var(--color-brand);
+    --btn-bg-hover: var(--color-brand-deep); --btn-ink-hover: var(--color-on-brand); --btn-border-hover: var(--color-brand-deep);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+    height: 2.75rem; padding: 0 1.5rem;
+    font: inherit; font-weight: 700; font-size: .9375rem; white-space: nowrap;
+    color: var(--btn-ink); background: var(--btn-bg);
+    border: 2px solid var(--btn-border); border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.cat-btn svg { width: 1.05rem; height: 1.05rem; flex: none; }
+.cat-btn:hover { color: var(--btn-ink-hover); background: var(--btn-bg-hover); border-color: var(--btn-border-hover); }
+.cat-btn[disabled], .cat-btn[aria-busy="true"] { opacity: .75; cursor: progress; }
+.cat-btn--light { --btn-bg: var(--white); --btn-ink: var(--color-brand-deep); --btn-border: var(--white);
+                  --btn-bg-hover: var(--color-brand-ink); --btn-border-hover: var(--color-brand-ink); }
+.cat-btn--ghost { --btn-bg: transparent; --btn-ink: var(--color-text); --btn-border: var(--color-border);
+                  --btn-bg-hover: var(--tone-soft); --btn-ink-hover: var(--color-text); --btn-border-hover: var(--tone-strong); }
+.cat-hero .cat-btn--ghost, .cat-band .cat-btn--ghost { --btn-ink: var(--white); --btn-border: rgba(255, 255, 255, .7);
+                  --btn-bg-hover: var(--white); --btn-ink-hover: var(--color-brand-deep); --btn-border-hover: var(--white); }
+.cat-btn--danger { --btn-bg: var(--red-800); --btn-border: var(--red-800); --btn-bg-hover: var(--red-950); --btn-border-hover: var(--red-950); }
+.cat-spin {
+    width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent;
+    animation: cat-spin .7s linear infinite;
+}
+@keyframes cat-spin { to { transform: rotate(360deg); } }
+
+/* 4b · Mensajes (success / warning / error) */
+.cat-msgs { display: grid; gap: .625rem; margin-bottom: 1.25rem; }
+.cat-msg {
+    display: flex; align-items: flex-start; gap: var(--space-3); padding: .85rem 1.1rem;
+    font-size: .9375rem; font-weight: 600; line-height: 1.4;
+    color: var(--color-text); background: var(--tone-c-soft);
+    border-radius: 1.1rem 1.1rem 1.1rem .3rem;
+}
+.cat-msg::before { content: ""; flex: none; width: .7rem; height: .7rem; margin-top: .3rem; border-radius: 50%; background: var(--color-muted); }
+.cat-msg.is-success { background: var(--color-ok-bg); }
+.cat-msg.is-success::before { background: #16a34a; }
+.cat-msg.is-warning { background: var(--color-warn-bg); }
+.cat-msg.is-warning::before { background: #d97706; }
+.cat-msg.is-error { background: var(--tone-a-soft); }
+.cat-msg.is-error::before { background: var(--color-brand-text); }
+
+/* 4c · Chips de categoría */
+.cat-cats { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: 1.5rem; }
+.cat-cat {
+    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.5rem; padding: 0 1.1rem 0 .8rem;
+    font-size: .9375rem; font-weight: 600; color: var(--color-text); background: var(--tone-soft);
+    border-radius: var(--radius-pill);
+    transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+}
+.cat-cat i { width: .8rem; height: .8rem; border-radius: 50%; background: var(--tone-strong); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18); }
+.cat-cat.is-all { padding-left: 1.1rem; }
+.cat-cat:hover { background: var(--tone-strong); }
+.cat-cat.is-on { color: var(--color-on-brand); background: var(--color-brand); }
+.cat-cat.is-on i { background: var(--white); box-shadow: none; }
+
+
+/* 4d · Tarjeta de producto  (estados: :hover/:focus-within activa, .is-out agotado) */
+.cat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem .75rem; }
+@media (min-width: 560px) { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr)); gap: 1.75rem 1.25rem; } }
+.cat-grid > li { min-width: 0; }
+
+.cat-card {
+    --card-bg: var(--tone-soft); --card-ink: var(--color-text); --card-mute: var(--color-muted); --card-disc: var(--tone-strong);
+    --card-price: var(--color-brand-text);
+    --card-btn: var(--color-brand); --card-btn-ink: var(--color-on-brand); --card-warn: var(--color-warn); --card-line: var(--color-border);
+    position: relative; isolation: isolate; height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1rem .75rem 1.1rem; text-align: center;
+    color: var(--card-ink); background: var(--card-bg); border-radius: 1.5rem;
+    transition: background-color var(--dur-base), color var(--dur-base), transform var(--dur-base), box-shadow var(--dur-base);
+}
+@media (min-width: 560px) { .cat-card { padding: 1.25rem 1.25rem 1.4rem; border-radius: var(--radius-lg); } }
+
+.cat-card:hover, .cat-card:focus-within {
+    --card-bg: var(--red-700); --card-ink: var(--white); --card-mute: rgba(255, 255, 255, .86); --card-disc: rgba(255, 255, 255, .16);
+    --card-price: var(--white); --card-btn: var(--white); --card-btn-ink: var(--red-700); --card-warn: var(--white); --card-line: rgba(255, 255, 255, .6);
+    transform: translateY(-.4rem); box-shadow: 0 1.25rem 1.75rem -1rem rgba(127, 29, 29, .55);
+}
+
+/* El producto es ~30 % más grande que el círculo: el disco queda centrado detrás y la imagen sobresale. */
+.cat-stage { position: relative; width: 100%; height: 10rem; display: flex; align-items: center; justify-content: center; margin-bottom: .875rem; }
+@media (min-width: 560px) { .cat-stage { height: 13rem; margin-bottom: 1rem; } }
+.cat-disc {
+    position: absolute; left: 50%; top: 50%; width: 6.25rem; height: 6.25rem; border-radius: 50%;
+    background: var(--card-disc); transform: translate(-50%, -50%); transition: background-color var(--dur-base);
+}
+@media (min-width: 560px) { .cat-disc { width: 9.25rem; height: 9.25rem; } }
+.cat-img { position: relative; display: block; max-width: 94%; max-height: 8.25rem; object-fit: contain; border-radius: .5rem; transition: transform var(--dur-base); }
+@media (min-width: 560px) { .cat-img { max-width: 84%; max-height: 12rem; } }
+.cat-card:hover .cat-img, .cat-card:focus-within .cat-img { transform: translateY(-.5rem) scale(1.07); }
+.cat-none { position: relative; display: flex; flex-direction: column; align-items: center; gap: .35rem; font-size: .875rem; color: var(--card-mute); }
+.cat-none svg { width: 2rem; height: 2rem; }
+
+.cat-card__cat {
+    display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; margin-bottom: .3rem;
+    font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--card-mute);
+}
+.cat-card__cat::before { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+.cat-card__cat span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-name { max-width: 100%; font-size: 1rem; font-weight: 700; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+@media (min-width: 560px) { .cat-name { font-size: 1.1875rem; } }
+.cat-size { margin-top: .25rem; font-size: .875rem; color: var(--card-mute); }
+.cat-price {
+    margin-top: .625rem; display: inline-flex; align-items: baseline; gap: .1rem; max-width: 100%;
+    font-size: 1.625rem; font-weight: 800; font-stretch: 75%; line-height: 1; letter-spacing: .005em;
+    font-variant-numeric: tabular-nums; color: var(--card-price);
+}
+.cat-price small { font-size: .95rem; font-weight: 700; font-stretch: 100%; }
+@media (min-width: 560px) { .cat-price { font-size: 2rem; } }
+.cat-stock { margin-top: .6rem; display: inline-flex; align-items: center; gap: .4rem; font-size: .875rem; font-weight: 600; color: var(--card-mute); }
+.cat-stock::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: #16a34a; }
+.cat-stock.is-low, .cat-stock.is-out { color: var(--card-warn); }
+.cat-stock.is-low::before, .cat-stock.is-out::before { background: currentColor; }
+.cat-card:hover .cat-stock::before, .cat-card:focus-within .cat-stock::before { background: var(--white); }
+
+.cat-more {
+    margin-top: 1rem; display: inline-flex; align-items: center; justify-content: center; height: 2.25rem; padding: 0 1.1rem;
+    font-size: .875rem; font-weight: 700; color: var(--card-btn-ink); background: var(--card-btn);
+    border-radius: var(--radius-pill); transition: background-color var(--dur-base), color var(--dur-base);
+}
+@media (min-width: 560px) { .cat-more { height: 2.5rem; padding: 0 1.4rem; font-size: .9375rem; } }
+.cat-more::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }   /* toda la tarjeta es enlace */
+.cat-more:focus-visible { outline: none !important; }
+.cat-more:focus-visible::after { outline: 3px solid var(--color-brand-text); outline-offset: 3px; border-radius: var(--radius-lg); }
+
+.cat-acts { position: relative; z-index: 2; margin-top: .75rem; display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+.cat-act {
+    display: inline-flex; align-items: center; gap: .4rem; height: 2.25rem; padding: 0 .9rem;
+    font: inherit; font-size: .8125rem; font-weight: 700; color: var(--card-ink); background: transparent;
+    border: 2px solid var(--card-line); border-radius: var(--radius-pill); cursor: pointer;
+    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.cat-act svg { width: .95rem; height: .95rem; }
+.cat-act:hover { color: var(--card-btn-ink); background: var(--card-btn); border-color: var(--card-btn); }
+.cat-act--del:hover { color: var(--white); background: var(--red-950); border-color: var(--red-950); }
+.cat-card:hover .cat-act--del:hover, .cat-card:focus-within .cat-act--del:hover { color: var(--red-900); background: var(--white); border-color: var(--white); }
+
+.cat-card.is-out .cat-img { filter: grayscale(1); opacity: .45; }
+.cat-card.is-out { --card-disc: var(--tone-c-strong); }
+.cat-card.is-out:hover, .cat-card.is-out:focus-within { --card-disc: rgba(255, 255, 255, .16); }
+.cat-stamp {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-8deg); padding: .1rem .6rem;
+    font-size: 1.25rem; font-weight: 800; font-stretch: 85%; letter-spacing: .02em;
+    color: var(--color-brand-text); border: 3px solid currentColor; border-radius: .375rem;
+    background: color-mix(in srgb, var(--card-bg) 78%, transparent);
+}
+.cat-card:hover .cat-stamp, .cat-card:focus-within .cat-stamp { color: var(--white); background: transparent; }
+
+/* 4e · Estado vacío y diálogo */
+.cat-empty { padding: 3.5rem 1.5rem 3.75rem; text-align: center; background: var(--tone-c-soft); border-radius: 4.5rem 1.25rem 1.25rem 1.25rem; }
+.cat-empty__disc { width: 5rem; height: 5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-c-strong); color: var(--color-muted); }
+.cat-empty__disc svg { display: block; width: 2.25rem; height: 2.25rem; }
+.cat-empty h3 { margin-top: 1.25rem; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
+.cat-empty p { margin: .5rem auto 0; max-width: 34ch; color: var(--color-muted); line-height: 1.5; }
+.cat-empty .cat-btn { margin-top: var(--space-5); }
+
+.cat-modal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: var(--space-4); background: rgba(15, 15, 15, .6); }
+.cat-modal.is-open { display: flex; }
+.cat-dialog { position: relative; width: 100%; max-width: 26rem; padding: 2rem 1.5rem 1.5rem; text-align: center; color: var(--color-text); background: var(--color-page); border-radius: 4rem 1.25rem 1.25rem 1.25rem; box-shadow: 0 2rem 4rem -1rem rgba(0, 0, 0, .5); }
+.dark .cat-dialog { background: #1a1a1a; }
+.cat-dialog__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-a-strong); color: var(--color-brand-text); }
+.cat-dialog__disc svg { width: 2rem; height: 2rem; }
+.cat-dialog h3 { margin-top: 1.1rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -.015em; }
+.cat-dialog p { margin-top: .6rem; line-height: 1.5; color: var(--color-muted); }
+.cat-dialog p strong { color: var(--color-text); overflow-wrap: anywhere; }
+.cat-dialog__acts { display: flex; gap: .625rem; margin-top: var(--space-5); }
+.cat-dialog__acts > * { flex: 1; padding: 0 .5rem; }
+
+/* 4f · Campos de formulario */
+.cat-field label { display: block; margin-bottom: .4rem; font-size: .875rem; font-weight: 700; }
+.cat-field label .cat-req { color: var(--color-brand-text); }
+.cat-field__box { position: relative; }
+.cat-field input:not([type="file"]), .cat-field select, .cat-field textarea {
+    display: block; width: 100%; height: 3rem; padding: 0 1.1rem;
+    font: inherit; font-size: 1rem; color: var(--color-text); background: var(--color-field);
+    border: 2px solid var(--color-border); border-radius: var(--radius-pill);
+    outline: 0; appearance: none; -webkit-appearance: none;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.cat-field textarea { height: auto; min-height: 8.5rem; padding: .9rem 1.2rem; border-radius: var(--radius-md); resize: vertical; line-height: 1.5; }
+.cat-field select { padding-right: 2.75rem; cursor: pointer; }
+.cat-field input::placeholder, .cat-field textarea::placeholder { color: var(--color-muted); opacity: .8; }
+.cat-field input:focus, .cat-field select:focus, .cat-field textarea:focus {
+    border-color: var(--color-brand-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-text) 18%, transparent); outline: 0 !important;
+}
+.cat-field.has-error input, .cat-field.has-error select, .cat-field.has-error textarea { border-color: var(--color-brand-text); }
+.cat-field--money input:not([type="file"]) { padding-left: 2.4rem; }
+.cat-field__sym { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--color-muted); pointer-events: none; }
+.cat-field__chev { position: absolute; right: 1.1rem; top: 50%; width: 1rem; height: 1rem; transform: translateY(-50%); color: var(--color-muted); pointer-events: none; }
+.cat-hint { display: flex; justify-content: space-between; gap: var(--space-3); margin-top: .4rem; padding-left: .25rem; font-size: .8125rem; color: var(--color-muted); }
+.cat-err { display: flex; align-items: flex-start; gap: .4rem; margin-top: .4rem; padding-left: .25rem; font-size: .875rem; font-weight: 600; color: var(--color-brand-text); }
+.cat-err::before {   /* el error no depende solo del color: lleva un signo */
+    content: "!"; flex: none; display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; margin-top: .1rem;
+    font-size: .7rem; font-weight: 900; color: var(--color-page); background: var(--color-brand-text); border-radius: 50%;
+}
+
+.cat-alert {
+    margin-bottom: var(--space-5); padding: 1.1rem 1.25rem 1.2rem; color: var(--color-text);
+    background: var(--tone-a-soft); border-left: .4rem solid var(--color-brand); border-radius: .5rem 1.25rem 1.25rem .5rem;
+}
+.cat-alert:focus { outline: 3px solid var(--color-brand-text); outline-offset: 3px; }
+.cat-alert h2 { font-size: 1.125rem; font-weight: 800; }
+.cat-alert ul { margin-top: .5rem; display: grid; gap: .25rem; }
+.cat-alert a { color: var(--color-brand-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+
+/* ===== 5. PANTALLAS =============================================== */
+
+/* 5a · Lista */
+.cat-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem var(--space-5); margin-bottom: 1.25rem; }
+.cat-head h2 {
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.1;
+    color: var(--color-brand-text);
+}
+.cat-head__side { display: flex; align-items: baseline; gap: var(--space-4); }
+.cat-count { font-size: .9375rem; color: var(--color-muted); }
+.cat-count strong { color: var(--color-text); font-weight: 700; }
+.cat-clear { display: inline-flex; align-items: center; gap: .4rem; font-size: .9375rem; font-weight: 600; color: var(--color-text); text-decoration: underline !important; text-underline-offset: 3px; }
+.cat-clear::after { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--color-brand); }
+
+/* Resumen (se llena con JS; sin JS queda oculto) */
+.cat-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: 1.25rem; }
+@media (min-width: 720px) { .cat-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.cat-stat {
+    --stat-bg: var(--tone-c-soft);
+    padding: .85rem 1.25rem; background: var(--stat-bg); border-radius: 1.1rem;
+}
+.cat-stat--ok  { --stat-bg: var(--color-ok-bg); }
+.cat-stat--low { --stat-bg: var(--color-warn-bg); }
+.cat-stat--out { --stat-bg: var(--tone-a-soft); }
+.cat-stat__n { display: block; font-size: 1.75rem; font-weight: 800; font-stretch: 80%; line-height: 1; font-variant-numeric: tabular-nums; }
+.cat-stat__l { display: block; margin-top: .25rem; font-size: .8125rem; font-weight: 600; color: var(--color-muted); }
+
+/* Buscador + orden */
+.cat-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: 1rem; }
+.cat-find {
+    flex: 1 1 18rem; min-width: 0; max-width: 34rem; display: flex; align-items: center; gap: var(--space-2);
+    padding: .3rem .3rem .3rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill);
+}
+.cat-find:focus-within { border-color: var(--color-brand-text); }
+.cat-find > svg { flex: none; width: 1.05rem; height: 1.05rem; color: var(--color-muted); }
+.cat-find input { flex: 1 1 auto; width: 0; min-width: 0; height: 2.5rem; padding: 0; font: inherit; font-size: 1rem; color: var(--color-text); background: transparent; border: 0; outline: 0 !important; }
+.cat-find input::placeholder { color: var(--color-muted); }
+.cat-find button { flex: none; height: 2.5rem; padding: 0 1.25rem; font: inherit; font-weight: 700; color: var(--color-on-brand); background: var(--color-brand); border: 0; border-radius: var(--radius-pill); cursor: pointer; }
+.cat-find button:hover { background: var(--color-brand-deep); }
+.cat-sort { position: relative; display: inline-flex; align-items: center; gap: var(--space-2); max-width: 100%; min-width: 0; font-size: .875rem; font-weight: 700; color: var(--color-muted); }
+.cat-sort select {
+    flex: 1 1 auto; min-width: 0; max-width: 100%;
+    height: 2.75rem; padding: 0 2.5rem 0 1.1rem; font: inherit; font-size: .9375rem; font-weight: 600; color: var(--color-text);
+    background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill); appearance: none; -webkit-appearance: none; cursor: pointer;
+}
+.cat-sort svg { position: absolute; right: 1rem; width: .9rem; height: .9rem; pointer-events: none; }
+
+.cat-end { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: 2rem; padding-top: 1rem; border-top: 2px dotted var(--color-border); font-size: .875rem; color: var(--color-muted); }
+.cat-end a { font-weight: 700; color: var(--color-brand-text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* 5b · Detalle */
+.cat-det { display: grid; gap: var(--space-5); align-items: stretch; }
+@media (min-width: 860px) { .cat-det { grid-template-columns: 1.05fr 1fr; gap: 2.5rem; } }
+.cat-det__stage {
+    --card-disc: var(--tone-strong);
+    position: relative; min-height: 20rem; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem;
+    background: var(--tone-soft); border-radius: 5rem 1.25rem 1.25rem 1.25rem; overflow: hidden;
+}
+@media (min-width: 860px) { .cat-det__stage img { max-height: 22rem; } }
+@media (min-width: 860px) { .cat-det__stage { min-height: 28rem; border-radius: 8rem 1.25rem 1.25rem 1.25rem; } }
+.cat-det__stage .cat-disc { width: 11rem; height: 11rem; }
+@media (min-width: 860px) { .cat-det__stage .cat-disc { width: 17rem; height: 17rem; } }
+.cat-det__stage img { position: relative; max-width: 82%; max-height: 14.5rem; object-fit: contain; border-radius: .5rem; transition: transform .35s; }
+.cat-det__stage:hover img { transform: scale(1.04) rotate(-1.5deg); }
+.cat-det__stage.is-out img { filter: grayscale(1); opacity: .45; }
+.cat-det__stage .cat-none { margin: 0; color: var(--color-muted); }
+.cat-det__stage .cat-none svg { width: 3rem; height: 3rem; }
+.cat-det__stage .cat-stamp { top: 50%; font-size: 1.75rem; background: color-mix(in srgb, var(--tone-soft) 78%, transparent); }
+
+.cat-det__body { display: flex; flex-direction: column; justify-content: center; gap: 1.15rem; min-width: 0; }
+.cat-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.cat-pill { display: inline-flex; align-items: center; gap: var(--space-2); padding: .35rem .9rem .35rem .7rem; font-size: .875rem; font-weight: 700; color: var(--color-text); background: var(--tone-soft); border-radius: var(--radius-pill); }
+.cat-pill i { width: .75rem; height: .75rem; border-radius: 50%; background: var(--tone-strong); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18); }
+.cat-pill--ref { font-variant-numeric: tabular-nums; background: transparent; border: 2px solid var(--color-border); color: var(--color-muted); }
+
+.cat-det__price {
+    align-self: flex-start; display: inline-flex; align-items: baseline; gap: .15rem;
+    font-size: clamp(2.75rem, 2rem + 3.5vw, 4.25rem); font-weight: 800; font-stretch: 75%; line-height: 1;
+    font-variant-numeric: tabular-nums; color: var(--color-brand-text);
+}
+.cat-det__price small { font-size: 1.4rem; font-weight: 700; font-stretch: 100%; }
+.cat-det__unit { margin-top: -.5rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-det__unit strong { color: var(--color-text); font-weight: 700; }
+
+.cat-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.cat-fact { padding: .9rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: 1.1rem; }
+.cat-fact dt { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
+.cat-fact dd { margin: .3rem 0 0; font-size: 1.125rem; font-weight: 800; }
+.cat-fact dd.is-ok { color: var(--color-ok); }
+.cat-fact dd.is-low, .cat-fact dd.is-out { color: var(--color-warn); }
+.cat-meter { --n: 0; display: block; height: .5rem; margin-top: .6rem; overflow: hidden; background: var(--color-border); border-radius: var(--radius-pill); }
+.cat-meter::before { content: ""; display: block; width: min(100%, calc(var(--n) * 5%)); height: 100%; background: var(--color-ok); border-radius: inherit; }
+.cat-meter.is-low::before, .cat-meter.is-out::before { background: var(--color-warn); }
+
+.cat-spec h2 { font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+.cat-spec dl { margin-top: .5rem; display: grid; gap: .45rem; }
+.cat-spec__row { display: grid; grid-template-columns: auto 1fr auto; column-gap: var(--space-3); align-items: baseline; }
+.cat-spec__row::before { content: ""; grid-column: 2; grid-row: 1; align-self: end; margin-bottom: .3em; border-bottom: 2px dotted var(--color-border); }
+.cat-spec__row dt { grid-column: 1; grid-row: 1; color: var(--color-muted); }
+.cat-spec__row dd { grid-column: 3; grid-row: 1; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+.cat-det__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
+
+.cat-story {
+    position: relative; overflow: hidden; margin-top: 1.5rem; padding: 2rem 1.5rem 2.25rem;
+    color: var(--color-on-maroon); background: var(--color-maroon); border-radius: 3.5rem 1.25rem 1.25rem 1.25rem;
+}
+.cat-story::after { content: ""; position: absolute; right: -3rem; bottom: -4rem; width: 12rem; height: 12rem; border-radius: 50%; background: var(--red-700); opacity: .35; pointer-events: none; }
+@media (min-width: 860px) { .cat-story { padding: 2.5rem 3rem 2.75rem; border-radius: 5rem 1.25rem 1.25rem 1.25rem; } }
+.cat-story h2 { position: relative; font-size: 1.5rem; font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; }
+.cat-story h2::after { content: ""; display: block; width: 2.75rem; height: .3rem; margin-top: .6rem; background: var(--red-400); border-radius: 1rem; }
+.cat-story p { position: relative; margin-top: 1rem; max-width: 62ch; line-height: 1.65; white-space: pre-line; overflow-wrap: anywhere; }
+
+/* 5c · Formulario crear / editar */
+.cat-formgrid { display: grid; gap: var(--space-6); align-items: start; }
+@media (min-width: 1000px) { .cat-formgrid { grid-template-columns: minmax(0, 1fr) 19rem; } }
+.cat-form { display: grid; gap: 1.75rem; min-width: 0; }
+
+.cat-sec { padding: 1.25rem 1.1rem 1.5rem; background: var(--color-page); border-radius: 1.5rem; }
+@media (min-width: 640px) { .cat-sec { padding: 1.75rem 1.75rem 2rem; border-radius: 2rem; } }
+.cat-sec__h { display: flex; align-items: center; gap: .875rem; margin-bottom: 1.25rem; }
+.cat-sec__n { flex: none; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 800; color: var(--color-on-brand); background: var(--color-brand); border-radius: 50%; }
+.cat-sec__h h2 { font-size: 1.375rem; font-weight: 800; letter-spacing: -.015em; line-height: 1.15; }
+.cat-sec__h p { margin-top: .15rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-fields { display: grid; gap: 1.1rem 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cat-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cat-fields .is-wide { grid-column: 1 / -1; }
+
+.cat-drop {
+    position: relative; display: grid; gap: 1.25rem; align-items: center; justify-items: center; padding: 1.5rem 1rem; text-align: center;
+    background: var(--color-field); border: 2px dashed var(--color-border); border-radius: 1.5rem; cursor: pointer;
+    transition: border-color var(--dur-fast), background-color var(--dur-fast);
+}
+.cat-drop:hover, .cat-drop.is-over { background: var(--tone-a-soft); border-color: var(--color-brand-text); }
+.cat-drop__prev { position: relative; width: 100%; max-width: 20rem; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; }
+.cat-drop__prev .cat-disc { --card-disc: var(--tone-a-strong); width: 56%; height: auto; aspect-ratio: 1; }
+.cat-drop__prev img { position: relative; max-width: 84%; max-height: 94%; object-fit: contain; border-radius: .5rem; }
+.cat-drop__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-a-strong); color: var(--color-brand-text); }
+.cat-drop__disc svg { width: 2rem; height: 2rem; }
+.cat-drop h3 { margin-top: 1rem; font-size: 1.125rem; font-weight: 800; }
+.cat-drop p { margin-top: .25rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-drop__file { font-size: .875rem; font-weight: 600; color: var(--color-muted); word-break: break-all; }
+.cat-drop__msg { min-height: 1.25rem; font-size: .875rem; font-weight: 700; color: var(--color-brand-text); }
+.cat-drop__btns { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
+
+.cat-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .875rem var(--space-5); }
+.cat-bar p { font-size: .9375rem; color: var(--color-muted); }
+.cat-bar__acts { display: flex; flex-wrap: wrap; gap: .625rem; margin-left: auto; }
+@media (max-width: 520px) { .cat-bar__acts { width: 100%; flex-direction: column-reverse; } .cat-bar__acts .cat-btn { width: 100%; } }
+
+/* Vista previa en vivo */
+.cat-preview { position: sticky; top: 5.5rem; padding: 1.25rem 1.1rem 1.25rem; background: var(--color-page); border-radius: var(--radius-lg); }
+.cat-preview summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); cursor: pointer; list-style: none; font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
+.cat-preview summary::-webkit-details-marker { display: none; }
+.cat-preview summary::after { content: ""; width: .6rem; height: .6rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform var(--dur-fast); }
+.cat-preview[open] summary::after { transform: rotate(-135deg); }
+.cat-preview__card { margin-top: 1.5rem; }
+.cat-preview__card .cat-card { cursor: default; }
+.cat-preview__card .cat-card:hover { transform: none; }
+/* La tarjeta de la vista previa siempre es ancha: usa las medidas de escritorio */
+.cat-preview__card .cat-stage { height: 13rem; }
+.cat-preview__card .cat-disc { width: 9.25rem; height: 9.25rem; }
+.cat-preview__card .cat-img { max-width: min(86%, 13rem); max-height: 12rem; }
+.cat-preview__note { display: block; margin-top: var(--space-4); font-size: .8125rem; color: var(--color-muted); text-align: center; }
+@media (max-width: 999px) { .cat-preview { position: static; order: -1; } }
+
+
+/* ===== 6. PREFERENCIAS DEL USUARIO ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
+    .cat-card:hover, .cat-card:focus-within { transform: none; }
+    .cat-card:hover .cat-img, .cat-card:focus-within .cat-img, .cat-det__stage:hover img { transform: none; }
+}
+
+@media (forced-colors: active) {
+    .cat-btn, .cat-cat, .cat-act, .cat-more { border: 2px solid ButtonText; }
+    .cat-stat { forced-color-adjust: none; }
+}
+
+@media print {   /* la ficha del producto imprime limpia */
+    .cat-hero__bg, .cat-band, .cat-det__acts, .cat-acts, .cat-more { display: none !important; }
+    .cat, .cat-board, .cat-story { color: #000 !important; background: #fff !important; }
+    .cat-hero { color: #000; background: #fff; padding: 0 0 1rem; }
+    .cat-hero h1, .cat-crumbs a { color: #000; text-shadow: none; }
+    .cat-story { border: 1px solid #999; } .cat-story h2, .cat-story p { color: #000; }
+    .cat-card { break-inside: avoid; }
+}
+</style>
+
+<div class="cat">
+
+    <header class="cat-hero" id="inicio">
+        <div class="cat-hero__bg" aria-hidden="true"></div>
+
+        <div class="cat-hero__in">
             <div>
-
-                <div class="flex items-center gap-2 text-red-100">
-
-                    <i class="fa-solid fa-boxes-stacked text-sm"></i>
-
-                    <span class="text-xs font-bold uppercase tracking-wider">
-                        {% if user.is_superuser %}
-                            Gestión de inventario
-                        {% else %}
-                            Catálogo
-                        {% endif %}
-                    </span>
-
-                </div>
-
-                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1 tracking-tight">
-                    Productos
-                </h1>
-
-                <p class="text-red-100 text-sm mt-1 max-w-xl">
-
+                <span class="cat-eyebrow">{% if user.is_superuser %}Gestión de inventario{% else %}Catálogo{% endif %}</span>
+                <h1>Productos</h1>
+                <p>
                     {% if user.is_superuser %}
-
-                        Administra el catálogo, precios, categorías y existencias en tiempo real.
-
+                        Crea, edita y controla lo que hay en la tienda.
                     {% else %}
-
-                        Consulta los productos disponibles, sus precios y existencias.
-
+                        Lo que hay en la tienda, con su precio y cuánto queda.
                     {% endif %}
-
                 </p>
-
             </div>
 
+            {% if user.is_superuser %}
+                <div class="cat-hero__acts">
+                    <a class="cat-btn cat-btn--light" href="{% url 'crear_producto' %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                        Nuevo producto
+                    </a>
+                </div>
+            {% endif %}
+        </div>
 
-            <!-- ZONA DERECHA: FILTRO + NUEVO PRODUCTO -->
-            <div class="shrink-0 flex items-center gap-3">
+    </header>
 
-                <!-- BOTÓN FILTRO -->
-                <button
-                    type="button"
-                    id="btnFiltro"
-                    onclick="toggleFiltro()"
-                    aria-expanded="{% if busqueda or categoria_seleccionada %}true{% else %}false{% endif %}"
-                    aria-controls="panelFiltro"
-                    title="Mostrar filtros"
-                    aria-label="Mostrar filtros"
-                    class="relative h-12 w-12 inline-flex items-center justify-center bg-white/15 hover:bg-white/25 border border-white/30 text-white rounded-2xl shadow-md transition-all duration-200 active:scale-95"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                        <line x1="4" y1="6" x2="20" y2="6"></line>
-                        <line x1="4" y1="12" x2="20" y2="12"></line>
-                        <line x1="4" y1="18" x2="20" y2="18"></line>
-                    </svg>
+
+    <div class="cat-wrap">
+        <section class="cat-board" aria-labelledby="lista-titulo">
+
+            {% if messages %}
+                <div class="cat-msgs" role="status">
+                    {% for message in messages %}
+                        <div class="cat-msg {% if message.tags == 'success' %}is-success{% elif message.tags == 'warning' %}is-warning{% else %}is-error{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="cat-head">
+                <h2 id="lista-titulo">Catálogo general</h2>
+
+                <div class="cat-head__side">
+                    <p class="cat-count" role="status">
+                        {% if busqueda %}Resultados para «{{ busqueda }}»: {% endif %}<strong>{{ productos|length }}</strong> producto{{ productos|length|pluralize }}
+                    </p>
 
                     {% if busqueda or categoria_seleccionada %}
-                        <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-white ring-2 ring-red-600"></span>
+                        <a class="cat-clear" href="{% url 'lista_productos' %}">Quitar filtros</a>
                     {% endif %}
-                </button>
-
-                {% if user.is_superuser %}
-
-                    <a
-                        href="{% url 'crear_producto' %}"
-                        class="h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95"
-                    >
-                        <i class="fa-solid fa-plus"></i>
-                        <span>Nuevo producto</span>
-                    </a>
-
-                {% endif %}
-
+                </div>
             </div>
 
-        </div>
+            {# Resumen: lo llena el script de abajo. Sin JavaScript simplemente no aparece. #}
+            {% if productos %}
+                <ul class="cat-stats" id="resumen" aria-label="Resumen de esta lista" hidden>
+                    <li class="cat-stat"><span class="cat-stat__n" data-stat="total">0</span><span class="cat-stat__l">en esta lista</span></li>
+                    <li class="cat-stat cat-stat--ok"><span class="cat-stat__n" data-stat="ok">0</span><span class="cat-stat__l">disponibles</span></li>
+                    <li class="cat-stat cat-stat--low"><span class="cat-stat__n" data-stat="low">0</span><span class="cat-stat__l">con pocas unidades</span></li>
+                    <li class="cat-stat cat-stat--out"><span class="cat-stat__n" data-stat="out">0</span><span class="cat-stat__l">agotados</span></li>
+                </ul>
+            {% endif %}
 
-    </section>
-
-
-    <!-- MENSAJES -->
-    {% if messages %}
-
-        <section class="space-y-3">
-
-            {% for message in messages %}
-
-                <div
-                    class="flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm font-medium
-
-                    {% if message.tags == 'success' %}
-
-                        bg-green-50 border-green-200 text-green-700
-                        dark:bg-green-950/40 dark:border-green-900/60 dark:text-green-400
-
-                    {% elif message.tags == 'warning' %}
-
-                        bg-yellow-50 border-yellow-200 text-yellow-700
-                        dark:bg-yellow-950/40 dark:border-yellow-900/60 dark:text-yellow-400
-
-                    {% else %}
-
-                        bg-red-50 border-red-200 text-red-700
-                        dark:bg-red-950/40 dark:border-red-900/60 dark:text-red-400
-
-                    {% endif %}"
-                >
-
-                    <i
-                        class="fa-solid
-
-                        {% if message.tags == 'success' %}
-                            fa-circle-check
-                        {% elif message.tags == 'warning' %}
-                            fa-triangle-exclamation
-                        {% else %}
-                            fa-circle-exclamation
-                        {% endif %}"
-                    ></i>
-
-                    <span>{{ message }}</span>
-
-                </div>
-
-            {% endfor %}
-
-        </section>
-
-    {% endif %}
-
-
-    <!-- BUSCADOR Y FILTROS (EXPANSIÓN EN CASCADA) -->
-    <div
-        id="panelFiltro"
-        style="margin-top: 0;"
-        class="grid transition-[grid-template-rows,opacity] duration-500 ease-in-out
-            {% if busqueda or categoria_seleccionada %}grid-rows-[1fr] opacity-100{% else %}grid-rows-[0fr] opacity-0{% endif %}"
-    >
-
-        <div
-            id="contenidoFiltro"
-            class="min-h-0 overflow-hidden"
-            {% if not busqueda and not categoria_seleccionada %}inert{% endif %}
-        >
-
-            <section class="mt-8 mx-1 mb-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-
-                <form method="GET" action="{% url 'lista_productos' %}">
-
-                    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px_auto] gap-4 items-end">
-
-                        <!-- BUSCAR -->
-                        <div>
-
-                            <label
-                                for="buscar"
-                                class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                            >
-                                Buscar producto
-                            </label>
-
-                            <div class="relative">
-
-                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-sm"></i>
-
-                                <input
-                                    type="text"
-                                    id="buscar"
-                                    name="buscar"
-                                    value="{{ busqueda }}"
-                                    placeholder="Escribe el nombre del producto..."
-                                    class="w-full h-12 pl-11 pr-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- CATEGORÍA -->
-                        <div>
-
-                            <label
-                                for="categoria"
-                                class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2"
-                            >
-                                Categoría
-                            </label>
-
-                            <div class="relative">
-
-                                <select
-                                    id="categoria"
-                                    name="categoria"
-                                    class="appearance-none w-full h-12 px-4 pr-10 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-200 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 cursor-pointer transition-all"
-                                >
-
-                                    <option value="">
-                                        Todas las categorías
-                                    </option>
-
-                                    {% for categoria in categorias %}
-
-                                        <option
-                                            value="{{ categoria.id }}"
-                                            {% if categoria_seleccionada == categoria.id|stringformat:"s" %}
-                                                selected
-                                            {% endif %}
-                                        >
-                                            {{ categoria.nombre }}
-                                        </option>
-
-                                    {% endfor %}
-
-                                </select>
-
-                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- BOTONES -->
-                        <div class="flex items-center gap-2">
-
-                            <button
-                                type="submit"
-                                class="h-12 px-6 flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-md shadow-red-600/20"
-                            >
-                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                                <span>Buscar</span>
-                            </button>
-
-
-                            {% if busqueda or categoria_seleccionada %}
-
-                                <a
-                                    href="{% url 'lista_productos' %}"
-                                    title="Limpiar filtros"
-                                    class="w-12 h-12 inline-flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-2xl transition-all active:scale-95"
-                                >
-                                    <i class="fa-solid fa-xmark"></i>
-                                </a>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
+            <div class="cat-tools">
+                <form class="cat-find" role="search" method="get" action="{% url 'lista_productos' %}">
+                    {% if categoria_seleccionada %}
+                        <input type="hidden" name="categoria" value="{{ categoria_seleccionada }}">
+                    {% endif %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                    </svg>
+                    <label class="cat-sr" for="buscar">Buscar producto por nombre</label>
+                    <input type="search" id="buscar" name="buscar" value="{{ busqueda }}" placeholder="Buscar por nombre" autocomplete="off">
+                    <button type="submit">Buscar</button>
                 </form>
 
-            </section>
-
-        </div>
-
-    </div>
-
-
-    <!-- CATÁLOGO -->
-    <section class="space-y-5">
-
-        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
-
-            <div>
-
-                <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                    Catálogo general
-                </h2>
-
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-
-                    {% if productos %}
-
-                        Mostrando {{ productos|length }}
-                        producto{{ productos|length|pluralize }}
-
-                    {% else %}
-
-                        0 productos registrados
-
-                    {% endif %}
-
-                </p>
-
+                {% if productos|length > 1 %}
+                    <label class="cat-sort" for="orden">
+                        <span>Ordenar</span>
+                        <select id="orden">
+                            <option value="">Como llegaron</option>
+                            <option value="nombre">Nombre (A–Z)</option>
+                            <option value="precio-asc">Precio: de menor a mayor</option>
+                            <option value="precio-desc">Precio: de mayor a menor</option>
+                            <option value="stock-desc">Más existencias</option>
+                            <option value="stock-asc">Menos existencias</option>
+                        </select>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                    </label>
+                {% endif %}
             </div>
 
+            {% if categorias %}
+                <nav class="cat-cats" aria-label="Filtrar por categoría">
+                    <a
+                        class="cat-cat is-all{% if not categoria_seleccionada %} is-on{% endif %}"
+                        href="{% url 'lista_productos' %}{% if busqueda %}?buscar={{ busqueda|urlencode }}{% endif %}"
+                        {% if not categoria_seleccionada %}aria-current="true"{% endif %}
+                    >Todas</a>
 
-            {% if busqueda or categoria_seleccionada %}
+                    {% for categoria in categorias %}
+                        <a
+                            class="cat-cat{% if categoria_seleccionada == categoria.id|stringformat:'s' %} is-on{% endif %}"
+                            data-tono="{{ categoria.id }}"
+                            href="{% url 'lista_productos' %}?categoria={{ categoria.id }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}"
+                            {% if categoria_seleccionada == categoria.id|stringformat:'s' %}aria-current="true"{% endif %}
+                        ><i aria-hidden="true"></i>{{ categoria.nombre }}</a>
+                    {% endfor %}
+                </nav>
+            {% endif %}
 
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs font-semibold">
 
-                    <i class="fa-solid fa-filter text-[10px]"></i>
+            {% if productos %}
 
-                    Filtros activos
+                <ul class="cat-grid">
+                    {% for producto in productos %}
+                        <li data-nombre="{{ producto.nombre|lower }}" data-precio="{{ producto.precio_unitario|stringformat:'.2f' }}" data-stock="{{ producto.existencias }}">
+                            <article class="cat-card{% if producto.existencias <= 0 %} is-out{% endif %}" data-tono="{{ producto.categoria_id|default:0 }}">
 
-                </span>
+                                <div class="cat-stage">
+                                    <span class="cat-disc" aria-hidden="true"></span>
+
+                                    {% if producto.imagen %}
+                                        <img class="cat-img" src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" loading="lazy" decoding="async">
+                                    {% else %}
+                                        <div class="cat-none">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                                                <circle cx="9" cy="10" r="1.75"></circle>
+                                                <path d="M21 16l-5-5-8 9"></path>
+                                            </svg>
+                                            <span>Sin foto</span>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if producto.existencias <= 0 %}
+                                        <span class="cat-stamp" aria-hidden="true">Agotado</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if producto.categoria %}
+                                    <p class="cat-card__cat"><span>{{ producto.categoria.nombre }}</span></p>
+                                {% endif %}
+
+                                <h3 class="cat-name">{{ producto.nombre }}</h3>
+
+                                <p class="cat-size">
+                                    {% with unidad=producto.unidad_medida|lower %}
+                                        {{ producto.cantidad }} {% if producto.cantidad == 1 and unidad != 'kg' %}{{ unidad|slice:':-1' }}{% else %}{{ unidad }}{% endif %}
+                                    {% endwith %}
+                                </p>
+
+                                <p class="cat-price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
+
+                                {% if producto.existencias > 5 %}
+                                    <p class="cat-stock">{{ producto.existencias }} disponibles</p>
+                                {% elif producto.existencias > 0 %}
+                                    <p class="cat-stock is-low">Quedan {{ producto.existencias }}</p>
+                                {% else %}
+                                    <p class="cat-stock is-out">Agotado</p>
+                                {% endif %}
+
+                                <a class="cat-more" href="{% url 'detalle_producto' producto.id %}">
+                                    Ver detalle<span class="cat-sr"> de {{ producto.nombre }}</span>
+                                </a>
+
+                                {% if user.is_superuser %}
+                                    <div class="cat-acts">
+                                        <a class="cat-act" href="{% url 'editar_producto' producto.id %}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>
+                                            Editar<span class="cat-sr"> {{ producto.nombre }}</span>
+                                        </a>
+                                        <button type="button" class="cat-act cat-act--del" onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path></svg>
+                                            Eliminar<span class="cat-sr"> {{ producto.nombre }}</span>
+                                        </button>
+                                    </div>
+                                {% endif %}
+
+                            </article>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="cat-end">
+                    <span>Fin de la lista · {{ productos|length }} producto{{ productos|length|pluralize }}</span>
+                    <a href="#inicio">Volver arriba ↑</a>
+                </div>
+
+            {% else %}
+
+                <div class="cat-empty">
+                    <div class="cat-empty__disc">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path>
+                        </svg>
+                    </div>
+
+                    {% if busqueda or categoria_seleccionada %}
+                        <h3>No encontramos productos con ese filtro</h3>
+                        <p>Revisa cómo escribiste el nombre o prueba con otra categoría.</p>
+                        <a class="cat-btn" href="{% url 'lista_productos' %}">Ver todos los productos</a>
+                    {% else %}
+                        {% if user.is_superuser %}
+                            <h3>Aún no hay productos</h3>
+                            <p>Crea el primero y aparecerá aquí para todo el equipo.</p>
+                            <a class="cat-btn" href="{% url 'crear_producto' %}">Crear producto</a>
+                        {% else %}
+                            <h3>Aún no hay productos disponibles</h3>
+                            <p>Vuelve a consultar más tarde.</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
 
             {% endif %}
 
-        </div>
-
-
-        <!-- PRODUCTOS -->
-        {% if productos %}
-
-            <div class="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-6">
-
-                {% for producto in productos %}
-
-                    <article
-                        class="flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xl hover:shadow-zinc-200/60 dark:hover:shadow-black/30 transition-all duration-300 group"
-                    >
-
-                        <!-- IMAGEN -->
-                        <a
-                            href="{% url 'detalle_producto' producto.id %}"
-                            class="block"
-                            aria-label="Ver detalle de {{ producto.nombre }}"
-                        >
-
-                            <div class="relative w-full h-56 bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center overflow-hidden border-b border-zinc-200 dark:border-zinc-800 p-4">
-
-                                {% if producto.imagen %}
-
-                                    <img
-                                        src="{{ producto.imagen.url }}"
-                                        alt="{{ producto.nombre }}"
-                                        class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                                    >
-
-                                {% else %}
-
-                                    <div class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 gap-2">
-
-                                        <div class="w-14 h-14 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-
-                                            <i class="fa-solid fa-image text-2xl text-zinc-400 dark:text-zinc-600"></i>
-
-                                        </div>
-
-                                        <span class="text-[10px] font-bold uppercase tracking-wider">
-                                            Sin imagen
-                                        </span>
-
-                                    </div>
-
-                                {% endif %}
-
-
-                                <!-- CATEGORÍA -->
-                                {% if producto.categoria %}
-
-                                    <span class="absolute top-3 left-3 px-3 py-1 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 rounded-full text-[10px] font-bold text-zinc-700 dark:text-zinc-200 shadow-sm">
-
-                                        {{ producto.categoria.nombre }}
-
-                                    </span>
-
-                                {% endif %}
-
-                            </div>
-
-                        </a>
-
-
-                        <!-- CONTENIDO -->
-                        <div class="p-5 flex-1 flex flex-col justify-between gap-5">
-
-                            <!-- NOMBRE Y PRECIO -->
-                            <div>
-
-                                <h3
-                                    class="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate"
-                                    title="{{ producto.nombre }}"
-                                >
-
-                                    <a
-                                        href="{% url 'detalle_producto' producto.id %}"
-                                        class="hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                                    >
-                                        {{ producto.nombre }}
-                                    </a>
-
-                                </h3>
-
-                                <p class="text-2xl font-black text-red-600 dark:text-red-500 mt-1">
-                                    ${{ producto.precio_unitario|floatformat:2 }}
-                                </p>
-
-                            </div>
-
-
-                            <!-- PRESENTACIÓN / STOCK -->
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-
-                                <!-- PRESENTACIÓN -->
-                                <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3">
-
-                                    <span class="block text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500">
-                                        Presentación
-                                    </span>
-
-                                    <p
-                                        class="font-semibold text-zinc-800 dark:text-zinc-200 truncate mt-0.5"
-                                        title="{{ producto.cantidad }} {{ producto.unidad_medida }}"
-                                    >
-
-                                        {{ producto.cantidad }}
-                                        {{ producto.unidad_medida }}
-
-                                    </p>
-
-                                </div>
-
-
-                                <!-- EXISTENCIAS -->
-                                <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3">
-
-                                    <span class="block text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500">
-                                        Existencias
-                                    </span>
-
-                                    <p
-                                        class="font-bold truncate mt-0.5 {% if producto.existencias > 0 %}text-zinc-800 dark:text-zinc-200{% else %}text-red-600 dark:text-red-500{% endif %}"
-                                    >
-
-                                        {{ producto.existencias }} un.
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- ACCIONES -->
-                            {% if user.is_superuser %}
-
-                                <div class="flex items-center gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-
-                                    <!-- EDITAR -->
-                                    <a
-                                        href="{% url 'editar_producto' producto.id %}"
-                                        title="Editar producto"
-                                        aria-label="Editar producto"
-                                        class="flex-1 h-10 inline-flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl transition-all active:scale-95"
-                                    >
-
-                                        <i class="fa-solid fa-pen text-sm"></i>
-
-                                    </a>
-
-
-                                    <!-- ELIMINAR -->
-                                    <button
-                                        type="button"
-                                        onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')"
-                                        title="Eliminar producto"
-                                        aria-label="Eliminar producto"
-                                        class="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400 transition-all active:scale-90 shrink-0"
-                                    >
-
-                                        <i class="fa-solid fa-trash text-sm"></i>
-
-                                    </button>
-
-                                </div>
-
-                            {% endif %}
-
-                        </div>
-
-                    </article>
-
-                {% endfor %}
-
-            </div>
-
-
-        {% else %}
-
-            <!-- SIN PRODUCTOS -->
-            <div class="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl py-16 px-6 text-center">
-
-                <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-red-600 dark:text-red-500 flex items-center justify-center">
-
-                    <i class="fa-solid fa-box-open text-2xl"></i>
-
-                </div>
-
-
-                {% if busqueda or categoria_seleccionada %}
-
-                    <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-5">
-                        No se encontraron productos
-                    </h3>
-
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
-                        No hay resultados para los criterios de búsqueda actuales.
-                    </p>
-
-                    <a
-                        href="{% url 'lista_productos' %}"
-                        class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-all active:scale-95"
-                    >
-
-                        <i class="fa-solid fa-rotate-left"></i>
-
-                        <span>Restablecer filtros</span>
-
-                    </a>
-
-
-                {% else %}
-
-                    <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-5">
-                        No hay productos registrados
-                    </h3>
-
-                    {% if user.is_superuser %}
-
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
-                            Comienza agregando el primer producto a la tienda.
-                        </p>
-
-                        <a
-                            href="{% url 'crear_producto' %}"
-                            class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-xs shadow-md shadow-red-600/20 transition-all active:scale-95"
-                        >
-
-                            <i class="fa-solid fa-plus"></i>
-
-                            <span>Crear producto</span>
-
-                        </a>
-
-                    {% else %}
-
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
-                            Aún no hay productos disponibles. Vuelve a consultar más tarde.
-                        </p>
-
-                    {% endif %}
-
-                {% endif %}
-
-            </div>
-
-        {% endif %}
-
-    </section>
-
-</div>
-
-
-</div>
-
-{% if user.is_superuser %}
-
-
-<!-- MODAL ELIMINAR -->
-<div
-    id="modalEliminar"
-    class="hidden fixed inset-0 z-50 items-center justify-center p-4"
->
-
-    <div
-        class="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onclick="cerrarModalEliminar()"
-    ></div>
-
-
-    <div class="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-7">
-
-        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-500">
-
-            <i class="fa-solid fa-trash text-xl"></i>
-
-        </div>
-
-
-        <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-4">
-            ¿Eliminar producto?
-        </h2>
-
-
-        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">
-
-            Estás a punto de eliminar
-
-            <span
-                id="nombreProductoEliminar"
-                class="font-bold text-zinc-900 dark:text-zinc-200"
-            ></span>.
-
-            Esta acción no se puede deshacer.
-
-        </p>
-
-
-        <form
-            id="formEliminar"
-            method="POST"
-            class="flex flex-col-reverse sm:flex-row gap-3 mt-6"
-        >
-
-            {% csrf_token %}
-
-
-            <button
-                type="button"
-                onclick="cerrarModalEliminar()"
-                class="flex-1 h-11 inline-flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl font-bold text-xs transition-all active:scale-95"
-            >
-
-                <i class="fa-solid fa-xmark"></i>
-
-                <span>Cancelar</span>
-
-            </button>
-
-
-            <button
-                type="submit"
-                class="flex-1 h-11 inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs transition-all active:scale-95 shadow-md shadow-red-600/20"
-            >
-
-                <i class="fa-solid fa-trash"></i>
-
-                <span>Eliminar</span>
-
-            </button>
-
-        </form>
-
+        </section>
     </div>
 
+
+    <section class="cat-band" aria-label="Siguiente paso">
+        <div class="cat-band__in">
+            {% if user.is_superuser %}
+                <div>
+                    <h2>¿Falta algo en la tienda?</h2>
+                    <p>Crea el producto y todo el equipo lo verá al instante.</p>
+                </div>
+                <a class="cat-btn cat-btn--light" href="{% url 'crear_producto' %}">Crear producto</a>
+            {% else %}
+                <div>
+                    <h2>¿No ves lo que buscas?</h2>
+                    <p>Prueba con otra categoría o busca por el nombre del producto.</p>
+                </div>
+                <a class="cat-btn cat-btn--light" href="#inicio">Volver arriba</a>
+            {% endif %}
+        </div>
+    </section>
+
+
+    {% if user.is_superuser %}
+        <div id="modalEliminar" class="cat-modal" role="dialog" aria-modal="true" aria-labelledby="modalEliminarTitulo" onclick="if (event.target === this) cerrarModalEliminar()">
+            <div class="cat-dialog">
+                <div class="cat-dialog__disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path><path d="M10 11v5M14 11v5"></path></svg>
+                </div>
+                <h3 id="modalEliminarTitulo">¿Eliminar producto?</h3>
+                <p>Vas a eliminar <strong id="nombreProductoEliminar"></strong>. Esta acción no se puede deshacer.</p>
+
+                <form id="formEliminar" method="POST" action="">
+                    {% csrf_token %}
+                    <div class="cat-dialog__acts">
+                        <button type="button" class="cat-btn cat-btn--ghost" onclick="cerrarModalEliminar()">Cancelar</button>
+                        <button type="submit" class="cat-btn cat-btn--danger">Sí, eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
 </div>
 
 
 <script>
+    (function () {
+        /* ---------- Resumen y orden (mejora progresiva: sin JS la lista funciona igual) ---------- */
+        var grid = document.querySelector('.cat-grid');
+        if (grid) {
+            var items = Array.prototype.slice.call(grid.children);
+            items.forEach(function (li, i) { li.dataset.i = i; });
 
-    function abrirModalEliminar(id, nombre) {
-
-        const modal =
-            document.getElementById("modalEliminar");
-
-        const nombreProducto =
-            document.getElementById("nombreProductoEliminar");
-
-        const formulario =
-            document.getElementById("formEliminar");
-
-
-        nombreProducto.textContent =
-            '"' + nombre + '"';
-
-
-        formulario.action =
-            "{% url 'eliminar_producto' 0 %}"
-            .replace("/0/", "/" + id + "/");
-
-
-        modal.classList.remove("hidden");
-
-        modal.classList.add("flex");
-
-        document.body.classList.add("overflow-hidden");
-
-    }
-
-
-    function cerrarModalEliminar() {
-
-        const modal =
-            document.getElementById("modalEliminar");
-
-
-        modal.classList.add("hidden");
-
-        modal.classList.remove("flex");
-
-        document.body.classList.remove("overflow-hidden");
-
-    }
-
-
-    document.addEventListener(
-        "keydown",
-        function(event) {
-
-            if (event.key === "Escape") {
-
-                cerrarModalEliminar();
-
+            var resumen = { total: items.length, ok: 0, low: 0, out: 0 };
+            items.forEach(function (li) {
+                var s = parseInt(li.dataset.stock, 10);
+                if (s <= 0) { resumen.out++; } else if (s <= 5) { resumen.low++; } else { resumen.ok++; }
+            });
+            var caja = document.getElementById('resumen');
+            if (caja) {
+                Object.keys(resumen).forEach(function (k) {
+                    var n = caja.querySelector('[data-stat="' + k + '"]');
+                    if (n) { n.textContent = resumen[k]; }
+                });
+                caja.hidden = false;
             }
 
+            var orden = document.getElementById('orden');
+            if (orden) {
+                var comparadores = {
+                    '': function (a, b) { return a.dataset.i - b.dataset.i; },
+                    'nombre': function (a, b) { return a.dataset.nombre.localeCompare(b.dataset.nombre, 'es'); },
+                    'precio-asc': function (a, b) { return a.dataset.precio - b.dataset.precio; },
+                    'precio-desc': function (a, b) { return b.dataset.precio - a.dataset.precio; },
+                    'stock-desc': function (a, b) { return b.dataset.stock - a.dataset.stock; },
+                    'stock-asc': function (a, b) { return a.dataset.stock - b.dataset.stock; }
+                };
+                orden.addEventListener('change', function () {
+                    items.slice().sort(comparadores[orden.value] || comparadores['']).forEach(function (li) { grid.appendChild(li); });
+                });
+            }
         }
-    );
-
+    })();
 </script>
 
+{% if user.is_superuser %}
+    <script>
+        (function () {
+            var modal = document.getElementById('modalEliminar');
+            var ultimoBoton = null;
+
+            window.abrirModalEliminar = function (id, nombre) {
+                ultimoBoton = document.activeElement;
+                document.getElementById('nombreProductoEliminar').textContent = nombre;
+                document.getElementById('formEliminar').action =
+                    "{% url 'eliminar_producto' 0 %}".replace("/0/", "/" + id + "/");
+                modal.classList.add('is-open');
+                modal.querySelector('.cat-btn--ghost').focus();
+            };
+
+            window.cerrarModalEliminar = function () {
+                modal.classList.remove('is-open');
+                if (ultimoBoton) { ultimoBoton.focus(); }
+            };
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+                    window.cerrarModalEliminar();
+                }
+            });
+        })();
+    </script>
 {% endif %}
-
-
-<!-- SCRIPT DEL FILTRO (disponible para todos los usuarios) -->
-<script>
-
-    function toggleFiltro() {
-
-        const panel = document.getElementById("panelFiltro");
-        const contenido = document.getElementById("contenidoFiltro");
-        const boton = document.getElementById("btnFiltro");
-        const abierto = boton.getAttribute("aria-expanded") === "true";
-
-        if (abierto) {
-            panel.classList.remove("grid-rows-[1fr]", "opacity-100");
-            panel.classList.add("grid-rows-[0fr]", "opacity-0");
-            contenido.setAttribute("inert", "");
-        } else {
-            panel.classList.remove("grid-rows-[0fr]", "opacity-0");
-            panel.classList.add("grid-rows-[1fr]", "opacity-100");
-            contenido.removeAttribute("inert");
-
-            setTimeout(function () {
-                document.getElementById("buscar").focus();
-            }, 500);
-        }
-
-        boton.setAttribute("aria-expanded", String(!abierto));
-    }
-
-</script>
 
 {% endblock %}

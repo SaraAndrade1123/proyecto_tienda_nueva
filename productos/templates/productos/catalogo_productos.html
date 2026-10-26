@@ -1,381 +1,631 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}Catálogo - Tienda Nueva{% endblock %}
 
 {% block content %}
 
-<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
-
-<div class="w-full max-w-7xl mx-auto space-y-8">
-
-    <!-- ENCABEZADO -->
-    <section class="relative overflow-hidden w-full flex items-center sm:min-h-[260px] bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8">
-
-        <!-- IMAGEN DE LA TIENDA CON DESVANECIDO -->
-        <div class="absolute inset-y-0 right-0 w-full sm:w-[62%] lg:w-[55%] pointer-events-none" aria-hidden="true">
-
-            <img
-                src="{% static 'img/tienda.jpg' %}"
-                alt=""
-                class="w-full h-full object-cover object-[50%_35%]"
-            >
-
-            <!-- Refuerzo solo en móvil para que el texto se lea -->
-            <div class="absolute inset-0 bg-red-600/35 sm:hidden"></div>
-
-            <!-- Desvanecido suave: rojo sólido a la izquierda, imagen visible a la derecha -->
-            <div
-                class="absolute inset-0"
-                style="background: linear-gradient(to right,
-                    #dc2626 0%,
-                    rgba(220,38,38,0.75) 10%,
-                    rgba(220,38,38,0.35) 24%,
-                    rgba(220,38,38,0.08) 40%,
-                    rgba(220,38,38,0) 55%);"
-            ></div>
-
-        </div>
-
-        <div class="relative z-10 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-
-            <div>
-
-                <div class="flex items-center gap-2 text-red-100">
-                    <i class="fa-solid fa-boxes-stacked text-sm"></i>
-                    <span class="text-xs font-bold uppercase tracking-wider">Catálogo</span>
-                </div>
-
-                <h1 class="text-3xl sm:text-4xl font-black text-white mt-1 tracking-tight">
-                    Productos
-                </h1>
-
-                <p class="text-red-100 text-sm mt-1 max-w-xl">
-                    Consulta los productos disponibles, sus precios y existencias.
-                </p>
-
-            </div>
-
-
-            <!-- BOTÓN FILTRO -->
-            <button
-                type="button"
-                id="btnFiltro"
-                onclick="toggleFiltro()"
-                aria-expanded="{% if busqueda or categoria_seleccionada %}true{% else %}false{% endif %}"
-                aria-controls="panelFiltro"
-                title="Mostrar filtros"
-                aria-label="Mostrar filtros"
-                class="relative shrink-0 h-12 w-12 inline-flex items-center justify-center bg-red-700 hover:bg-red-800 border-2 border-white text-white rounded-2xl shadow-xl shadow-black/30 transition-all duration-200 active:scale-95"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <circle cx="11" cy="11" r="7"></circle>
-                    <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-                </svg>
-
-                {% if busqueda or categoria_seleccionada %}
-                    <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-white ring-2 ring-red-700"></span>
-                {% endif %}
-            </button>
-
-        </div>
-
-    </section>
-
-
-    <!-- BUSCADOR Y FILTROS (EXPANSIÓN EN CASCADA) -->
-    <div
-        id="panelFiltro"
-        style="margin-top: 0;"
-        class="grid transition-[grid-template-rows,opacity] duration-500 ease-in-out
-            {% if busqueda or categoria_seleccionada %}grid-rows-[1fr] opacity-100{% else %}grid-rows-[0fr] opacity-0{% endif %}"
-    >
-
-        <div
-            id="contenidoFiltro"
-            class="min-h-0 overflow-hidden"
-            {% if not busqueda and not categoria_seleccionada %}inert{% endif %}
-        >
-
-            <section class="mt-8 mx-1 mb-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
-
-                <form method="GET" action="{% url 'catalogo_productos' %}">
-
-                    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px_auto] gap-4 items-end">
-
-                        <!-- BUSCAR -->
-                        <div>
-                            <label for="buscar" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
-                                Buscar producto
-                            </label>
-
-                            <div class="relative">
-                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-sm"></i>
-
-                                <input
-                                    type="text"
-                                    id="buscar"
-                                    name="buscar"
-                                    value="{{ busqueda }}"
-                                    placeholder="Escribe el nombre del producto..."
-                                    class="w-full h-12 pl-11 pr-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
-                                >
-                            </div>
-                        </div>
-
-
-                        <!-- CATEGORÍA -->
-                        <div>
-                            <label for="categoria" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
-                                Categoría
-                            </label>
-
-                            <div class="relative">
-                                <select
-                                    id="categoria"
-                                    name="categoria"
-                                    class="appearance-none w-full h-12 px-4 pr-10 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm text-zinc-900 dark:text-zinc-200 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 cursor-pointer transition-all"
-                                >
-                                    <option value="">Todas las categorías</option>
-
-                                    {% for categoria in categorias %}
-                                        <option
-                                            value="{{ categoria.id }}"
-                                            {% if categoria_seleccionada == categoria.id|stringformat:"s" %}selected{% endif %}
-                                        >
-                                            {{ categoria.nombre }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-
-                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 text-xs pointer-events-none"></i>
-                            </div>
-                        </div>
-
-
-                        <!-- BOTONES -->
-                        <div class="flex items-center gap-2">
-
-                            <button
-                                type="submit"
-                                class="h-12 px-6 flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-md shadow-red-600/20"
-                            >
-                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                                <span>Buscar</span>
-                            </button>
-
-                            {% if busqueda or categoria_seleccionada %}
-                                <a
-                                    href="{% url 'catalogo_productos' %}"
-                                    title="Limpiar filtros"
-                                    class="w-12 h-12 inline-flex items-center justify-center bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-2xl transition-all active:scale-95"
-                                >
-                                    <i class="fa-solid fa-xmark"></i>
-                                </a>
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
-                </form>
-
-            </section>
-
-        </div>
-
-    </div>
-
-
-    <!-- CATÁLOGO -->
-    <section class="space-y-5">
-
-        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
-
-            <div>
-                <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                    Catálogo general
-                </h2>
-
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    {% if productos %}
-                        Mostrando {{ productos|length }} producto{{ productos|length|pluralize }}
-                    {% else %}
-                        0 productos encontrados
-                    {% endif %}
-                </p>
-            </div>
-
-            {% if busqueda or categoria_seleccionada %}
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs font-semibold">
-                    <i class="fa-solid fa-filter text-[10px]"></i>
-                    Filtros activos
-                </span>
-            {% endif %}
-
-        </div>
-
-
-        {% if productos %}
-
-            <div class="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))] gap-6">
-
-                {% for producto in productos %}
-
-                    <article class="flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden">
-
-                        <!-- IMAGEN -->
-                        <div class="relative w-full h-56 bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center overflow-hidden border-b border-zinc-200 dark:border-zinc-800 p-4">
-
-                            {% if producto.imagen %}
-                                <img
-                                    src="{{ producto.imagen.url }}"
-                                    alt="{{ producto.nombre }}"
-                                    class="w-full h-full object-contain"
-                                >
-                            {% else %}
-                                <div class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 gap-2">
-                                    <div class="w-14 h-14 rounded-2xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
-                                        <i class="fa-solid fa-image text-2xl text-zinc-400 dark:text-zinc-600"></i>
-                                    </div>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider">Sin imagen</span>
-                                </div>
-                            {% endif %}
-
-                            {% if producto.categoria %}
-                                <span class="absolute top-3 left-3 px-3 py-1 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 rounded-full text-[10px] font-bold text-zinc-700 dark:text-zinc-200 shadow-sm">
-                                    {{ producto.categoria.nombre }}
-                                </span>
-                            {% endif %}
-
-                        </div>
-
-
-                        <!-- CONTENIDO -->
-                        <div class="p-5 flex-1 flex flex-col gap-5">
-
-                            <!-- NOMBRE Y PRECIO -->
-                            <div>
-                                <h3
-                                    class="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate"
-                                    title="{{ producto.nombre }}"
-                                >
-                                    {{ producto.nombre }}
-                                </h3>
-
-                                <p class="text-2xl font-black text-red-600 dark:text-red-500 mt-1">
-                                    ${{ producto.precio_unitario|floatformat:2 }}
-                                </p>
-                            </div>
-
-
-                            <!-- PRESENTACIÓN / EXISTENCIAS -->
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-
-                                <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3">
-                                    <span class="block text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500">
-                                        Presentación
-                                    </span>
-                                    <p class="font-semibold text-zinc-800 dark:text-zinc-200 truncate mt-0.5">
-                                        {{ producto.cantidad }} {{ producto.unidad_medida }}
-                                    </p>
-                                </div>
-
-                                <div class="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3">
-                                    <span class="block text-[10px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500">
-                                        Existencias
-                                    </span>
-                                    <p class="font-bold truncate mt-0.5 {% if producto.existencias > 0 %}text-zinc-800 dark:text-zinc-200{% else %}text-red-600 dark:text-red-500{% endif %}">
-                                        {% if producto.existencias > 0 %}
-                                            {{ producto.existencias }} un.
-                                        {% else %}
-                                            Agotado
-                                        {% endif %}
-                                    </p>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </article>
-
-                {% endfor %}
-
-            </div>
-
-        {% else %}
-
-            <!-- SIN PRODUCTOS -->
-            <div class="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl py-16 px-6 text-center">
-
-                <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-red-600 dark:text-red-500 flex items-center justify-center">
-                    <i class="fa-solid fa-box-open text-2xl"></i>
-                </div>
-
-                {% if busqueda or categoria_seleccionada %}
-
-                    <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-5">
-                        No se encontraron productos con los filtros seleccionados
-                    </h3>
-
-                    <a
-                        href="{% url 'catalogo_productos' %}"
-                        class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-2xl font-bold text-xs transition-all active:scale-95"
-                    >
-                        <i class="fa-solid fa-rotate-left"></i>
-                        <span>Restablecer filtros</span>
-                    </a>
-
-                {% else %}
-
-                    <h3 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-5">
-                        No hay productos disponibles
-                    </h3>
-
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-1">
-                        Vuelve a consultar más tarde.
-                    </p>
-
-                {% endif %}
-
-            </div>
-
-        {% endif %}
-
-    </section>
-
-</div>
-
-</div>
-
-
-<script>
-
-    function toggleFiltro() {
-
-        const panel = document.getElementById("panelFiltro");
-        const contenido = document.getElementById("contenidoFiltro");
-        const boton = document.getElementById("btnFiltro");
-        const abierto = boton.getAttribute("aria-expanded") === "true";
-
-        if (abierto) {
-            panel.classList.remove("grid-rows-[1fr]", "opacity-100");
-            panel.classList.add("grid-rows-[0fr]", "opacity-0");
-            contenido.setAttribute("inert", "");
-        } else {
-            panel.classList.remove("grid-rows-[0fr]", "opacity-0");
-            panel.classList.add("grid-rows-[1fr]", "opacity-100");
-            contenido.removeAttribute("inert");
-
-            setTimeout(function () {
-                document.getElementById("buscar").focus();
-            }, 500);
-        }
-
-        boton.setAttribute("aria-expanded", String(!abierto));
+{# Fuente de esta pantalla. Si más adelante quieres usarla en todo el sitio, mueve estas tres líneas al <head> de base.html #}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+
+<style>
+    .cat, .cat * { box-sizing: border-box; }
+
+    .cat {
+        /* Tinta, texto y fondos */
+        --page: #ffffff;
+        --board: #fbf6f5;
+        --ink: #1c1917;
+        --muted: #6b645e;
+        --red: #b91c1c;
+        --red-hero: #dc2626;
+        --price: #b91c1c;
+        --link: #b91c1c;
+        --warn: #92400e;
+
+        /* Cuatro tonos suaves, todos de la familia del rojo y los grises cálidos */
+        --ta-soft: #ffe8e5;  --ta-strong: #ffc7c0;
+        --tb-soft: #fff0e6;  --tb-strong: #ffd3b8;
+        --tc-soft: #f4f1ef;  --tc-strong: #e3ddd9;
+        --td-soft: #fde7ec;  --td-strong: #f8b9c9;
+
+        --soft: var(--tc-soft);
+        --strong: var(--tc-strong);
+
+        font-family: "Archivo", Verdana, Tahoma, sans-serif;
+        color: var(--ink);
+    }
+    .dark .cat {
+        --page: #0f0f0f;
+        --board: #151515;
+        --ink: #f5f5f4;
+        --muted: #a8a29e;
+        --price: #f87171;
+        --link: #f87171;
+        --warn: #fbbf24;
+
+        --ta-soft: #2b1816;  --ta-strong: #45221f;
+        --tb-soft: #2b1d15;  --tb-strong: #47291a;
+        --tc-soft: #242221;  --tc-strong: #373331;
+        --td-soft: #2b1720;  --td-strong: #46212f;
     }
 
-</script>
+    /* El tono lo decide el id de la categoría, así cada categoría siempre tiene su color */
+    .cat [data-tono$="1"], .cat [data-tono$="5"], .cat [data-tono$="9"] { --soft: var(--ta-soft); --strong: var(--ta-strong); }
+    .cat [data-tono$="2"], .cat [data-tono$="6"]                         { --soft: var(--tb-soft); --strong: var(--tb-strong); }
+    .cat [data-tono$="3"], .cat [data-tono$="7"]                         { --soft: var(--tc-soft); --strong: var(--tc-strong); }
+    .cat [data-tono$="0"], .cat [data-tono$="4"], .cat [data-tono$="8"] { --soft: var(--td-soft); --strong: var(--td-strong); }
+
+    .cat-sr {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ---------- Banner a todo el ancho ---------- */
+    .cat-hero {
+        position: relative;
+        color: #fff;
+        background: var(--red-hero);
+        padding: 2.5rem 1.25rem 5.25rem;
+    }
+    .cat-hero__bg {
+        position: absolute; inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .cat-hero__bg::before {
+        content: "";
+        position: absolute; inset: -40%;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
+        background-size: 320px 72px;
+        transform: rotate(-9deg);
+    }
+    .cat-hero__in {
+        position: relative;
+        max-width: 80rem;
+        margin: 0 auto;
+        display: grid;
+        gap: 2rem;
+        align-items: center;
+    }
+    @media (min-width: 900px) {
+        .cat-hero { padding: 3.5rem 2.5rem 6.5rem; }
+        .cat-hero__in { grid-template-columns: 1.15fr .85fr; gap: 3.5rem; }
+    }
+
+    .cat-hero h1 {
+        margin: 0;
+        font-size: clamp(3rem, 1.4rem + 6vw, 5.5rem);
+        font-weight: 800;
+        font-stretch: 110%;
+        line-height: .92;
+        letter-spacing: -.035em;
+    }
+    .cat-hero p {
+        margin: 1rem 0 0;
+        max-width: 28ch;
+        font-size: 1.125rem;
+        line-height: 1.45;
+        color: #fff;
+    }
+
+    .cat-search {
+        display: flex; align-items: center; gap: .5rem;
+        margin-top: 1.75rem;
+        max-width: 32rem;
+        padding: .375rem .375rem .375rem 1.15rem;
+        color: #1c1917;
+        background: #fff;
+        border-radius: 999px;
+    }
+    .cat-search:focus-within { outline: 3px solid #450a0a; outline-offset: 3px; }
+    .cat-search > svg { flex: none; width: 1.1rem; height: 1.1rem; color: #78716c; }
+    .cat-search input {
+        flex: 1 1 auto; min-width: 0;
+        height: 2.75rem;
+        padding: 0;
+        font: inherit; font-size: 1rem;
+        color: #1c1917;
+        background: transparent;
+        border: 0; outline: 0;
+    }
+    .cat-search input::placeholder { color: #78716c; }
+    .cat-search button {
+        flex: none;
+        height: 2.75rem; padding: 0 1.4rem;
+        font: inherit; font-weight: 700;
+        color: #fff; background: #1c1917;
+        border: 0; border-radius: 999px;
+        cursor: pointer;
+        transition: background-color .15s;
+    }
+    .cat-search button:hover { background: #000; }
+    .cat-search button:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
+
+    .cat-hero__photo {
+        margin: 0;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-radius: 5rem .75rem .75rem .75rem;
+        background: #b91c1c;
+    }
+    .cat-hero__photo img {
+        display: block; width: 100%; height: 100%;
+        object-fit: cover; object-position: 50% 35%;
+    }
+    @media (min-width: 900px) {
+        .cat-hero__photo { aspect-ratio: 4 / 3; border-radius: 8rem .75rem .75rem .75rem; }
+    }
+
+    /* Círculo que muerde el borde inferior del banner */
+    .cat-notch {
+        position: absolute; left: 50%; bottom: 0;
+        z-index: 2;
+        width: 5.5rem; height: 5.5rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        background: var(--page);
+        transform: translate(-50%, 50%);
+    }
+    .cat-notch span {
+        width: 3.5rem; height: 3.5rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        color: #fff; background: var(--red-hero);
+        transition: transform .2s;
+    }
+    .cat-notch:hover span { transform: translateY(.2rem); }
+    .cat-notch svg { width: 1.4rem; height: 1.4rem; }
+    .cat-notch:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+    /* ---------- Contenedor del catálogo ---------- */
+    .cat-wrap {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 3.75rem .75rem 2.5rem;
+    }
+    @media (min-width: 640px)  { .cat-wrap { padding: 4.25rem 1.5rem 3rem; } }
+    @media (min-width: 1024px) { .cat-wrap { padding: 4.5rem 2.5rem 3.5rem; } }
+
+    .cat-board {
+        scroll-margin-top: 5rem;
+        padding: 1.25rem .875rem 1.5rem;
+        background: var(--board);
+        border-radius: 1.75rem;
+    }
+    @media (min-width: 640px) { .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: 2.5rem; } }
+
+    .cat-head {
+        display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+        gap: .5rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .cat-head h2 {
+        margin: 0;
+        font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem);
+        font-weight: 800;
+        font-stretch: 105%;
+        letter-spacing: -.02em;
+        line-height: 1.1;
+        color: var(--link);
+    }
+    .cat-head__side { display: flex; align-items: baseline; gap: 1rem; }
+    .cat-count { margin: 0; font-size: .9375rem; color: var(--muted); }
+    .cat-count strong { color: var(--ink); font-weight: 700; }
+    .cat-clear {
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-size: .9375rem; font-weight: 600;
+        color: var(--ink);
+        text-decoration: underline; text-underline-offset: 3px;
+    }
+    .cat-clear::after {
+        content: ""; width: .5rem; height: .5rem; border-radius: 50%;
+        background: var(--red);
+    }
+
+    /* ---------- Categorías ---------- */
+    .cat-cats { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.75rem; }
+    .cat-cat {
+        display: inline-flex; align-items: center; gap: .5rem;
+        min-height: 2.5rem;
+        padding: 0 1.1rem 0 .8rem;
+        font-size: .9375rem; font-weight: 600;
+        color: var(--ink);
+        background: var(--soft);
+        border-radius: 999px;
+        text-decoration: none;
+        transition: background-color .15s, color .15s;
+    }
+    .cat-cat i {
+        width: .8rem; height: .8rem; border-radius: 50%;
+        background: var(--strong);
+        box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18);
+    }
+    .cat-cat.is-all { padding-left: 1.1rem; }
+    .cat-cat:hover { background: var(--strong); }
+    .cat-cat.is-on { color: #fff; background: var(--red); }
+    .cat-cat.is-on i { background: #fff; box-shadow: none; }
+    .cat-cat:focus-visible, .cat-clear:focus-visible, .cat-btn:focus-visible {
+        outline: 2px solid var(--red); outline-offset: 2px;
+    }
+
+    /* ---------- Tarjetas altas ---------- */
+    .cat-grid {
+        list-style: none; margin: 0; padding: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.25rem .75rem;
+    }
+    @media (min-width: 560px)  { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 1.75rem 1.25rem; } }
+
+    .cat-card {
+        --c-bg: var(--soft);
+        --c-ink: var(--ink);
+        --c-mute: var(--muted);
+        --c-disc: var(--strong);
+        --c-price: var(--price);
+        --c-btn: var(--red);
+        --c-btn-ink: #fff;
+        --c-warn: var(--warn);
+
+        position: relative;
+        height: 100%;
+        display: flex; flex-direction: column; align-items: center;
+        padding: 1rem .75rem 1.1rem;
+        text-align: center;
+        color: var(--c-ink);
+        background: var(--c-bg);
+        border-radius: 1.5rem;
+        transition: background-color .25s, color .25s, transform .25s, box-shadow .25s;
+    }
+    @media (min-width: 560px) { .cat-card { padding: 1.25rem 1.25rem 1.4rem; border-radius: 1.75rem; } }
+
+    /* Estado activo, como la tarjeta destacada del carrusel de referencia */
+    .cat-card:hover, .cat-card:focus-within {
+        --c-bg: #b91c1c;
+        --c-ink: #fff;
+        --c-mute: rgba(255, 255, 255, .86);
+        --c-disc: rgba(255, 255, 255, .16);
+        --c-price: #fff;
+        --c-btn: #fff;
+        --c-btn-ink: #b91c1c;
+        --c-warn: #fff;
+        transform: translateY(-.4rem);
+        box-shadow: 0 1.25rem 1.75rem -1rem rgba(127, 29, 29, .55);
+    }
+
+    .cat-stage {
+        position: relative;
+        width: 100%;
+        height: 10rem;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: .875rem;
+    }
+    @media (min-width: 560px) { .cat-stage { height: 13rem; margin-bottom: 1rem; } }
+
+    .cat-disc {
+        position: absolute; left: 50%; top: 50%;
+        width: 6.25rem; height: 6.25rem;
+        border-radius: 50%;
+        background: var(--c-disc);
+        transform: translate(-50%, -50%);
+        transition: background-color .25s;
+    }
+    @media (min-width: 560px) { .cat-disc { width: 9.25rem; height: 9.25rem; } }
+
+    .cat-img {
+        position: relative;
+        display: block;
+        max-width: 94%; max-height: 8.25rem;
+        object-fit: contain;
+        border-radius: .5rem;
+        transition: transform .25s;
+    }
+    @media (min-width: 560px) { .cat-img { max-width: 84%; max-height: 12rem; } }
+    .cat-card:hover .cat-img, .cat-card:focus-within .cat-img { transform: translateY(-.5rem) scale(1.07); }
+
+    .cat-none {
+        position: relative;
+        display: flex; flex-direction: column; align-items: center; gap: .35rem;
+        font-size: .875rem; color: var(--c-mute);
+    }
+    .cat-none svg { width: 2rem; height: 2rem; }
+
+    .cat-name {
+        margin: 0;
+        max-width: 100%;
+        font-size: 1rem; font-weight: 700; line-height: 1.2;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    @media (min-width: 560px) { .cat-name { font-size: 1.1875rem; } }
+
+    .cat-size { margin: .25rem 0 0; font-size: .875rem; color: var(--c-mute); }
+
+    .cat-price {
+        margin: .625rem 0 0;
+        display: inline-flex; align-items: baseline; gap: .1rem;
+        font-size: 1.625rem; font-weight: 800; font-stretch: 75%;
+        line-height: 1;
+        letter-spacing: .005em;
+        font-variant-numeric: tabular-nums;
+        color: var(--c-price);
+    }
+    .cat-price small { font-size: .95rem; font-weight: 700; font-stretch: 100%; }
+    @media (min-width: 560px) { .cat-price { font-size: 2rem; } }
+
+    .cat-stock {
+        margin: .6rem 0 0;
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-size: .875rem; font-weight: 600;
+        color: var(--c-mute);
+    }
+    .cat-stock::before {
+        content: ""; width: .5rem; height: .5rem; border-radius: 50%;
+        background: #16a34a;
+    }
+    .cat-stock.is-low { color: var(--c-warn); }
+    .cat-stock.is-low::before { background: currentColor; }
+    .cat-stock.is-out::before { background: currentColor; }
+    .cat-card:hover .cat-stock::before, .cat-card:focus-within .cat-stock::before { background: #fff; }
+
+    .cat-more {
+        margin-top: auto;
+        padding-top: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 2.25rem; padding: 0 1.1rem;
+        font-size: .875rem; font-weight: 700;
+        color: var(--c-btn-ink);
+        background: var(--c-btn);
+        border-radius: 999px;
+        text-decoration: none;
+        transition: background-color .25s, color .25s;
+    }
+    .cat-stock + .cat-more { margin-top: 1rem; }
+    @media (min-width: 560px) { .cat-more { height: 2.5rem; padding: 0 1.4rem; font-size: .9375rem; } }
+    /* Toda la tarjeta es un enlace */
+    .cat-more::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+    .cat-card { isolation: isolate; }
+    .cat-more:focus-visible { outline: none; }
+    .cat-more:focus-visible::after { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 1.75rem; }
+
+    /* Producto agotado */
+    .cat-card.is-out .cat-img { filter: grayscale(1); opacity: .45; }
+    .cat-card.is-out { --c-disc: var(--tc-strong); }
+    .cat-card.is-out:hover, .cat-card.is-out:focus-within { --c-disc: rgba(255, 255, 255, .16); }
+    .cat-stamp {
+        position: absolute; left: 50%; top: 50%;
+        transform: translate(-50%, -50%) rotate(-8deg);
+        padding: .1rem .6rem;
+        font-size: 1.25rem; font-weight: 800; font-stretch: 85%;
+        letter-spacing: .02em;
+        color: var(--red);
+        border: 3px solid var(--red);
+        border-radius: .375rem;
+        background: color-mix(in srgb, var(--c-bg) 78%, transparent);
+    }
+    .dark .cat-stamp { color: #f87171; border-color: #f87171; }
+    .cat-card:hover .cat-stamp, .cat-card:focus-within .cat-stamp { color: #fff; border-color: #fff; background: transparent; }
+
+    /* ---------- Sin resultados ---------- */
+    .cat-empty {
+        padding: 3.5rem 1.5rem 3.75rem;
+        text-align: center;
+        background: var(--tc-soft);
+        border-radius: 4.5rem 1.25rem 1.25rem 1.25rem;
+    }
+    .cat-empty__disc {
+        width: 5rem; height: 5rem; margin: 0 auto;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        background: var(--tc-strong);
+        color: var(--muted);
+    }
+    .cat-empty__disc svg { display: block; width: 2.25rem; height: 2.25rem; }
+    .cat-empty h3 { margin: 1.25rem 0 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
+    .cat-empty p { margin: .5rem auto 0; max-width: 32ch; color: var(--muted); line-height: 1.5; }
+    .cat-btn {
+        display: inline-flex; align-items: center;
+        margin-top: 1.5rem;
+        height: 2.75rem; padding: 0 1.5rem;
+        font-weight: 700; font-size: .9375rem;
+        color: #fff; background: var(--red);
+        border-radius: 999px;
+        text-decoration: none;
+        transition: background-color .15s;
+    }
+    .cat-btn:hover { background: #7f1d1d; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cat *, .cat *::before, .cat *::after { transition: none !important; }
+        .cat-card:hover, .cat-card:focus-within { transform: none; }
+        .cat-card:hover .cat-img, .cat-card:focus-within .cat-img { transform: none; }
+    }
+</style>
+
+<div class="cat">
+
+    <header class="cat-hero">
+        <div class="cat-hero__bg" aria-hidden="true"></div>
+
+        <div class="cat-hero__in">
+            <div>
+                <h1>Productos</h1>
+                <p>Lo que hay en la tienda, con su precio y cuánto queda.</p>
+
+                <form class="cat-search" role="search" method="get" action="{% url 'catalogo_productos' %}">
+                    {% if categoria_seleccionada %}
+                        <input type="hidden" name="categoria" value="{{ categoria_seleccionada }}">
+                    {% endif %}
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                    </svg>
+                    <label class="cat-sr" for="buscar">Buscar producto por nombre</label>
+                    <input
+                        type="search"
+                        id="buscar"
+                        name="buscar"
+                        value="{{ busqueda }}"
+                        placeholder="Buscar por nombre"
+                        autocomplete="off"
+                    >
+                    <button type="submit">Buscar</button>
+                </form>
+            </div>
+
+            <figure class="cat-hero__photo" aria-hidden="true">
+                <img src="{% static 'img/tienda.jpg' %}" alt="">
+            </figure>
+        </div>
+
+        <a class="cat-notch" href="#catalogo" aria-label="Ir al catálogo">
+            <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12l7 7 7-7"></path>
+                </svg>
+            </span>
+        </a>
+    </header>
+
+
+    <div class="cat-wrap">
+        <section class="cat-board" id="catalogo" aria-labelledby="catalogo-titulo">
+
+            <div class="cat-head">
+                <h2 id="catalogo-titulo">Catálogo general.</h2>
+
+                <div class="cat-head__side">
+                    <p class="cat-count" role="status">
+                        {% if busqueda %}Resultados para «{{ busqueda }}»: {% endif %}<strong>{{ productos|length }}</strong> producto{{ productos|length|pluralize }}
+                    </p>
+
+                    {% if busqueda or categoria_seleccionada %}
+                        <a class="cat-clear" href="{% url 'catalogo_productos' %}">Quitar filtros</a>
+                    {% endif %}
+                </div>
+            </div>
+
+
+            {% if categorias %}
+                <nav class="cat-cats" aria-label="Filtrar por categoría">
+                    <a
+                        class="cat-cat is-all{% if not categoria_seleccionada %} is-on{% endif %}"
+                        href="{% url 'catalogo_productos' %}{% if busqueda %}?buscar={{ busqueda|urlencode }}{% endif %}"
+                        {% if not categoria_seleccionada %}aria-current="true"{% endif %}
+                    >Todas</a>
+
+                    {% for categoria in categorias %}
+                        <a
+                            class="cat-cat{% if categoria_seleccionada == categoria.id|stringformat:'s' %} is-on{% endif %}"
+                            data-tono="{{ categoria.id }}"
+                            href="{% url 'catalogo_productos' %}?categoria={{ categoria.id }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}"
+                            {% if categoria_seleccionada == categoria.id|stringformat:'s' %}aria-current="true"{% endif %}
+                        ><i aria-hidden="true"></i>{{ categoria.nombre }}</a>
+                    {% endfor %}
+                </nav>
+            {% endif %}
+
+
+            {% if productos %}
+
+                <ul class="cat-grid">
+
+                    {% for producto in productos %}
+                        <li>
+                            <article
+                                class="cat-card{% if producto.existencias <= 0 %} is-out{% endif %}"
+                                data-tono="{{ producto.categoria_id|default:0 }}"
+                            >
+
+                                <div class="cat-stage">
+                                    <span class="cat-disc" aria-hidden="true"></span>
+
+                                    {% if producto.imagen %}
+                                        <img
+                                            class="cat-img"
+                                            src="{{ producto.imagen.url }}"
+                                            alt="{{ producto.nombre }}"
+                                            loading="lazy"
+                                            decoding="async"
+                                        >
+                                    {% else %}
+                                        <div class="cat-none">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                                                <circle cx="9" cy="10" r="1.75"></circle>
+                                                <path d="M21 16l-5-5-8 9"></path>
+                                            </svg>
+                                            <span>Sin foto</span>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if producto.existencias <= 0 %}
+                                        <span class="cat-stamp" aria-hidden="true">Agotado</span>
+                                    {% endif %}
+                                </div>
+
+                                <h3 class="cat-name">{{ producto.nombre }}</h3>
+
+                                <p class="cat-size">
+                                    {% with unidad=producto.unidad_medida|lower %}
+                                        {{ producto.cantidad }} {% if producto.cantidad == 1 and unidad != 'kg' %}{{ unidad|slice:':-1' }}{% else %}{{ unidad }}{% endif %}
+                                    {% endwith %}
+                                </p>
+
+                                <p class="cat-price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
+
+                                {% if producto.existencias > 5 %}
+                                    <p class="cat-stock">{{ producto.existencias }} disponibles</p>
+                                {% elif producto.existencias > 0 %}
+                                    <p class="cat-stock is-low">Quedan {{ producto.existencias }}</p>
+                                {% else %}
+                                    <p class="cat-stock is-out">Agotado</p>
+                                {% endif %}
+
+                                <a class="cat-more" href="{% url 'detalle_producto' producto.id %}">
+                                    Ver detalle<span class="cat-sr"> de {{ producto.nombre }}</span>
+                                </a>
+
+                            </article>
+                        </li>
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <div class="cat-empty">
+                    <div class="cat-empty__disc">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path>
+                            <path d="M3 8l9 5 9-5"></path>
+                            <path d="M12 13v8"></path>
+                        </svg>
+                    </div>
+
+                    {% if busqueda or categoria_seleccionada %}
+                        <h3>No encontramos productos con ese filtro</h3>
+                        <p>Revisa cómo escribiste el nombre o prueba con otra categoría.</p>
+                        <a class="cat-btn" href="{% url 'catalogo_productos' %}">Ver todo el catálogo</a>
+                    {% else %}
+                        <h3>Aún no hay productos en el catálogo</h3>
+                        <p>Cuando se agreguen, los verás aquí con su precio y cuánto queda.</p>
+                        {% if user.is_superuser %}
+                            <a class="cat-btn" href="{% url 'crear_producto' %}">Agregar un producto</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+            {% endif %}
+
+        </section>
+    </div>
+
+</div>
 
 {% endblock %}
