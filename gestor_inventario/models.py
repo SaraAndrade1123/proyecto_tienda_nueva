@@ -60,3 +60,30 @@ class ImagenCarrusel(models.Model):
             ultimo = ImagenCarrusel.objects.order_by('-orden').first()
             self.orden = (ultimo.orden + 1) if ultimo else 1
         super().save(*args, **kwargs)
+
+class ConsumoPersonal(models.Model):
+    fecha = models.DateField(default=timezone.localdate, verbose_name='Fecha del consumo')
+
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, verbose_name='Usuario')
+
+    total = models.IntegerField( default=0, verbose_name='Total')
+
+    activo=models.BooleanField(default=True, verbose_name='Activo (Soft Delete)')
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Consumo #{self.id} - {self.fecha} - ${self.total}'
+
+class DetalleConsumo(models.Model):
+
+    consumo = models.ForeignKey(ConsumoPersonal, related_name='detalles', on_delete=models.CASCADE)
+
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+
+    cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+
+    precio_unitario = models.IntegerField(verbose_name='Precio al momento del registro')
+    subtotal = models.IntegerField(verbose_name='Subtotal')
+
+    def __str__(self):
+        return f'{self.producto.nombre} * {self.cantidad}'
