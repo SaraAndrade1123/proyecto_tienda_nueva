@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 
+from cloudinary.models import CloudinaryField
+
 
 class Proveedor(models.Model):
     nombre_empresa = models.CharField(max_length=200, verbose_name="Nombre de la empresa / Razón Social", default='')
