@@ -14,7 +14,6 @@ urlpatterns = [
     path('proveedores/<int:id>/visitas/nueva/',views.agregar_visita_proveedor,name='agregar_visita_proveedor'),
 
     path('consumo/', views.ver_consumo, name='ver_consumo'),
-
     path('consumo/agregar/', views.agregar_consumo, name='agregar_consumo'),
 
 ]

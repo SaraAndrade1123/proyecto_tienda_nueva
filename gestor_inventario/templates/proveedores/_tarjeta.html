@@ -1,0 +1,157 @@
+{# Tarjeta de proveedor (estilo catálogo). Requiere en el contexto: proveedor, hoy, limite_aviso #}
+<article class="prv-card {% if proveedor.activo %}is-activo{% else %}is-inactivo{% endif %}">
+
+  <div class="prv-top">
+
+    <!-- Zona que despliega la tarjeta al presionarla -->
+    <div class="prv-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="prov-more-{{ proveedor.id }}">
+
+      <div class="prv-id-row">
+        <div class="prv-disc">
+          <i class="fa-solid fa-truck-field"></i>
+
+          {# Aviso "!" cuando hay una visita pronta (solo proveedores activos) #}
+          {% if proveedor.activo and proveedor.siguiente_visita and proveedor.siguiente_visita.fecha <= limite_aviso %}
+            <span class="prv-alert" title="Visita próxima: {{ proveedor.siguiente_visita.fecha|date:'d/m/Y' }}">!</span>
+          {% endif %}
+
+          <span class="prv-dot" title="{% if proveedor.activo %}Activo{% else %}Desactivado{% endif %}"></span>
+        </div>
+
+        <div class="prv-id">
+          <h3 class="prv-name" title="{{ proveedor.nombre_empresa }}">{{ proveedor.nombre_empresa }}</h3>
+          <p class="prv-nit">NIT {{ proveedor.nit }}{% if not proveedor.activo %} · Desactivado{% endif %}</p>
+        </div>
+      </div>
+
+      <!-- Visita más próxima: siempre ocupa el mismo espacio -->
+      <div class="prv-visit">
+        <i class="fa-regular fa-calendar"></i>
+        <div class="prv-visit__txt">
+          <p class="prv-label">Próxima visita</p>
+          {% if proveedor.siguiente_visita %}
+            <p class="prv-date">
+              <strong>{{ proveedor.siguiente_visita.fecha|date:"d/m/Y" }}</strong>
+              {% if proveedor.siguiente_visita.fecha <= limite_aviso and proveedor.activo %}
+                <span class="prv-soon"><i class="fa-solid fa-clock"></i> Próximamente</span>
+              {% endif %}
+            </p>
+          {% else %}
+            <p class="prv-date is-none">Sin visitas</p>
+          {% endif %}
+        </div>
+        <i class="fa-solid fa-chevron-down prv-chev"></i>
+      </div>
+    </div>
+
+    <!-- Botones a la derecha -->
+    <div class="prv-actions">
+      {% if proveedor.activo %}
+
+        <!-- Agregar visita: el botón abre un calendario emergente -->
+        <form method="POST" action="{% url 'agregar_visita_proveedor' proveedor.id %}">
+          {% csrf_token %}
+          <button type="button" class="prv-ib prv-ib--main" title="Agregar visita" aria-label="Agregar visita"
+            onclick="var f=document.getElementById('fecha-visita-{{ proveedor.id }}'); if (f.showPicker) { f.showPicker(); } else { f.focus(); f.click(); }">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </button>
+          <input
+            id="fecha-visita-{{ proveedor.id }}"
+            class="prv-date-input"
+            type="date"
+            name="fecha"
+            tabindex="-1"
+            aria-hidden="true"
+            onchange="if (this.value) { this.form.submit(); }"
+          >
+        </form>
+
+        <!-- Editar -->
+        <a href="{% url 'editar_proveedor' proveedor.id %}" class="prv-ib" title="Editar" aria-label="Editar proveedor">
+          <i class="fa-solid fa-pen"></i>
+        </a>
+
+        <!-- Desactivar -->
+        <form method="POST" action="{% url 'desactivar_proveedor' proveedor.id %}" onsubmit="return confirm('¿Deseas desactivar este proveedor?');">
+          {% csrf_token %}
+          <button type="submit" class="prv-ib" title="Desactivar" aria-label="Desactivar proveedor">
+            <i class="fa-solid fa-ban"></i>
+          </button>
+        </form>
+
+      {% else %}
+
+        <!-- Activar -->
+        <form method="POST" action="{% url 'activar_proveedor' proveedor.id %}">
+          {% csrf_token %}
+          <button type="submit" class="prv-ib prv-ib--main" title="Activar" aria-label="Activar proveedor">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </form>
+
+      {% endif %}
+
+      <!-- Eliminar (activos y desactivados) -->
+      <form method="POST" action="{% url 'eliminar_proveedor' proveedor.id %}" onsubmit="return confirm('¿Eliminar definitivamente este proveedor? Se borrarán también sus visitas.');">
+        {% csrf_token %}
+        <button type="submit" class="prv-ib prv-ib--danger" title="Eliminar" aria-label="Eliminar proveedor">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Información completa (se despliega al presionar la tarjeta) -->
+  <div id="prov-more-{{ proveedor.id }}" class="prv-more">
+    <div>
+      <div class="prv-details">
+
+        <dl class="prv-dl">
+          <div>
+            <dt title="Contacto"><i class="fa-solid fa-user"></i></dt>
+            <dd>{{ proveedor.contacto_nombre }}</dd>
+          </div>
+          <div>
+            <dt title="Teléfono"><i class="fa-solid fa-phone"></i></dt>
+            <dd>{{ proveedor.telefono }}</dd>
+          </div>
+          <div>
+            <dt title="Correo"><i class="fa-solid fa-envelope"></i></dt>
+            <dd>{{ proveedor.email }}</dd>
+          </div>
+          <div>
+            <dt title="Dirección"><i class="fa-solid fa-location-dot"></i></dt>
+            <dd{% if not proveedor.direccion %} class="is-mute"{% endif %}>{% if proveedor.direccion %}{{ proveedor.direccion }}{% else %}Sin dirección{% endif %}</dd>
+          </div>
+          <div>
+            <dt title="Registrado"><i class="fa-regular fa-clock"></i></dt>
+            <dd class="is-mute">Registrado el {{ proveedor.fecha_registro|date:"d/m/Y" }}</dd>
+          </div>
+        </dl>
+
+        <!-- Todas las próximas visitas -->
+        <div class="prv-box">
+          <div class="prv-box__head">
+            <span><i class="fa-regular fa-calendar"></i> Próximas visitas</span>
+            {% if proveedor.proximas_visitas %}<span>{{ proveedor.proximas_visitas|length }}</span>{% endif %}
+          </div>
+
+          {% if proveedor.proximas_visitas %}
+            <ul>
+              {% for visita in proveedor.proximas_visitas %}
+                <li>
+                  <span>{{ visita.fecha|date:"d/m/Y" }}</span>
+                  {% if visita.fecha <= limite_aviso and proveedor.activo %}
+                    <span class="prv-soon"><i class="fa-solid fa-clock"></i> Próximamente</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>Sin visitas próximas</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

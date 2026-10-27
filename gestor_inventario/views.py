@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.utils import timezone
@@ -28,30 +27,48 @@ def acerda_de(request):
 
 DIAS_AVISO_VISITA = 3
 
+
+def _preparar(queryset, hoy):
+    """
+    Convierte el queryset en lista y le agrega a cada proveedor:
+    - proximas_visitas: todas las visitas con fecha >= hoy, ordenadas por fecha.
+    - siguiente_visita: la primera de ellas, o None.
+    """
+    lista = list(queryset)
+    for proveedor in lista:
+        proximas = sorted(
+            (v for v in proveedor.visitas.all() if v.fecha >= hoy),
+            key=lambda v: v.fecha
+        )
+        proveedor.proximas_visitas = proximas
+        proveedor.siguiente_visita = proximas[0] if proximas else None
+    return lista
+
+
 @login_required
 @user_passes_test(es_admin)
 def mostrar_proveedores(request):
     query = request.GET.get('q', '').strip()
-    mostrar_inactivos = request.GET.get('inactivos') == '1'
 
-    proveedores = Proveedor.objects.all()
-
-    if not mostrar_inactivos:
-        proveedores = proveedores.filter(activo=True)
+    proveedores = Proveedor.objects.prefetch_related('visitas').order_by('nombre_empresa')
 
     if query:
         proveedores = proveedores.filter(
             Q(nombre_empresa__icontains=query) |
-            Q(nit__icontains=query)
+            Q(nit__icontains=query) |
+            Q(contacto_nombre__icontains=query)
         )
 
     hoy = timezone.localdate()
     limite_aviso = hoy + timedelta(days=DIAS_AVISO_VISITA)
 
+    activos = _preparar(proveedores.filter(activo=True), hoy)
+    inactivos = _preparar(proveedores.filter(activo=False), hoy)
+
     datos = {
-        'proveedores': proveedores,
+        'activos': activos,
+        'inactivos': inactivos,
         'query': query,
-        'mostrar_inactivos': mostrar_inactivos,
         'hoy': hoy,
         'limite_aviso': limite_aviso,
     }
@@ -70,7 +87,7 @@ def nuevo_proveedor(request):
     if request.method == 'POST':
         nombre_empresa = request.POST.get('nombre', '').strip()
         nit = request.POST.get('nit', '').strip()
-        contacto_nombre = request.POST.get('telefono_contacto', '').strip()
+        contacto_nombre = request.POST.get('contacto_nombre', '').strip()
         telefono = request.POST.get('telefono', '').strip()
         email = request.POST.get('correo', '').strip()
         direccion = request.POST.get('direccion', '').strip()
@@ -78,7 +95,7 @@ def nuevo_proveedor(request):
 
         datos_form = request.POST
 
-        if not all([nombre_empresa, nit, contacto_nombre, email]):
+        if not all([nombre_empresa, nit, contacto_nombre, telefono, email]):
             error_campos = True
 
         elif Proveedor.objects.filter(nit=nit).exists():
@@ -126,18 +143,25 @@ def nuevo_proveedor(request):
 def editar_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
 
+    # Un proveedor desactivado solo se puede volver a activar, no editar.
+    if not proveedor.activo:
+        return redirect('proveedores')
+
     error_nit = False
     error_campos = False
+    datos_form = {}
 
     if request.method == 'POST':
         nombre_empresa = request.POST.get('nombre', '').strip()
         nit = request.POST.get('nit', '').strip()
-        contacto_nombre = request.POST.get('telefono_contacto', '').strip()
+        contacto_nombre = request.POST.get('contacto_nombre', '').strip()
         telefono = request.POST.get('telefono', '').strip()
         email = request.POST.get('correo', '').strip()
         direccion = request.POST.get('direccion', '').strip()
 
-        if not all([nombre_empresa, nit, contacto_nombre, email]):
+        datos_form = request.POST
+
+        if not all([nombre_empresa, nit, contacto_nombre, telefono, email]):
             error_campos = True
 
         elif Proveedor.objects.filter(nit=nit).exclude(id=proveedor.id).exists():
@@ -161,6 +185,7 @@ def editar_proveedor(request, id):
             'proveedor': proveedor,
             'error_nit': error_nit,
             'error_campos': error_campos,
+            'datos': datos_form,
         }
     )
 
@@ -209,7 +234,7 @@ def agregar_visita_proveedor(request, id):
         )
     return redirect('proveedores')
 
-#=================================================
+#================================================================00
 
 def ver_consumo(request):
     return render(request, 'consumo.html')

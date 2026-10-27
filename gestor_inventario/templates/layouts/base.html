@@ -130,8 +130,13 @@
                         <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
                             <i class="fa-solid fa-percent w-5 text-brand-red"></i> pp
                         </a>
-                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-600">
+                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
                             <i class="fa-solid fa-cash-register w-5 text-brand-red"></i> Cierre de caja
+                        </a>
+
+                        <!-- NUEVO: Informe de ingresos -->
+                        <a href="{% url 'informe_ingresos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
+                            <i class="fa-solid fa-chart-column w-5 text-brand-red"></i> Informe de ingresos
                         </a>
                     </div>
                 </div>
@@ -255,6 +260,7 @@
                     <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Consumo</a>
                     <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">pp</a>
                     <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Cierre de caja</a>
+                    <a href="{% url 'informe_ingresos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Informe de ingresos</a>
                 {% endif %}
 
                 <hr class="border-white/20 dark:border-gray-600">
