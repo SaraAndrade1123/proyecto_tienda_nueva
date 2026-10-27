@@ -7,55 +7,57 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.contrib import messages
 
-from .models import Proveedor, VisitaProveedor
+from .models import Proveedor, VisitaProveedor, ImagenCarrusel
 from accounts.views import es_superadmin as es_admin
 
 # =========================================================
 
 @login_required
 def informacion_tienda(request):
-        imagenes = ImagenCarrusel.objects.all()
+    imagenes = ImagenCarrusel.objects.all()
 
     if request.method == 'POST':
         accion = request.POST.get('accion')
 
         if accion == 'agregar':
-            imagenes_subidadas = request.FILES.getlist('imagenes')
+            imagenes_subidas = request.FILES.getlist('imagenes')
 
-        if imagenes_subidadas:
-            for img in imagenes_subidadas:
-                ImagenCarrusel.objects.create(imagen=img)
+            if imagenes_subidas:
+                for img in imagenes_subidas:
+                    ImagenCarrusel.objects.create(imagen=img)
 
-            messages.success(request, 'Imagenes subidas correctamente.')
-        else:
-            messages.error(request, 'No se selecciono ninguna imagen.')
+                messages.success(request, 'Imagenes subidas correctamente.')
+            else:
+                messages.error(request, 'No se selecciono ninguna imagen.')
 
-        return redirect('informacion_tienda')
+            return redirect('informacion_tienda')
 
-    elif accion == 'eliminar':
-        imagne_id = request.POST.get('imagen_id')
-        imagen = get_object_or_404(ImagenCarrusel, id=imagen_id)
-        imagen.delete
+        elif accion == 'eliminar':
+            imagen_id = request.POST.get('imagen_id')
+            imagen = get_object_or_404(ImagenCarrusel, id=imagen_id)
+            imagen.delete()
 
-        messages.success(request, 'Imagen eliminada correctamente')
+            messages.success(request, 'Imagen eliminada correctamente')
 
-        return redirect('informacion_tienda')
+            return redirect('informacion_tienda')
 
-    elif accion == 'mover':
-        imagen_id = request.POST.get('imagen_id')
-        direccion = request.POST.get('direccion')
+        elif accion == 'mover':
+            imagen_id = request.POST.get('imagen_id')
+            direccion = request.POST.get('direccion')
+            imagen_actual = get_object_or_404(ImagenCarrusel, id=imagen_id)
 
-        if direccion == 'izquierda':
-            imagen_vecina =ImagenCarrusel.objects.filter(orden_lt=imagen_actual.orden)order_by('-orden').first()
-        else:
-            imagen_vecina = ImagenCarrusel.objects.filter(orden_gt=imagen_actual).order_by('orden').first()
+            if direccion == 'izquierda':
+                imagen_vecina = ImagenCarrusel.objects.filter(orden__lt=imagen_actual.orden).order_by('-orden').first()
+            else:
+                imagen_vecina = ImagenCarrusel.objects.filter(orden__gt=imagen_actual.orden).order_by('orden').first()
 
-        if imagen_vecina:
-            imagen_actual.orden, imagen_vecina.orden = imagen_actual.orden
+            if imagen_vecina:
+                imagen_actual.orden, imagen_vecina.orden = imagen_vecina.orden, imagen_actual.orden
 
-            imagen_actual.save()
-            imagen_vecina.save()
+                imagen_actual.save()
+                imagen_vecina.save()
 
             return redirect('informacion_tienda')
 
@@ -63,7 +65,7 @@ def informacion_tienda(request):
     context = {
         'imagenes': imagenes
     }
-    return render(request, 'infomacion.html', context)
+    return render(request, 'informacion.html', context)
 
 
 
