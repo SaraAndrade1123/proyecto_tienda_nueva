@@ -5,7 +5,6 @@ from . import views
 urlpatterns = [
     path('', views.home,name='home'),
 
-# HU_008: CRUD_PROVEEDOR
     path('proveedores/',views.mostrar_proveedores,name='proveedores'),
     path('proveedores/nuevo/',views.nuevo_proveedor,name='nuevo_proveedor'),
     path('proveedores/<int:id>/editar/',views.editar_proveedor,name='editar_proveedor'),
@@ -15,4 +14,7 @@ urlpatterns = [
     path('proveedores/<int:id>/visitas/nueva/',views.agregar_visita_proveedor,name='agregar_visita_proveedor'),
 
     path('consumo/', views.ver_consumo, name='ver_consumo'),
+
+    path('consumo/agregar/', views.agregar_consumo, name='agregar_consumo'),
+
 ]

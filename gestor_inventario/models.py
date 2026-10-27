@@ -44,3 +44,23 @@ class Perfil(models.Model):
 
     def __str__(self):
         return f"Perfil de {self.user}"
+
+class ImagenCarrusel(models.Model):
+
+    imagen = models.ImageField(
+        upload_to='carrusel/',
+        verbose_name="Imagen"
+    )
+    
+    orden = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Orden de visualización"
+    )
+
+    class Meta:
+        verbose_name = "Imagen del Carrusel"
+        verbose_name_plural = "Imágenes del Carrusel"
+        ordering = ["orden"]
+
+    def __str__(self):
+        return f"Imagen del carrusel {self.id}"
