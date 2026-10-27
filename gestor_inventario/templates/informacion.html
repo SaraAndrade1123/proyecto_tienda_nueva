@@ -10,10 +10,10 @@
             {% if imagenes %}
                 <div id="carruselHero" class="relative w-full h-full">
                     {% for imagen in imagenes %}
-                    <img src="{{ imagen.imagen.url }}"
-                         alt="Imagen de la tienda"
-                         class="carrusel-hero-img absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out {% if forloop.first %}opacity-100{% else %}opacity-0{% endif %}"
-                         data-index="{{ forloop.counter0 }}">
+                        <img src="{{ imagen.imagen.url }}"
+                            alt="Imagen de la tienda"
+                            class="carrusel-hero-img absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out {% if forloop.first %}opacity-100{% else %}opacity-0{% endif %}"
+                            data-index="{{ forloop.counter0 }}">
                     {% endfor %}
                 </div>
             {% else %}
