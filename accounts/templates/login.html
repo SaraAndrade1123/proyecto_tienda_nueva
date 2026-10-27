@@ -1,19 +1,14 @@
 <!DOCTYPE html>
-<html lang="es" class="light">
+<html lang="es" class="light h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Iniciar Sesión</title>
-
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'><path fill='rgb(185, 28, 28)' d='M94.7 136.3C101.6 112.4 123.5 96 148.4 96L492.4 96C517.3 96 539.2 112.4 546.2 136.3L569.6 216.5C582.4 260.2 549.5 304 504 304C477.7 304 454.6 289.1 443.2 266.9C431.6 288.8 408.6 304 381.8 304C355.2 304 332.1 289 320.5 267C308.9 289 285.8 304 259.2 304C232.4 304 209.4 288.9 197.8 266.9C186.4 289 163.3 304 137 304C91.4 304 58.6 260.3 71.4 216.5L94.7 136.3zM160.4 416L480.4 416L480.4 349.6C488 351.2 495.9 352 503.9 352C518.2 352 531.9 349.4 544.4 344.8L544.4 496C544.4 522.5 522.9 544 496.4 544L144.4 544C117.9 544 96.4 522.5 96.4 496L96.4 344.8C108.9 349.4 122.5 352 136.9 352C145 352 152.8 351.2 160.4 349.6L160.4 416z'/></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - MiTienda</title>
+    
+    {% load static %}
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- Configuración de Tailwind con TUS colores -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -23,17 +18,38 @@
                         brand: {
                             red: '#b91c1c',
                             darkred: '#7f1d1d',
-                            darkbg: '#0f0f0f',
-                            darknav: '#1a1a1a',
+                            hoverred: '#991b1b',
+                            darkbg: '#0f0f0f', 
+                            darknav: '#1a1a1a', 
                             darkcard: '#1e1e1e',
                         }
+                    },
+                    keyframes: {
+                        shine: {
+                            '100%': { left: '125%' }
+                        }
+                    },
+                    animation: {
+                        'shine': 'shine 1.5s ease-in-out infinite'
                     }
                 }
             }
         }
     </script>
 
-    <!-- Aplicar tema ANTES de renderizar para evitar flash -->
+    <!-- Font Awesome Free CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+
+    <!-- Script de inicialización rápida del tema -->
     <script>
         (function () {
             try {
@@ -50,256 +66,222 @@
             } catch (e) {}
         })();
     </script>
-
-    <style>
-        html, body {
-            min-height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            transition: background-color 0.4s ease, color 0.4s ease;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        @media (max-width: 768px) {
-            html, body {
-                overscroll-behavior: none;
-                height: 100%;
-                overflow: hidden;
-            }
-            .login-wrapper {
-                height: 100vh;
-                height: 100dvh;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .login-wrapper {
-                min-height: 100vh;
-                padding: 40px 20px;
-            }
-        }
-
-        /* ==== BOTÓN DE TEMA ==== */
-        .theme-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        /* Modo claro: texto con brand.red */
-        html.light .theme-toggle {
-            color: #b91c1c;
-        }
-        html.light .theme-toggle:hover {
-            background: rgba(185, 28, 28, 0.1);
-        }
-
-        /* Modo oscuro: texto con brand.red */
-        html.dark .theme-toggle {
-            color: #b91c1c;
-        }
-        html.dark .theme-toggle:hover {
-            background: rgba(185, 28, 28, 0.2);
-        }
-
-        .theme-toggle i {
-            font-size: 16px;
-            transition: transform 0.4s ease;
-        }
-
-        /* Rotación suave al cambiar de tema */
-        html.dark .theme-toggle i {
-            transform: rotate(180deg);
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(185, 28, 28, 0.3);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(185, 28, 28, 0.5);
-        }
-    </style>
 </head>
-<body class="bg-gray-50 dark:bg-brand-darkbg">
+<body class="h-full bg-slate-100 dark:bg-brand-darkbg text-slate-800 dark:text-slate-100 selection:bg-brand-red selection:text-white overflow-x-hidden min-h-screen relative flex items-center justify-center transition-colors duration-500">
 
-    <div class="login-wrapper flex items-center justify-center px-4 py-8">
+    <!-- IMAGEN DE FONDO A PANTALLA COMPLETA -->
+    <div class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+        <div class="w-full h-full bg-cover bg-center opacity-95 transition-opacity duration-700 scale-105"
+            style="background-image: url('{% get_media_prefix %}fondo_tienda.jpeg');">
+        </div>
+        
+        <!-- Velo adaptativo -->
+        <div class="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] transition-colors duration-500"></div>
+    </div>
 
-        <div class="w-full max-w-md">
+    <!-- BOTÓN DE CAMBIO DE TEMA FLOTANTE -->
+    <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-50">
+        <button
+            id="themeToggleBtn"
+            onclick="toggleTheme()"
+            type="button"
+            class="inline-flex items-center gap-2 px-3.5 py-2 sm:px-4.5 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-extrabold border border-slate-300 dark:border-white/20 bg-white/90 dark:bg-black/50 text-slate-800 dark:text-white hover:bg-white dark:hover:bg-black/70 backdrop-blur-xl shadow-2xl transition-all cursor-pointer group"
+        >
+            <i id="themeIcon" class="fa-solid fa-moon text-brand-red group-hover:rotate-12 transition-transform"></i>
+            <span id="themeText">Modo Oscuro</span>
+        </button>
+    </div>
 
-            <!-- Encabezado con botón de tema -->
-            <div class="text-center mb-8">
-                
-            <div class="flex items-center justify-center mb-4">
-                {% load static %}
-                <img src="{% static '' %}"
-                    alt="#"
-                    class="w-28 h-28 object-contain rounded-full mx-auto">
-            </div>
-
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                    Iniciar Sesión
-                </h1>
-
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                    Ingresa tus datos para continuar
-                </p>
-
-                <!-- Botón de tema -->
-                <button class="theme-toggle mt-4" onclick="toggleTheme()" aria-label="Cambiar tema">
-                    <i id="theme-icon" class="fa-solid fa-moon"></i>
-                    <span id="theme-text">Modo Oscuro</span>
-                </button>
-            </div>
-
-            <!-- Formulario -->
-            <div class="bg-white dark:bg-brand-darkcard border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-7 md:p-8">
-
-                {% if error %}
-                    <div class="mb-5 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-brand-red dark:text-red-300 text-sm">
-                        <i class="fa-solid fa-circle-exclamation mr-2"></i>
-                        {{ error }}
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="relative z-10 min-h-screen w-full flex flex-col lg:flex-row items-center justify-between p-6 pt-20 sm:p-12 sm:pt-20 lg:p-20 max-w-7xl mx-auto gap-12">
+        
+        <!-- COLUMNA IZQUIERDA: MENSAJE DE BIENVENIDA Y MARCA -->
+        <div class="w-full lg:w-1/2 space-y-6 my-auto text-center lg:text-left">
+            
+            <!-- MARCA CON LOGO -->
+            <div class="flex items-center justify-center lg:justify-start gap-3.5 group cursor-default">
+                <div class="relative w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-brand-red to-red-500 shadow-xl flex items-center justify-center shrink-0">
+                    <div class="absolute inset-0 rounded-full bg-brand-red/40 blur-md group-hover:bg-brand-red/70 transition-all"></div>
+                    <div class="w-full h-full rounded-full overflow-hidden bg-brand-darkbg flex items-center justify-center relative z-10">
+                        <img src="{% get_media_prefix %}logo.png" alt="Logo" class="w-full h-full object-cover">
                     </div>
+                </div>
+                <span class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight drop-shadow-md">
+                    MiTienda<span class="text-brand-red">.</span>
+                </span>
+            </div>
+
+            <!-- TÍTULOS -->
+            <div class="space-y-3">
+                <h1 class="text-5xl sm:text-7xl font-black text-slate-900 dark:text-white tracking-tight drop-shadow-md leading-none">
+                    <span class="text-brand-red">¡</span>Bienvenido<span class="text-brand-red">!</span>
+                </h1>
+                <p class="text-base sm:text-lg font-medium text-slate-700 dark:text-slate-100 tracking-wide drop-shadow-md max-w-md mx-auto lg:mx-0">
+                    Que tengas un excelente recorrido administrando nuestra plataforma...
+                </p>
+            </div>
+
+            <!-- BOTÓN VOLVER A LA TIENDA -->
+            <div class="pt-2">
+                <a href="{% url 'informacion_tienda' %}" class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-white/20 hover:bg-white backdrop-blur-xl border border-slate-300 dark:border-white/30 text-xs font-extrabold text-slate-800 dark:text-white shadow-xl hover:border-brand-red/50 transition-all active:scale-95">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                    <span>Volver a la tienda</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: TARJETA DE LOGIN TRANSLÚCIDA OPTIMIZADA -->
+        <div class="w-full lg:w-[460px] shrink-0 my-auto">
+            <div class="relative w-full p-8 sm:p-10 rounded-[2rem] bg-white/80 dark:bg-brand-darkbg/55 backdrop-blur-xl border border-slate-300/80 dark:border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.2)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)] space-y-6 transition-all duration-500">
+                
+                <!-- ALERTA DE ERROR DE DJANGO -->
+                {% if error %}
+                <div class="p-3.5 rounded-2xl bg-red-500/15 border border-brand-red/60 text-red-700 dark:text-red-200 text-xs flex items-center gap-2.5 shadow-lg">
+                    <i class="fa-solid fa-circle-exclamation text-brand-red text-base shrink-0"></i>
+                    <p class="font-bold leading-tight">{{ error }}</p>
+                </div>
                 {% endif %}
 
-                <form method="POST">
+                <!-- FORMULARIO -->
+                <form method="POST" action="{% url 'login' %}" class="space-y-5">
                     {% csrf_token %}
 
-                    <!-- Correo -->
-                    <div class="mb-5">
-                        <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Correo electrónico
+                    <!-- CAMPO USUARIO / CORREO -->
+                    <div class="space-y-1.5">
+                        <label for="email" class="block text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-wider pl-1">
+                            Correo Electrónico
                         </label>
-                        <div class="relative">
-                            <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <div class="relative flex items-center">
                             <input
                                 type="email"
                                 id="email"
                                 name="email"
-                                placeholder="correo@ejemplo.com"
+                                placeholder="ejemplo@correo.com"
                                 required
-                                class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition"
+                                class="w-full h-12 px-4 rounded-2xl bg-white/70 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/40 shadow-inner backdrop-blur-sm transition-all"
                             >
                         </div>
                     </div>
 
-                    <!-- Contraseña -->
-                    <div class="mb-2">
-                        <label for="password" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    <!-- CAMPO CONTRASEÑA -->
+                    <div class="space-y-1.5">
+                        <label for="password" class="block text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase tracking-wider pl-1">
                             Contraseña
                         </label>
-                        <div class="relative">
-                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <div class="relative flex items-center">
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="Ingresa tu contraseña"
+                                placeholder="••••••••"
                                 required
-                                class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-brand-darknav text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-brand-red transition"
+                                class="w-full h-12 px-4 pr-11 rounded-2xl bg-white/70 dark:bg-white/10 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-slate-400 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/40 shadow-inner backdrop-blur-sm transition-all"
                             >
+                            <button
+                                type="button"
+                                onclick="togglePasswordVisibility()"
+                                class="absolute right-4 text-slate-500 dark:text-slate-300 hover:text-brand-red transition-colors focus:outline-none cursor-pointer"
+                                title="Mostrar / Ocultar contraseña"
+                            >
+                                <i id="eyeIcon" class="fa-solid fa-eye-slash text-xs sm:text-sm"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Recuperar datos -->
-                    <div class="text-center mb-6">
-                        <a href="{% url 'recuperar_opciones' %}" class="text-sm text-brand-red hover:text-brand-darkred dark:hover:text-red-400 transition">
-                            ¿Olvidaste alguno de tus datos?
-                        </a>
+                    <!-- OPCIÓN RECORDARME -->
+                    <div class="flex items-center pt-1">
+                        <label class="flex items-center gap-2.5 cursor-pointer select-none group">
+                            <input 
+                                type="checkbox" 
+                                id="remember" 
+                                name="remember" 
+                                class="w-4 h-4 rounded border-slate-400 dark:border-white/30 bg-white/50 dark:bg-white/10 text-brand-red focus:ring-brand-red/30 cursor-pointer"
+                            >
+                            <span class="text-xs font-semibold text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                                Recordarme
+                            </span>
+                        </label>
                     </div>
 
-                    <!-- Botón iniciar sesión -->
-                    <button
-                        type="submit"
-                        class="w-full flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-darkred text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
-                    >
-                        <i class="fa-solid fa-right-to-bracket"></i>
-                        Iniciar Sesión
-                    </button>
+                    <!-- BOTÓN PRINCIPAL CON EFECTO SHINE -->
+                    <div class="pt-2">
+                        <button
+                            type="submit"
+                            class="relative overflow-hidden w-full h-12 bg-gradient-to-r from-brand-red via-red-600 to-brand-hoverred hover:opacity-95 text-white font-black text-xs sm:text-sm uppercase tracking-widest rounded-2xl shadow-xl shadow-brand-red/40 active:scale-[0.99] flex items-center justify-center gap-2.5 transition-all cursor-pointer group"
+                        >
+                            <span class="absolute top-0 -left-full w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 group-hover:animate-shine pointer-events-none"></span>
+                            
+                            <span>INICIAR SESIÓN</span>
+                            <i class="fa-solid fa-arrow-right text-xs sm:text-sm group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+
                 </form>
 
-                <!-- Registro -->
-                <div class="text-center mt-6 pt-5 border-t border-gray-200 dark:border-gray-800">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                        ¿No tienes una cuenta?
+                <!-- ENLACES INFERIORES -->
+                <div class="pt-4 space-y-2 text-center text-xs border-t border-slate-300/80 dark:border-white/15">
+                    <p class="text-slate-700 dark:text-slate-300">
+                        ¿No tienes una cuenta? 
+                        <a href="{% url 'registro' %}" class="font-extrabold text-slate-900 dark:text-white hover:text-brand-red underline transition-colors ml-1">
+                            Regístrate aquí
+                        </a>
                     </p>
-                    <a href="{% url 'registro' %}" class="inline-block mt-2 text-sm font-bold text-rose-700 hover:text-rose-900 dark:hover:text-rose-400 transition">
-                        Crear una cuenta
-                    </a>
-                </div>
-
-                <!-- Volver -->
-                <div class="text-center mt-5">
-                    <a href="{% url 'informacion_tienda' %}" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-rose-700 dark:hover:text-rose-700 transition">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        Volver
-                    </a>
+                    <div>
+                        <a href="recuperar_opciones" class="font-bold text-slate-600 dark:text-slate-300 hover:text-brand-red transition-colors">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
                 </div>
 
             </div>
         </div>
+
     </div>
 
-    <!-- JavaScript para el cambio de tema -->
+    <!-- SCRIPTS -->
     <script>
-        function toggleTheme() {
-            const html = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            const text = document.getElementById('theme-text');
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
 
-            if (html.classList.contains('dark')) {
-                // Cambiar a MODO CLARO → mostramos LUNA y texto "Modo Oscuro"
-                html.classList.remove('dark');
-                html.classList.add('light');
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-                text.textContent = 'Modo Oscuro';
-                localStorage.setItem('theme', 'light');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.className = 'fa-solid fa-eye text-xs sm:text-sm text-brand-red';
             } else {
-                // Cambiar a MODO OSCURO → mostramos SOL y texto "Modo Claro"
-                html.classList.remove('light');
-                html.classList.add('dark');
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-                text.textContent = 'Modo Claro';
-                localStorage.setItem('theme', 'dark');
+                passwordInput.type = 'password';
+                eyeIcon.className = 'fa-solid fa-eye-slash text-xs sm:text-sm';
             }
         }
 
-        // Al cargar la página, sincronizar iconos con el tema ya aplicado en <head>
-        (function() {
-            const html = document.documentElement;
-            const icon = document.getElementById('theme-icon');
-            const text = document.getElementById('theme-text');
+        function updateThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
 
-            if (html.classList.contains('dark')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
+            if (isDark) {
+                icon.className = 'fa-solid fa-sun text-yellow-400';
                 text.textContent = 'Modo Claro';
             } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
+                icon.className = 'fa-solid fa-moon text-brand-red';
                 text.textContent = 'Modo Oscuro';
             }
-        })();
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', updateThemeUI);
     </script>
 
 </body>
