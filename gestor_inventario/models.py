@@ -48,21 +48,15 @@ class Perfil(models.Model):
         return f"Perfil de {self.user}"
 
 class ImagenCarrusel(models.Model):
-
-    imagen = models.ImageField(
-        upload_to='carrusel/',
-        verbose_name="Imagen"
-    )
-    
-    orden = models.PositiveIntegerField(
-        default=0,
-        verbose_name="Orden de visualización"
-    )
+    imagen = models.ImageField(upload_to='carrusel/')
+    orden = models.PositiveIntegerField(default=0)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Imagen del Carrusel"
-        verbose_name_plural = "Imágenes del Carrusel"
-        ordering = ["orden"]
+        ordering = ['orden']
 
-    def __str__(self):
-        return f"Imagen del carrusel {self.id}"
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.orden:
+            ultimo = ImagenCarrusel.objects.order_by('-orden').first()
+            self.orden = (ultimo.orden + 1) if ultimo else 1
+        super().save(*args, **kwargs)
