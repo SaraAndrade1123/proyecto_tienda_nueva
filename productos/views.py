@@ -378,5 +378,3 @@ def catalogo_productos(request):
         }
     )
 
-def informacion_tienda(request):
-    return render(request, 'informacion.html')

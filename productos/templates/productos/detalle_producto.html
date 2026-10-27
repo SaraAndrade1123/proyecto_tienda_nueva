@@ -510,7 +510,8 @@
     font-variant-numeric: tabular-nums; color: var(--color-brand-text);
 }
 .cat-det__price small { font-size: 1.4rem; font-weight: 700; font-stretch: 100%; }
-.cat-det__unit { margin-top: -.5rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-det__pricebox { display: grid; gap: .65rem; justify-items: start; }
+.cat-det__unit { font-size: .9375rem; color: var(--color-muted); }
 .cat-det__unit strong { color: var(--color-text); font-weight: 700; }
 
 .cat-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
@@ -541,6 +542,63 @@
 .cat-story h2 { position: relative; font-size: 1.5rem; font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; }
 .cat-story h2::after { content: ""; display: block; width: 2.75rem; height: .3rem; margin-top: .6rem; background: var(--red-400); border-radius: 1rem; }
 .cat-story p { position: relative; margin-top: 1rem; max-width: 62ch; line-height: 1.65; white-space: pre-line; overflow-wrap: anywhere; }
+
+/* Escritorio: toda la ficha cabe en una sola pantalla, sin deslizar.
+   Medidas pensadas para un portátil de 1366×768 (≈ 600 px útiles en el navegador).
+   Va aquí, después de las reglas base, para ganar sobre ellas sin !important. */
+@media (min-width: 860px) {
+    /* Banner delgado */
+    .cat-hero { padding: 1.1rem 2.5rem 3.25rem; }
+    .cat-hero--name h1 {
+        max-width: 40ch; font-size: clamp(1.875rem, 1rem + 1.8vw, 2.5rem); line-height: 1.1;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;   /* máximo 2 líneas: un nombre larguísimo no empuja el contenido */
+    }
+    .cat-hero__in { gap: var(--space-3) var(--space-5); }
+    .cat-crumbs { margin-bottom: .3rem; }
+    .cat-hero .cat-btn { height: 2.5rem; }
+    .cat-wrap { margin-top: -2.25rem; padding-bottom: 2rem; }
+
+    /* El tablero pasa a dos columnas: imagen y descripción a la izquierda, datos a la derecha */
+    .cat-board--det {
+        display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto;
+        gap: .875rem 1.75rem; padding: 1rem 1.25rem 1.25rem; border-radius: var(--radius-lg);
+    }
+    .cat-board--det > .cat-det { display: contents; }   /* sus hijos (imagen y datos) pasan a ser celdas del tablero */
+
+    /* La imagen crece con la altura de la ventana: ventana baja → compacta, ventana alta → grande */
+    .cat-board--det .cat-det__stage {
+        --s: clamp(9.5rem, calc(100vh - 27rem), 20rem);   /* alto máximo de la imagen */
+        grid-column: 1; grid-row: 1;
+        min-height: calc(var(--s) + 2rem); padding: 1rem; border-radius: 4rem 1rem 1rem 1rem;
+    }
+    .cat-board--det .cat-det__stage img { max-height: var(--s); }
+    .cat-board--det .cat-det__stage .cat-disc { width: calc(var(--s) * .77); height: calc(var(--s) * .77); }   /* el producto sobresale ~30 % del círculo */
+    .cat-board--det .cat-det__stage .cat-stamp { font-size: 1.5rem; }
+
+    /* Si sobra altura (ventana alta o zoom reducido) el espacio se reparte entre los bloques; los botones quedan alineados con la base de la descripción */
+    .cat-board--det .cat-det__body { grid-column: 2; grid-row: 1 / span 2; justify-content: space-between; gap: .8rem; }
+
+    .cat-det__price { font-size: clamp(2.25rem, 1.4rem + 2.2vw, 3rem); }
+    .cat-det__price small { font-size: 1.15rem; }
+    .cat-det__pricebox { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; }
+
+    .cat-fact { padding: .6rem .9rem; border-radius: 1rem; }
+    .cat-fact dd { margin-top: .15rem; font-size: 1.0625rem; }
+    .cat-meter { margin-top: .4rem; height: .4rem; }
+
+    .cat-spec dl { margin-top: .35rem; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem 1.5rem; font-size: .9375rem; }
+    @media (max-width: 1199px) { .cat-spec dl { grid-template-columns: 1fr; } }   /* columna estrecha: una fila por dato */
+
+    .cat-det__acts { gap: .5rem; }
+    .cat-det__acts .cat-btn { height: 2.5rem; padding: 0 1.1rem; font-size: .875rem; }
+
+    /* Descripción compacta bajo la imagen; si es muy larga, se desplaza dentro de su caja */
+    .cat-board--det .cat-story { grid-column: 1; grid-row: 2; margin: 0; padding: 1rem 1.25rem 1.1rem; border-radius: 2rem 1rem 1rem 1rem; }
+    .cat-board--det .cat-story::after { right: -2rem; bottom: -3rem; width: 8rem; height: 8rem; }
+    .cat-board--det .cat-story h2 { font-size: 1.125rem; }
+    .cat-board--det .cat-story h2::after { width: 2rem; height: .22rem; margin-top: .4rem; }
+    .cat-board--det .cat-story p { margin-top: .6rem; max-width: none; max-height: 4.75rem; padding-right: .25rem; overflow-y: auto; font-size: .9375rem; line-height: 1.5; scrollbar-width: thin; }
+}
 
 /* 5c · Formulario crear / editar */
 .cat-formgrid { display: grid; gap: var(--space-6); align-items: start; }
@@ -627,15 +685,7 @@
         <div class="cat-hero__in">
             <div>
                 {% if producto %}
-                    <nav class="cat-crumbs" aria-label="Ruta de navegación">
-                        <ol>
-                            <li><a href="{% url 'lista_productos' %}">Productos</a></li>
-                            {% if producto.categoria %}
-                                <li><a href="{% url 'lista_productos' %}?categoria={{ producto.categoria_id }}">{{ producto.categoria.nombre }}</a></li>
-                            {% endif %}
-                            <li aria-current="page">{{ producto.nombre }}</li>
-                        </ol>
-                    </nav>
+                    
                     <h1>{{ producto.nombre }}</h1>
                 {% else %}
                     <span class="cat-eyebrow">Producto</span>
@@ -655,7 +705,7 @@
 
 
     <div class="cat-wrap">
-        <section class="cat-board" aria-label="{% if producto %}Ficha de {{ producto.nombre }}{% else %}Producto no disponible{% endif %}">
+        <section class="cat-board{% if producto %} cat-board--det{% endif %}" aria-label="{% if producto %}Ficha de {{ producto.nombre }}{% else %}Producto no disponible{% endif %}">
 
             {% if producto %}
 
@@ -703,11 +753,13 @@
                             <span class="cat-pill cat-pill--ref">Ref. {{ producto.id|stringformat:"04d" }}</span>
                         </div>
 
-                        <p class="cat-det__price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
+                        <div class="cat-det__pricebox">
+                            <p class="cat-det__price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
 
-                        {% if precio_base %}
-                            <p class="cat-det__unit">Equivale a <strong>${% language 'es-co' %}{{ precio_base|floatformat:"0g" }}{% endlanguage %}</strong> por {{ base_txt }}.</p>
-                        {% endif %}
+                            {% if precio_base %}
+                                <p class="cat-det__unit">Equivale a <strong>${% language 'es-co' %}{{ precio_base|floatformat:"0g" }}{% endlanguage %}</strong> por {{ base_txt }}.</p>
+                            {% endif %}
+                        </div>
 
                         <dl class="cat-facts">
                             <div class="cat-fact">
