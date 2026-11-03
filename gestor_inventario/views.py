@@ -1,15 +1,19 @@
+import json
+
 from datetime import timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
 from django.utils import timezone
-from django.utils.dateparse import parse_date
 from django.contrib import messages
 
-from .models import Proveedor, VisitaProveedor, ImagenCarrusel
+from django.utils.dateparse import parse_date
+
+from .models import (Proveedor, VisitaProveedor, ImagenCarrusel, ConsumoPersonal, DetalleConsumo, Persona)
+from productos.models import Producto
 from accounts.views import es_superadmin as es_admin
 
 # =========================================================
@@ -266,9 +270,177 @@ def agregar_visita_proveedor(request, id):
     return redirect('proveedores')
 
 #=================================================
-
+@login_required
+@user_passes_test(es_admin)
 def ver_consumo(request):
-    return render(request, 'consumo.html')
+    busqueda = request.GET.get('buscar', '').strip()
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
 
+    consumos = (
+        ConsumoPersonal.objects.filter(activo=True).select_related('persona').prefetch_related('detalles__producto')
+    )
+
+    if busqueda:
+        consumos = consumos.filter(
+            Q(persona__nombre__icontains=busqueda) | Q(detalles__producto__nombre__icontains=busqueda)
+        ).distinct()
+
+    if fecha_inicio:
+        consumos = consumos.filter(fecha__gte=fecha_inicio)
+    if fecha_fin:
+        consumos = consumos.filter(fecha__lte=fecha_fin)
+
+    consumos = consumos.order_by('-fecha','-id')
+
+    total_general = consumos.aggregate(total=Sum('total'))['total'] or 0
+    total_registros = consumos.count()
+    total_productos = (
+        DetalleConsumo.objects.filter(consumo__in=consumos).aggregate(total=Sum('cantidad'))['total'] or 0
+    )
+
+    resumen_personas = (
+        consumos.values('persona__id', 'persona__nombre').annotate(total_consumido=Sum('total'), cantidad_registros=Count('id'),
+        )
+        .order_by('-total_consumido')
+    )
+
+    return render(request, 'consumo-lista.html',{
+        'consumos' : consumos,
+        'busqueda' : busqueda,
+        'fecha_inicio' : fecha_inicio,
+        'fecha_fin' : fecha_fin,
+        'total_general' : total_general,
+        'total_registros' : total_registros,
+        'total_productos' : total_productos,
+        'resumen_personas' : resumen_personas
+    })
+
+@login_required
+@user_passes_test(es_admin)
 def agregar_consumo(request):
-    pass
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body)
+            persona_id = payload.get('persona_id')
+            fecha = payload.get('fecha') or timezone.localdate().isoformat()
+            items = payload.get('items', [])
+
+            if not persona_id:
+                return JsonResponse(
+                    {'ok':False, 'error' : 'Debes seleccionar a una persona.'},
+                    status=400
+                )
+            persona = get_object_or_404(Persona, pk=persona_id, activo=True)
+
+            consumo = ConsumoPersonal.objects.create(
+                persona=persona,
+                fecha=fecha,
+                total=0,
+                activo=True
+            )
+
+            total = 0
+            for item in items:
+                producto_id = item.get('producto_id')
+                cantidad = int(item.get('cantidad', 0))
+                if cantidad <= 0:
+                    continue
+
+                try:
+                    producto = Producto.objects.get(pk=producto_id)
+
+                except Producto.DoesNotExist:
+                    continue
+
+                precio = int(producto.precio_unitario)
+                subtotal = precio * cantidad
+
+                DetalleConsumo.objects.create(
+                    consumo=consumo,
+                    producto=producto,
+                    cantidad=cantidad,
+                    precio_unitario=precio,
+                    subtotal=subtotal
+                )
+                total += subtotal
+
+            if total == 0 and not consumo.detalles.exists():
+                consumo.delete()
+                return JsonResponse(
+                    {'ok' : False, 'error' : 'No se registró ningún producto válido'},
+                    status=400
+                )
+            consumo.total = total
+            consumo.save(update_fields=['total'])
+
+            messages.success(
+                request,
+                f'Consumo registrado para {persona.nombre} con un total de ${total:,}.'
+            )
+
+            return JsonResponse({
+                'ok': True,
+                'consumo_id': consumo.id,
+                'redirect': 'reverse('/inventario/consumo/')'
+            })
+        except json.JSONDecodeError:
+            return JsonResponse({'ok': False, 'error': 'Datos inválidos'}, status=400)
+        except Exception as e:
+            return JsonResponse({'ok': False, 'error': f'Error: {str(e)}'}, status=400)
+    personas = Persona.objects.filter(activo=True).order_by('nombre')
+
+    productos = Producto.objects.all().order_by('nombre')
+
+    return render(request, 'consumo-agregar.html',{
+        'personas': personas,
+        'productos': productos,
+    })
+
+@login_required
+@user_passes_test(es_admin)
+def detalle_consumo(request, pk):
+    consumo = get_object_or_404(
+        ConsumoPersonal.objects.select_related('persona'),
+        pk=pk,
+        activo=True
+    )
+    detalles = consumo.detalles.select_related('producto').all()
+
+    return render(request, 'consumo-detalle.html', {
+        'consumo': consumo,
+        'detalles': detalles,
+    })
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_consumo(request, pk):
+    consumo = get_object_or_404(ConsumoPersonal, pk=pk, activo=True)
+    consumo.activo = False
+    consumo.save(update_fields=['activo'])
+    messages.success(request, 'Consumo eliminado correctamente.')
+
+    return redirect('ver_consumo')
+
+# Auto completa los productos en el formulario
+@login_required
+@user_passes_test(es_admin)
+def buscar_productos_api(request):
+
+    q = request.GET.get('q','').strip()
+    productos_qs = Producto.objects.all()
+
+    if q:
+        productos_qs = productos_qs.filter(nombre__icontains=q)
+
+    productos = productos_qs.order_by('nombre')[:20]
+
+    data = [{
+        'id' : p.id,
+        'nombre' : p.nombre,
+        'precio' : float(p.precio_unitario),
+        'existencias': p.existencias,
+    } for p in productos ] 
+
+    return JsonResponse({'productos': data})

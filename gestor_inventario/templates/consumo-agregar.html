@@ -1,0 +1,533 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Nuevo Consumo - Tienda Nueva{% endblock %}
+{% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+
+<style>
+/* =====================================================================
+   Tienda Nueva · Formulario de Consumo
+   Basado en el sistema de diseño de "Crear producto".
+   ===================================================================== */
+
+.cat {
+    --red-950: #450a0a; --red-900: #7f1d1d; --red-800: #991b1b;
+    --red-700: #b91c1c; --red-600: #dc2626; --red-400: #f87171;
+    --white: #ffffff;
+
+    --space-1: .25rem;  --space-2: .5rem;  --space-3: .75rem; --space-4: 1rem;
+    --space-5: 1.5rem;  --space-6: 2rem;   --space-7: 3rem;
+    --radius-md: 1.25rem; --radius-lg: 1.75rem; --radius-xl: 2.5rem; --radius-pill: 999px;
+    --dur-fast: .15s; --dur-base: .25s;
+    --font-sans: "Archivo", Verdana, Tahoma, sans-serif;
+
+    --color-page: #ffffff;
+    --color-board: #fbf6f5;
+    --color-field: #ffffff;
+    --color-border: #e7ddda;
+    --color-text: #1c1917;
+    --color-muted: #6b645e;
+    --color-brand: var(--red-700);
+    --color-brand-text: var(--red-700);
+    --color-brand-hero: var(--red-600);
+    --color-brand-deep: var(--red-900);
+    --color-brand-ink: var(--red-950);
+    --color-on-brand: var(--white);
+    --color-maroon: #4a0e0e;
+    --color-on-maroon: #fff1e6;
+    
+    --tone-a-soft: #ffe8e5;  --tone-a-strong: #ffc7c0;
+    --tone-c-soft: #f4f1ef;  --tone-c-strong: #e3ddd9;
+
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: var(--color-page);
+    min-height: 100vh;
+}
+
+.dark .cat {
+    --color-page: #0f0f0f; --color-board: #151515; --color-field: #1e1e1e;
+    --color-border: #3a3532; --color-text: #f5f5f4; --color-muted: #a8a29e;
+    --color-brand-text: var(--red-400);
+    --color-maroon: #2a0b0b; --color-on-maroon: #f5e6dc;
+    --tone-a-soft: #2b1816;  --tone-a-strong: #45221f;
+    --tone-c-soft: #242221;  --tone-c-strong: #373331;
+}
+
+.cat, .cat * { box-sizing: border-box; }
+:where(.cat) :where(h1, h2, h3, p, ul, li) { margin: 0; }
+:where(.cat) :where(ul) { padding: 0; list-style: none; }
+.cat a { text-decoration: none; }
+.cat [hidden] { display: none !important; }
+
+.cat a:focus-visible, .cat button:focus-visible, .cat input:focus-visible, .cat select:focus-visible {
+    outline: 3px solid var(--color-brand-text); outline-offset: 2px;
+}
+.cat-hero a:focus-visible, .cat-hero button:focus-visible { outline-color: var(--white); }
+
+/* Layout */
+.cat-hero {
+    position: relative; padding: 2.5rem 1.25rem 5.25rem;
+    color: var(--white); background: var(--color-brand-hero);
+}
+@media (min-width: 900px) { .cat-hero { padding: 3.25rem 2.5rem 6rem; } }
+
+.cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.cat-hero__bg::before {
+    content: ""; position: absolute; inset: -40%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
+    background-size: 320px 72px; transform: rotate(-9deg);
+}
+.cat-hero__in {
+    position: relative; max-width: 80rem; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: var(--space-5) var(--space-6);
+}
+.cat-hero__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
+.cat-hero h1 { font-size: clamp(2.5rem, 1.3rem + 4.6vw, 4rem); font-weight: 800; font-stretch: 110%; line-height: .95; letter-spacing: -.035em; }
+.cat-hero p { margin-top: .9rem; max-width: 34ch; font-size: 1.0625rem; line-height: 1.45; }
+.cat-eyebrow {
+    display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: .75rem;
+    font-size: .8125rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+}
+.cat-eyebrow::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: currentColor; }
+
+.cat-crumbs { margin-bottom: .75rem; }
+.cat-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; font-size: .875rem; font-weight: 600; }
+.cat-crumbs li { display: inline-flex; align-items: center; gap: .5rem; }
+.cat-crumbs li + li::before { content: "/"; opacity: .7; }
+.cat-crumbs a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, .55); }
+.cat-crumbs a:hover { text-decoration-color: var(--white); }
+
+.cat-wrap { position: relative; max-width: 80rem; margin: -2.75rem auto 0; padding: 0 .75rem 2.5rem; }
+@media (min-width: 640px)  { .cat-wrap { padding: 0 1.5rem 3rem; } }
+@media (min-width: 1024px) { .cat-wrap { padding: 0 2.5rem 3.5rem; } }
+.cat-wrap--narrow { max-width: 62rem; }
+.cat-board { position: relative; padding: 1.25rem .875rem 1.5rem; background: var(--color-board); border-radius: var(--radius-lg); }
+@media (min-width: 640px) { .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: var(--radius-xl); } }
+
+/* Componentes */
+.cat-btn {
+    --btn-bg: var(--color-brand); --btn-ink: var(--color-on-brand); --btn-border: var(--color-brand);
+    --btn-bg-hover: var(--color-brand-deep); --btn-border-hover: var(--color-brand-deep);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+    height: 2.75rem; padding: 0 1.5rem; font: inherit; font-weight: 700; font-size: .9375rem; white-space: nowrap;
+    color: var(--btn-ink); background: var(--btn-bg); border: 2px solid var(--btn-border); border-radius: var(--radius-pill);
+    cursor: pointer; transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.cat-btn svg { width: 1.05rem; height: 1.05rem; flex: none; }
+.cat-btn:hover { color: var(--btn-ink-hover); background: var(--btn-bg-hover); border-color: var(--btn-border-hover); }
+.cat-btn[disabled], .cat-btn[aria-busy="true"] { opacity: .75; cursor: progress; }
+.cat-btn--light { --btn-bg: var(--white); --btn-ink: var(--color-brand-deep); --btn-border: var(--white); --btn-bg-hover: var(--color-brand-ink); --btn-border-hover: var(--color-brand-ink); }
+.cat-btn--ghost { --btn-bg: transparent; --btn-ink: var(--color-text); --btn-border: var(--color-border); --btn-bg-hover: var(--tone-c-soft); --btn-border-hover: var(--tone-c-strong); }
+.cat-hero .cat-btn--ghost { --btn-ink: var(--white); --btn-border: rgba(255, 255, 255, .7); --btn-bg-hover: var(--white); --btn-ink-hover: var(--color-brand-deep); --btn-border-hover: var(--white); }
+
+.cat-formgrid { display: grid; gap: var(--space-6); align-items: start; }
+@media (min-width: 1000px) { .cat-formgrid { grid-template-columns: minmax(0, 1fr) 24rem; } }
+.cat-form { display: grid; gap: 1.75rem; min-width: 0; }
+
+.cat-sec { padding: 1.25rem 1.1rem 1.5rem; background: var(--color-page); border-radius: 1.5rem; }
+@media (min-width: 640px) { .cat-sec { padding: 1.75rem 1.75rem 2rem; border-radius: 2rem; } }
+.cat-sec__h { display: flex; align-items: center; gap: .875rem; margin-bottom: 1.25rem; }
+.cat-sec__n { flex: none; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 800; color: var(--color-on-brand); background: var(--color-brand); border-radius: 50%; }
+.cat-sec__h h2 { font-size: 1.375rem; font-weight: 800; letter-spacing: -.015em; line-height: 1.15; }
+.cat-sec__h p { margin-top: .15rem; font-size: .9375rem; color: var(--color-muted); }
+.cat-fields { display: grid; gap: 1.1rem 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cat-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cat-fields .is-wide { grid-column: 1 / -1; }
+
+.cat-field label { display: block; margin-bottom: .4rem; font-size: .875rem; font-weight: 700; }
+.cat-field__box { position: relative; }
+.cat-field input:not([type="file"]), .cat-field select {
+    display: block; width: 100%; height: 3rem; padding: 0 1.1rem;
+    font: inherit; font-size: 1rem; color: var(--color-text); background: var(--color-field);
+    border: 2px solid var(--color-border); border-radius: var(--radius-pill);
+    outline: 0; appearance: none; -webkit-appearance: none;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-fast);
+}
+.cat-field select { padding-right: 2.75rem; cursor: pointer; }
+.cat-field input:focus, .cat-field select:focus {
+    border-color: var(--color-brand-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-text) 18%, transparent);
+}
+.cat-field__chev { position: absolute; right: 1.1rem; top: 50%; width: 1rem; height: 1rem; transform: translateY(-50%); color: var(--color-muted); pointer-events: none; }
+
+/* Buscador de producto */
+.cat-find { display: flex; align-items: center; gap: var(--space-2); padding: .3rem .3rem .3rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill); transition: border-color var(--dur-fast); }
+.cat-find:focus-within { border-color: var(--color-brand-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-text) 18%, transparent); }
+.cat-find > svg { flex: none; width: 1.05rem; height: 1.05rem; color: var(--color-muted); }
+.cat-find input { flex: 1 1 auto; width: 0; min-width: 0; height: 2.5rem; padding: 0; font: inherit; font-size: 1rem; color: var(--color-text); background: transparent; border: 0; outline: 0 !important; }
+
+.cat-dropdown {
+    position: absolute; z-index: 50; margin-top: .5rem; width: 100%; max-height: 18rem; overflow-y: auto;
+    background: var(--color-page); border: 2px solid var(--color-border); border-radius: var(--radius-md);
+    box-shadow: 0 1rem 2rem -0.5rem rgba(0,0,0,.15); display: none;
+}
+.cat-dropdown.is-open { display: block; animation: fadeIn .2s ease; }
+.cat-dropdown button {
+    width: 100%; display: flex; justify-content: space-between; align-items: center; padding: .85rem 1.25rem;
+    background: transparent; border: 0; border-bottom: 1px solid var(--color-border); cursor: pointer; text-align: left; transition: background var(--dur-fast);
+}
+.cat-dropdown button:last-child { border-bottom: 0; }
+.cat-dropdown button:hover { background: var(--tone-a-soft); }
+.cat-dropdown .name { font-weight: 700; font-size: .9375rem; color: var(--color-text); }
+.cat-dropdown .price { font-weight: 800; font-size: .875rem; color: var(--color-brand-text); }
+
+/* Tabla de items */
+.cat-table { width: 100%; border-collapse: collapse; }
+.cat-table th { text-align: left; padding: 1rem 1.25rem; font-size: .75rem; font-weight: 800; text-transform: uppercase; color: var(--color-muted); background: var(--tone-c-soft); }
+.cat-table td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.cat-table tr:last-child td { border-bottom: 0; }
+.cat-table tr { transition: background var(--dur-fast); }
+.cat-table tbody tr:hover { background: var(--color-board); }
+
+.cat-qty { display: inline-flex; align-items: center; background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill); overflow: hidden; }
+.cat-qty button { width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; cursor: pointer; color: var(--color-text); transition: background var(--dur-fast); }
+.cat-qty button:hover { background: var(--tone-c-soft); }
+.cat-qty input { width: 2.5rem; height: 2.25rem; text-align: center; border: 0; background: transparent; font-weight: 800; font-size: .9375rem; color: var(--color-text); outline: 0; }
+.cat-qty input::-webkit-outer-spin-button, .cat-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.cat-del { width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 2px solid transparent; border-radius: 50%; color: var(--color-muted); cursor: pointer; transition: all var(--dur-fast); }
+.cat-del:hover { background: var(--tone-a-soft); color: var(--color-brand-text); border-color: var(--tone-a-strong); }
+
+.cat-summary { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-top: 2px dashed var(--color-border); margin-top: .5rem; }
+.cat-summary span { font-size: 1rem; font-weight: 800; text-transform: uppercase; color: var(--color-muted); letter-spacing: .05em; }
+.cat-summary strong { font-size: 2rem; font-weight: 800; color: var(--color-brand-text); line-height: 1; }
+
+/* Barra de acciones */
+.cat-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .875rem var(--space-5); }
+.cat-bar p { font-size: .9375rem; color: var(--color-muted); }
+.cat-bar__acts { display: flex; flex-wrap: wrap; gap: .625rem; margin-left: auto; }
+@media (max-width: 520px) { .cat-bar__acts { width: 100%; flex-direction: column-reverse; } .cat-bar__acts .cat-btn { width: 100%; } }
+
+/* Animaciones */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="cat">
+
+    <header class="cat-hero">
+        <div class="cat-hero__bg" aria-hidden="true"></div>
+
+        <div class="cat-hero__in">
+            <div>
+                <nav class="cat-crumbs" aria-label="Migas de pan">
+                    <ol>
+                        <li><a href="{% url 'ver_consumo' %}">Consumos</a></li>
+                        <li><span aria-current="page">Nuevo registro</span></li>
+                    </ol>
+                </nav>
+                <h1>Nuevo consumo</h1>
+                <p>Registra los productos retirados de la tienda por el núcleo familiar.</p>
+            </div>
+
+            <div class="cat-hero__acts">
+                <a class="cat-btn cat-btn--light" href="{% url 'ver_consumo' %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg>
+                    Volver a la lista
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="cat-wrap cat-wrap--narrow">
+        <section class="cat-board">
+            
+            <form id="formConsumo" class="cat-form">
+                {% csrf_token %}
+
+                <!-- SECCIÓN 1: DATOS DEL CONSUMO -->
+                <section class="cat-sec" aria-labelledby="sec-datos">
+                    <div class="cat-sec__h">
+                        <span class="cat-sec__n" aria-hidden="true">1</span>
+                        <div>
+                            <h2 id="sec-datos">Datos del consumo</h2>
+                            <p>Selecciona quién retira y en qué fecha.</p>
+                        </div>
+                    </div>
+
+                    <div class="cat-fields">
+                        <div class="cat-field">
+                            <label for="persona_id">Persona del núcleo familiar</label>
+                            <div class="cat-field__box">
+                                <select id="persona_id" required>
+                                    <option value="">Selecciona una persona...</option>
+                                    {% for p in personas %}
+                                    <option value="{{ p.id }}">{{ p.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <svg class="cat-field__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                            </div>
+                        </div>
+
+                        <div class="cat-field">
+                            <label for="fecha">Fecha</label>
+                            <div class="cat-field__box">
+                                <!-- Se agrega el max con JS para que no deje elegir fechas futuras -->
+                                <input type="date" id="fecha" required>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 2: PRODUCTOS -->
+                <section class="cat-sec" aria-labelledby="sec-productos" style="overflow: visible;">
+                    <div class="cat-sec__h">
+                        <span class="cat-sec__n" aria-hidden="true">2</span>
+                        <div>
+                            <h2 id="sec-productos">Productos retirados</h2>
+                            <p>Busca y agrega los artículos que se llevaron.</p>
+                        </div>
+                    </div>
+
+                    <div class="cat-field is-wide" style="margin-bottom: 1.5rem; position: relative;">
+                        <label for="buscadorProducto">Buscar producto</label>
+                        <div class="cat-find">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                            <input type="text" id="buscadorProducto" autocomplete="off" placeholder="Ej. Leche entera...">
+                        </div>
+                        <!-- Dropdown de resultados -->
+                        <div id="resultadosProducto" class="cat-dropdown"></div>
+                    </div>
+
+                    <div style="background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden;">
+                        <table class="cat-table" id="tablaItems">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th style="width: 140px; text-align: center;">Cant.</th>
+                                    <th style="width: 100px; text-align: right;">Precio</th>
+                                    <th style="width: 100px; text-align: right;">Subtotal</th>
+                                    <th style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaItems">
+                                <tr id="filaVacia">
+                                    <td colspan="5" style="text-align: center; padding: 3rem 1rem; color: var(--color-muted);">
+                                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto .5rem; opacity: .5;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                                        <p>Aún no has agregado productos.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="cat-summary">
+                            <span>Total</span>
+                            <strong id="totalGeneral">$0</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ACCIONES -->
+                <div class="cat-bar">
+                    <p>Los campos con * son obligatorios.</p>
+                    <div class="cat-bar__acts">
+                        <a class="cat-btn cat-btn--ghost" href="{% url 'ver_consumo' %}">Cancelar</a>
+                        <button type="submit" id="btnGuardar" class="cat-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>
+                            <span>Guardar consumo</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </section>
+    </div>
+</div>
+
+<script>
+(function() {
+    const items = [];
+    const buscador = document.getElementById('buscadorProducto');
+    const resultados = document.getElementById('resultadosProducto');
+    const listaItems = document.getElementById('listaItems');
+    const totalGeneral = document.getElementById('totalGeneral');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const fechaInput = document.getElementById('fecha');
+
+    // 1. Configurar Fecha por defecto y bloquear días futuros
+    const hoy = new Date();
+    // Ajustar a la zona horaria local para que coincida con el input type="date"
+    hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+    const hoyStr = hoy.toISOString().split('T')[0];
+    
+    fechaInput.value = hoyStr;
+    fechaInput.max = hoyStr; // Aquí se bloquea el futuro
+
+    // 2. Buscador con Debounce
+    let timeout;
+    buscador.addEventListener('input', () => {
+        clearTimeout(timeout);
+        const q = buscador.value.trim();
+        if (q.length < 1) { resultados.classList.remove('is-open'); return; }
+
+        timeout = setTimeout(async () => {
+            try {
+                const res = await fetch(`{% url 'api_buscar_productos' %}?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                
+                if (!data.productos || data.productos.length === 0) {
+                    resultados.innerHTML = `<div style="padding: 1rem 1.25rem; font-size: .875rem; color: var(--color-muted);">Sin resultados</div>`;
+                } else {
+                    resultados.innerHTML = data.productos.map(p => `
+                        <button type="button" onclick='agregarItem(${JSON.stringify(p)})'>
+                            <span class="name">${p.nombre}</span>
+                            <span class="price">$${Number(p.precio).toLocaleString()}</span>
+                        </button>
+                    `).join('');
+                }
+                resultados.classList.add('is-open');
+            } catch (err) { console.error(err); }
+        }, 250);
+    });
+
+    // Cerrar buscador al hacer click fuera
+    document.addEventListener('click', e => {
+        if (!buscador.contains(e.target) && !resultados.contains(e.target)) {
+            resultados.classList.remove('is-open');
+        }
+    });
+
+    // 3. Manejo de la tabla
+    function agregarItem(prod) {
+        const existe = items.find(i => i.producto_id === prod.id);
+        if (existe) {
+            existe.cantidad += 1;
+        } else {
+            items.push({ producto_id: prod.id, nombre: prod.nombre, precio: Number(prod.precio), cantidad: 1 });
+        }
+        buscador.value = '';
+        resultados.classList.remove('is-open');
+        renderItems();
+    }
+
+    function cambiarCantidad(idx, delta) {
+        items[idx].cantidad = Math.max(1, items[idx].cantidad + delta);
+        renderItems();
+    }
+
+    function setCantidad(idx, val) {
+        const n = parseInt(val, 10);
+        items[idx].cantidad = (isNaN(n) || n < 1) ? 1 : n;
+        renderItems();
+    }
+
+    function eliminarItem(idx) {
+        items.splice(idx, 1);
+        renderItems();
+    }
+
+    // Exponer funciones al scope global para que funcionen los onclick del HTML
+    window.agregarItem = agregarItem;
+    window.cambiarCantidad = cambiarCantidad;
+    window.setCantidad = setCantidad;
+    window.eliminarItem = eliminarItem;
+
+    function renderItems() {
+        if (items.length === 0) {
+            listaItems.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 3rem 1rem; color: var(--color-muted);">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto .5rem; opacity: .5;"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <p>Aún no has agregado productos.</p>
+                    </td>
+                </tr>`;
+            totalGeneral.textContent = '$0';
+            return;
+        }
+
+        let total = 0;
+        listaItems.innerHTML = items.map((item, idx) => {
+            const subtotal = item.precio * item.cantidad;
+            total += subtotal;
+            return `
+                <tr style="animation: slideIn .2s ease forwards;">
+                    <td>
+                        <div style="font-weight: 700; font-size: .9375rem; color: var(--color-text);">${item.nombre}</div>
+                    </td>
+                    <td style="text-align: center;">
+                        <div class="cat-qty">
+                            <button type="button" onclick="cambiarCantidad(${idx}, -1)">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"></path></svg>
+                            </button>
+                            <input type="number" min="1" value="${item.cantidad}" onchange="setCantidad(${idx}, this.value)">
+                            <button type="button" onclick="cambiarCantidad(${idx}, 1)">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg>
+                            </button>
+                        </div>
+                    </td>
+                    <td style="text-align: right; font-size: .875rem; color: var(--color-muted);">
+                        $${item.precio.toLocaleString()}
+                    </td>
+                    <td style="text-align: right; font-weight: 800; font-size: .9375rem;">
+                        $${subtotal.toLocaleString()}
+                    </td>
+                    <td style="text-align: right;">
+                        <button type="button" class="cat-del" onclick="eliminarItem(${idx})" title="Eliminar">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        totalGeneral.textContent = '$' + total.toLocaleString();
+    }
+
+    // 4. Guardar
+    document.getElementById('formConsumo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const persona_id = document.getElementById('persona_id').value;
+        const fecha = fechaInput.value;
+
+        if (!persona_id) { alert('Debes seleccionar una persona.'); return; }
+        if (items.length === 0) { alert('Debes agregar al menos un producto.'); return; }
+
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg> Guardando...';
+
+        try {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const res = await fetch("{% url 'agregar_consumo' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({
+                    persona_id: persona_id,
+                    fecha: fecha,
+                    items: items.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad })),
+                }),
+            });
+
+            const data = await res.json();
+
+            if (data.ok) {
+                window.location.href = data.redirect || "{% url 'ver_consumo' %}";
+            } else {
+                alert(data.error || 'Ocurrió un error al guardar.');
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg> <span>Guardar consumo</span>';
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error de conexión. Intenta de nuevo.');
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg> <span>Guardar consumo</span>';
+        }
+    });
+
+    // Agregar animación de spin al CSS para el loader
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+    document.head.appendChild(style);
+
+})();
+</script>
+
+{% endblock %}
