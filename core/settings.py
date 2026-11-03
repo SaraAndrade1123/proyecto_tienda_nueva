@@ -161,15 +161,16 @@ STATICFILES_DIRS = [
 
 # configuracion del correo electronico de las pruebas
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'lopezreyeskarensofia@gmail.com'
-EMAIL_HOST_PASSWORD = 'vopfskpblvemupqe'
+EMAIL_HOST_USER = 'tiendanueva.correo202@gmail.com'
+EMAIL_HOST_PASSWORD = 'moli nfei vdzd jglp'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+EMAIL_TIMEOUT = 30
 
 STORAGES = {
     "default": {
