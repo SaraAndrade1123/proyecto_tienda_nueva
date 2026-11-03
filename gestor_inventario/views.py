@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -77,7 +75,12 @@ def acerda_de(request):
 
 # =========================================================
 
-DIAS_AVISO_VISITA = 3
+TIPOS_VISITA_VALIDOS = {valor for valor, _ in VisitaProveedor.TIPOS}
+
+
+def _tipo_valido(valor):
+    """Devuelve el tipo recibido si es válido; si no, 'entrega' por defecto."""
+    return valor if valor in TIPOS_VISITA_VALIDOS else VisitaProveedor.ENTREGA
 
 
 def _preparar(queryset, hoy):
@@ -85,6 +88,8 @@ def _preparar(queryset, hoy):
     Convierte el queryset en lista y le agrega a cada proveedor:
     - proximas_visitas: todas las visitas con fecha >= hoy, ordenadas por fecha.
     - siguiente_visita: la primera de ellas, o None.
+    - visitas_hoy: las visitas cuya fecha es hoy.
+    - tiene_visita_hoy: True si el proveedor llega hoy.
     """
     lista = list(queryset)
     for proveedor in lista:
@@ -94,6 +99,8 @@ def _preparar(queryset, hoy):
         )
         proveedor.proximas_visitas = proximas
         proveedor.siguiente_visita = proximas[0] if proximas else None
+        proveedor.visitas_hoy = [v for v in proximas if v.fecha == hoy]
+        proveedor.tiene_visita_hoy = bool(proveedor.visitas_hoy)
     return lista
 
 
@@ -112,17 +119,24 @@ def mostrar_proveedores(request):
         )
 
     hoy = timezone.localdate()
-    limite_aviso = hoy + timedelta(days=DIAS_AVISO_VISITA)
 
     activos = _preparar(proveedores.filter(activo=True), hoy)
     inactivos = _preparar(proveedores.filter(activo=False), hoy)
+
+    # Avisos emergentes: proveedores activos que llegan hoy (sin importar la búsqueda)
+    visitas_hoy = (
+        VisitaProveedor.objects
+        .filter(fecha=hoy, proveedor__activo=True)
+        .select_related('proveedor')
+        .order_by('proveedor__nombre_empresa')
+    )
 
     datos = {
         'activos': activos,
         'inactivos': inactivos,
         'query': query,
         'hoy': hoy,
-        'limite_aviso': limite_aviso,
+        'visitas_hoy': visitas_hoy,
     }
 
     return render(request, 'proveedores/lista.html', datos)
@@ -144,6 +158,7 @@ def nuevo_proveedor(request):
         email = request.POST.get('correo', '').strip()
         direccion = request.POST.get('direccion', '').strip()
         fecha_visita_texto = request.POST.get('fecha_visita', '').strip()
+        tipo_visita = _tipo_valido(request.POST.get('tipo_visita'))
 
         datos_form = request.POST
 
@@ -173,7 +188,8 @@ def nuevo_proveedor(request):
                 if fecha_visita:
                     VisitaProveedor.objects.create(
                         proveedor=proveedor,
-                        fecha=fecha_visita
+                        fecha=fecha_visita,
+                        tipo=tipo_visita,
                     )
 
                 return redirect('proveedores')
@@ -278,11 +294,13 @@ def agregar_visita_proveedor(request, id):
     proveedor = get_object_or_404(Proveedor, id=id)
     fecha_texto = request.POST.get('fecha', '').strip()
     fecha = parse_date(fecha_texto)
+    tipo = _tipo_valido(request.POST.get('tipo_visita'))
 
     if fecha:
         VisitaProveedor.objects.create(
             proveedor=proveedor,
-            fecha=fecha
+            fecha=fecha,
+            tipo=tipo,
         )
     return redirect('proveedores')
 

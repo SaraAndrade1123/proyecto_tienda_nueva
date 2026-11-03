@@ -8,11 +8,11 @@
 
 <div class="prv">
 
-  <header class="prv-hero prv-hero--plain">
+  <header class="prv-hero">
     <div class="prv-hero__bg" aria-hidden="true"></div>
 
     <div class="prv-hero__in">
-      <div>
+      <div class="prv-hero__txt">
         <h1>{% if proveedor %}Editar proveedor{% else %}Nuevo proveedor{% endif %}</h1>
         <p>
           {% if proveedor %}
@@ -29,14 +29,15 @@
     <section class="prv-board" aria-labelledby="titulo-form">
 
       <div class="prv-head">
-        <h2 id="titulo-form">Datos del proveedor.</h2>
+        <h2 id="titulo-form">Datos del proveedor</h2>
       </div>
 
       <form method="POST" novalidate>
         {% csrf_token %}
 
+        {% if error_nit or error_campos or error_fecha %}
         <!-- Errores -->
-        <div style="display:grid; gap:.75rem; margin-bottom:1.25rem;">
+        <div class="prv-errors">
 
           {% if error_nit %}
             <div role="alert" class="prv-error">
@@ -68,6 +69,7 @@
             </div>
           {% endif %}
         </div>
+        {% endif %}
 
         <div class="prv-form">
 
@@ -127,14 +129,34 @@
 
           <!-- Primera visita: solo al registrar -->
           {% if not proveedor %}
-            <div class="prv-field prv-field--wide">
+            <div class="prv-field">
               <label for="fecha_visita">Primera fecha de visita <span class="prv-opt">(opcional)</span></label>
               <div class="prv-input">
                 <i class="fa-regular fa-calendar"></i>
                 <input type="date" id="fecha_visita" name="fecha_visita"
                   value="{{ datos.fecha_visita|default:'' }}">
               </div>
-              <p class="prv-hint">Las siguientes visitas se agregan desde el listado.</p>
+            </div>
+
+            <div class="prv-field">
+              <div class="prv-lbl" id="lbl-tipo-visita">Tipo de visita</div>
+              <div class="prv-seg" role="radiogroup" aria-labelledby="lbl-tipo-visita">
+                <label>
+                  <input type="radio" name="tipo_visita" value="entrega" {% if datos.tipo_visita != 'pedido' %}checked{% endif %}>
+                  <span><i class="fa-solid fa-truck-ramp-box"></i> Entrega</span>
+                </label>
+                <label>
+                  <input type="radio" name="tipo_visita" value="pedido" {% if datos.tipo_visita == 'pedido' %}checked{% endif %}>
+                  <span><i class="fa-solid fa-clipboard-list"></i> Pedido</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="prv-field prv-field--wide" style="margin-top:-.5rem;">
+              <p class="prv-hint">
+                Pedido: viene a tomar el pedido. Entrega: viene a traer la mercancía. El día de la visita verás un aviso en pantalla.
+                Las siguientes visitas se agregan desde el listado.
+              </p>
             </div>
           {% endif %}
         </div>

@@ -1,4 +1,3 @@
-{# Tarjeta de proveedor (estilo catálogo). Requiere en el contexto: proveedor, hoy, limite_aviso #}
 <article class="prv-card {% if proveedor.activo %}is-activo{% else %}is-inactivo{% endif %}">
 
   <div class="prv-top">
@@ -10,9 +9,9 @@
         <div class="prv-disc">
           <i class="fa-solid fa-truck-field"></i>
 
-          {# Aviso "!" cuando hay una visita pronta (solo proveedores activos) #}
-          {% if proveedor.activo and proveedor.siguiente_visita and proveedor.siguiente_visita.fecha <= limite_aviso %}
-            <span class="prv-alert" title="Visita próxima: {{ proveedor.siguiente_visita.fecha|date:'d/m/Y' }}">!</span>
+          {# Aviso "!" solo el día en que llega el proveedor (proveedores activos) #}
+          {% if proveedor.activo and proveedor.tiene_visita_hoy %}
+            <span class="prv-alert" title="Hoy llega este proveedor">!</span>
           {% endif %}
 
           <span class="prv-dot" title="{% if proveedor.activo %}Activo{% else %}Desactivado{% endif %}"></span>
@@ -28,15 +27,16 @@
       <div class="prv-visit">
         <i class="fa-regular fa-calendar"></i>
         <div class="prv-visit__txt">
-          <p class="prv-label">Próxima visita</p>
           {% if proveedor.siguiente_visita %}
+            <p class="prv-label">Próxima visita · {{ proveedor.siguiente_visita.get_tipo_display }}</p>
             <p class="prv-date">
               <strong>{{ proveedor.siguiente_visita.fecha|date:"d/m/Y" }}</strong>
-              {% if proveedor.siguiente_visita.fecha <= limite_aviso and proveedor.activo %}
-                <span class="prv-soon"><i class="fa-solid fa-clock"></i> Próximamente</span>
+              {% if proveedor.siguiente_visita.fecha == hoy and proveedor.activo %}
+                <span class="prv-today"><i class="fa-solid fa-bell"></i> Hoy</span>
               {% endif %}
             </p>
           {% else %}
+            <p class="prv-label">Próxima visita</p>
             <p class="prv-date is-none">Sin visitas</p>
           {% endif %}
         </div>
@@ -48,23 +48,13 @@
     <div class="prv-actions">
       {% if proveedor.activo %}
 
-        <!-- Agregar visita: el botón abre un calendario emergente -->
-        <form method="POST" action="{% url 'agregar_visita_proveedor' proveedor.id %}">
-          {% csrf_token %}
-          <button type="button" class="prv-ib prv-ib--main" title="Agregar visita" aria-label="Agregar visita"
-            onclick="var f=document.getElementById('fecha-visita-{{ proveedor.id }}'); if (f.showPicker) { f.showPicker(); } else { f.focus(); f.click(); }">
-            <i class="fa-solid fa-calendar-plus"></i>
-          </button>
-          <input
-            id="fecha-visita-{{ proveedor.id }}"
-            class="prv-date-input"
-            type="date"
-            name="fecha"
-            tabindex="-1"
-            aria-hidden="true"
-            onchange="if (this.value) { this.form.submit(); }"
-          >
-        </form>
+        <!-- Agregar visita: abre una ventana para elegir fecha y tipo (pedido / entrega) -->
+        <button type="button" class="prv-ib prv-ib--main js-add-visita"
+          title="Agregar visita" aria-label="Agregar visita"
+          data-action="{% url 'agregar_visita_proveedor' proveedor.id %}"
+          data-nombre="{{ proveedor.nombre_empresa }}">
+          <i class="fa-solid fa-calendar-plus"></i>
+        </button>
 
         <!-- Editar -->
         <a href="{% url 'editar_proveedor' proveedor.id %}" class="prv-ib" title="Editar" aria-label="Editar proveedor">
@@ -140,9 +130,9 @@
             <ul>
               {% for visita in proveedor.proximas_visitas %}
                 <li>
-                  <span>{{ visita.fecha|date:"d/m/Y" }}</span>
-                  {% if visita.fecha <= limite_aviso and proveedor.activo %}
-                    <span class="prv-soon"><i class="fa-solid fa-clock"></i> Próximamente</span>
+                  <span>{{ visita.fecha|date:"d/m/Y" }} <span class="prv-tipo">· {{ visita.get_tipo_display }}</span></span>
+                  {% if visita.fecha == hoy and proveedor.activo %}
+                    <span class="prv-today"><i class="fa-solid fa-bell"></i> Hoy</span>
                   {% endif %}
                 </li>
               {% endfor %}

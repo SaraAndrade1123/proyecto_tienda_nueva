@@ -9,45 +9,49 @@
 
 <div class="prv">
 
-    <header class="prv-hero">
-        <div class="prv-hero__bg" aria-hidden="true"></div>
+    {# ===== Avisos emergentes: proveedores que llegan HOY ===== #}
+    {% if visitas_hoy %}
+        <div class="prv-toasts" aria-live="polite">
+            {% for visita in visitas_hoy %}
+                <div class="prv-toast" role="status" data-toast-id="{{ visita.id }}-{{ hoy|date:'Ymd' }}">
+                    <div class="prv-toast__icon">
+                        <i class="fa-solid {% if visita.tipo == 'pedido' %}fa-clipboard-list{% else %}fa-truck-ramp-box{% endif %}"></i>
+                    </div>
+                    <div class="prv-toast__body">
+                        <p class="prv-toast__tag">Hoy · {{ visita.get_tipo_display }}</p>
+                        <p class="prv-toast__title">{{ visita.proveedor.nombre_empresa }}</p>
+                        <p class="prv-toast__txt">
+                            {% if visita.tipo == 'pedido' %}
+                                Hoy llega a tomar el pedido.
+                            {% else %}
+                                Hoy llega a entregar la mercancía.
+                            {% endif %}
+                        </p>
+                    </div>
+                    <button type="button" class="prv-toast__x" aria-label="Cerrar aviso">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
-        <div class="prv-hero__in">
-            <div>
-                <h1>Proveedores</h1>
-                <p>Quién nos surte y cuándo es la próxima visita.</p>
-
-                <form class="prv-search" role="search" method="get" action="{% url 'proveedores' %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-                    </svg>
-                    <label class="prv-sr" for="q">Buscar por nombre, NIT o contacto</label>
-                    <input
-                        type="search"
-                        id="q"
-                        name="q"
-                        value="{{ query|default:'' }}"
-                        placeholder="Buscar por nombre, NIT o contacto"
-                        autocomplete="off"
-                    >
-                    <button type="submit">Buscar</button>
-                </form>
-            </div>
-
-            <figure class="prv-hero__photo" aria-hidden="true">
-                <img src="{% static 'img/tienda.jpg' %}" alt="">
-            </figure>
+    <header class="prv-hero" id="inicio">
+        <div class="prv-hero__bg" aria-hidden="true">
+            <div class="prv-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
         </div>
 
-        <a class="prv-notch" href="#activos" aria-label="Ir a los proveedores">
-            <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 5v14"></path>
-                    <path d="M5 12l7 7 7-7"></path>
-                </svg>
-            </span>
-        </a>
+        <div class="prv-hero__in">
+            <div class="prv-hero__txt">
+                <h1>Proveedores</h1>
+                <p>Quién nos surte y cuándo es la próxima visita.</p>
+            </div>
+
+            <a class="prv-new" href="{% url 'nuevo_proveedor' %}">
+                <span class="prv-new__mas" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
+                Nuevo proveedor
+            </a>
+        </div>
     </header>
 
 
@@ -57,7 +61,7 @@
         <section class="prv-board" id="activos" aria-labelledby="titulo-activos">
 
             <div class="prv-head">
-                <h2 id="titulo-activos">Proveedores activos.</h2>
+                <h2 id="titulo-activos">Proveedores activos</h2>
 
                 <div class="prv-head__side">
                     <p class="prv-count" role="status">
@@ -67,12 +71,26 @@
                     {% if query %}
                         <a class="prv-clear" href="{% url 'proveedores' %}">Quitar filtros</a>
                     {% endif %}
-
-                    <a class="prv-btn" href="{% url 'nuevo_proveedor' %}">
-                        <i class="fa-solid fa-plus"></i> Nuevo proveedor
-                    </a>
                 </div>
             </div>
+
+            <form class="prv-find" role="search" method="get" action="{% url 'proveedores' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                </svg>
+                <label class="prv-sr" for="q">Buscar por nombre, NIT o contacto</label>
+                <input
+                    type="search"
+                    id="q"
+                    name="q"
+                    value="{{ query|default:'' }}"
+                    placeholder="Buscar por nombre, NIT o contacto"
+                    autocomplete="off"
+                    enterkeyhint="search"
+                >
+                <button type="submit" class="prv-sr">Buscar</button>
+            </form>
 
             {% if activos %}
                 <ul class="prv-grid">
@@ -94,7 +112,7 @@
         <section class="prv-board" aria-labelledby="titulo-inactivos">
 
             <div class="prv-head">
-                <h2 class="is-off" id="titulo-inactivos">Proveedores desactivados.</h2>
+                <h2 class="is-off" id="titulo-inactivos">Proveedores desactivados</h2>
 
                 <div class="prv-head__side">
                     <p class="prv-count">
@@ -117,6 +135,44 @@
         </section>
 
     </div>
+
+    {# ===== Ventana para agregar una visita (fecha + pedido/entrega) ===== #}
+    <dialog id="dlg-visita" class="prv-dialog" aria-labelledby="dlg-visita-titulo">
+        <form method="POST" id="form-visita" class="prv-dialog__in">
+            {% csrf_token %}
+
+            <h3 id="dlg-visita-titulo">Agregar visita</h3>
+            <p class="prv-dialog__sub" id="dlg-visita-nombre"></p>
+
+            <div class="prv-field">
+                <label for="dlg-fecha">Fecha de la visita</label>
+                <div class="prv-input">
+                    <i class="fa-regular fa-calendar"></i>
+                    <input type="date" id="dlg-fecha" name="fecha" required>
+                </div>
+            </div>
+
+            <div class="prv-field">
+                <div class="prv-lbl" id="dlg-tipo-lbl">Tipo de visita</div>
+                <div class="prv-seg" role="radiogroup" aria-labelledby="dlg-tipo-lbl">
+                    <label>
+                        <input type="radio" name="tipo_visita" value="entrega" checked>
+                        <span><i class="fa-solid fa-truck-ramp-box"></i> Entrega</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="tipo_visita" value="pedido">
+                        <span><i class="fa-solid fa-clipboard-list"></i> Pedido</span>
+                    </label>
+                </div>
+                <p class="prv-hint">Pedido: viene a tomar el pedido. Entrega: viene a traer la mercancía.</p>
+            </div>
+
+            <div class="prv-form-actions">
+                <button type="button" class="prv-btn prv-btn--ghost" id="dlg-visita-cancelar">Cancelar</button>
+                <button type="submit" class="prv-btn"><i class="fa-solid fa-calendar-plus"></i> Agregar visita</button>
+            </div>
+        </form>
+    </dialog>
 </div>
 
 <script>
@@ -143,6 +199,51 @@
       if (!zona || e.target !== zona) return;
       e.preventDefault();
       alternar(zona.closest('.prv-card'));
+    });
+
+    // ---------- Ventana "Agregar visita" ----------
+    var dlg = document.getElementById('dlg-visita');
+    var formVisita = document.getElementById('form-visita');
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.js-add-visita');
+      if (!btn || !dlg) return;
+      formVisita.reset();
+      formVisita.action = btn.getAttribute('data-action');
+      document.getElementById('dlg-visita-nombre').textContent = btn.getAttribute('data-nombre') || '';
+      dlg.showModal();
+    });
+
+    if (dlg) {
+      document.getElementById('dlg-visita-cancelar').addEventListener('click', function () { dlg.close(); });
+      // Clic en el fondo oscuro cierra la ventana
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    }
+
+    // ---------- Avisos emergentes de hoy ----------
+    var CLAVE = 'prv-avisos-cerrados';
+
+    function leerCerrados() {
+      try { return JSON.parse(sessionStorage.getItem(CLAVE) || '[]'); } catch (err) { return []; }
+    }
+    function guardarCerrados(lista) {
+      try { sessionStorage.setItem(CLAVE, JSON.stringify(lista)); } catch (err) {}
+    }
+
+    // Los avisos que ya cerraste en esta sesión no vuelven a salir
+    var cerrados = leerCerrados();
+    document.querySelectorAll('.prv-toast').forEach(function (t) {
+      if (cerrados.indexOf(t.getAttribute('data-toast-id')) !== -1) t.remove();
+    });
+
+    document.addEventListener('click', function (e) {
+      var x = e.target.closest('.prv-toast__x');
+      if (!x) return;
+      var toast = x.closest('.prv-toast');
+      var lista = leerCerrados();
+      lista.push(toast.getAttribute('data-toast-id'));
+      guardarCerrados(lista);
+      toast.remove();
     });
   })();
 </script>
