@@ -29,7 +29,7 @@
             <div class="md:hidden absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0f0f0f] to-transparent transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"></div>
         </div>
 
-        <div class="relative w-full flex items-center justify-start md:justify-end px-6 md:px-10 lg:px-14 py-4 md:py-16 bg-gray-100 dark:bg-[#0a0a0a] transition-colors duration-500 ease-in-out">
+        <div class="relative w-full flex items-center justify-start md:justify-end px-6 md:px-10 lg:px-14 py-4 md:py-16 bg-white dark:bg-[#0a0a0a] transition-colors duration-500 ease-in-out">
             <div class="w-full max-w-lg text-left md:text-right transition-colors duration-500 ease-in-out">
                 <h1 class="text-5xl md:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight font-sans mb-6 transition-colors duration-500 ease-in-out">
                     Bienvenido a <br class="hidden md:block">
@@ -254,9 +254,8 @@
             #bookPageContent::-webkit-scrollbar { width: 6px; }
             #bookPageContent::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
             #bookPageContent::-webkit-scrollbar-thumb { background: #b91c1c; border-radius: 8px; }
-            .dark #bookPageContent::-webkit-scrollbar-track { background: #374151; }
-            .dark #bookPageContent { scrollbar-color: #b91c1c #374151; }
-        `;
+            .dark #bookPageContent::-webkit-scrollbar-track { background: #f3f4f6; }
+            .dark #bookPageContent { scrollbar-color: #b91c1c #f3f4f6
         document.head.appendChild(sheet);
 
         const ajustarResponsive = () => {
@@ -361,7 +360,7 @@
             li.textContent = item;
             li.style.breakInside = 'avoid';
             li.style.padding = '0.2rem 0';
-            li.style.color = esDark ? '#9ca3af' : '#4b5563';
+            li.style.color = esDark ? '#f3f4f6' : '#4b5563';
             li.style.fontSize = '0.95rem';
             li.style.display = 'flex';
             li.style.alignItems = 'baseline';

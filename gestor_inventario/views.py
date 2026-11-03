@@ -54,7 +54,11 @@ def informacion_tienda(request):
                 imagen_vecina = ImagenCarrusel.objects.filter(orden__gt=imagen_actual.orden).order_by('orden').first()
 
             if imagen_vecina:
-                imagen_actual.orden, imagen_vecina.orden = imagen_vecina.orden, imagen_actual.orden
+                orden_actual = imagen_actual.orden
+                orden_vecina = imagen_vecina.orden
+
+                imagen_actual.orden = orden_vecina
+                imagen_vecina.orden = orden_actual
 
                 imagen_actual.save()
                 imagen_vecina.save()
