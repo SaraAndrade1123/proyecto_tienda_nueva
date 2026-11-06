@@ -5,7 +5,6 @@ from .models import (
     VisitaProveedor,
     Perfil,
     ImagenCarrusel,
-    Persona,
     ConsumoPersonal,
     DetalleConsumo,
 )
@@ -32,14 +31,6 @@ class PerfilAdmin(admin.ModelAdmin):
 class ImagenCarruselAdmin(admin.ModelAdmin):
     list_display = ('id', 'orden', 'fecha_creacion')
     ordering = ('orden',)
-
-
-@admin.register(Persona)
-class PersonaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'activo', 'creado_en')
-    list_filter = ('activo',)
-    search_fields = ('nombre',)
-
 
 class DetalleConsumoInline(admin.TabularInline):
     model = DetalleConsumo
