@@ -1,5 +1,9 @@
-from django.db import models
 
+from decimal import Decimal
+ 
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
 
 class Categoria(models.Model):
 
@@ -32,7 +36,7 @@ class Producto(models.Model):
 
     precio_unitario = models.DecimalField(
         max_digits=10,
-        decimal_places=2
+        decimal_places=0
     )
 
     cantidad = models.IntegerField()
@@ -65,3 +69,59 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class TransaccionQuerySet(models.QuerySet):
+
+ 
+    def update(self, **campos):
+        raise ValidationError('Las transacciones registradas no se pueden modificar.')
+ 
+    def delete(self):
+        raise ValidationError('Las transacciones registradas no se pueden borrar.')
+ 
+ 
+class Transaccion(models.Model):
+   
+ 
+    # Número único de la transacción. Lo asigna la base de datos sola: 1, 2, 3...
+    id_transaccion = models.BigAutoField(primary_key=True)
+ 
+    # Nombre del producto TAL COMO ESTABA al vender (es texto copiado, no un enlace).
+    nom_producto = models.CharField(max_length=200)
+ 
+    # Fecha y hora exactas (con segundos) en que se registró. Se llena sola; no se escribe a mano.
+    fecha_hora = models.DateTimeField(default=timezone.now, editable=False, db_index=True)
+ 
+    # Cuántas unidades se vendieron (entero de 0 en adelante; la vista exige 1 o más).
+    cantidad = models.PositiveIntegerField()
+ 
+    # Precio de UNA unidad en el momento de la venta.
+    precio = models.DecimalField(max_digits=10, decimal_places=0)
+ 
+    # precio × cantidad. Lo calcula save(); nadie lo escribe a mano.
+    total = models.DecimalField(max_digits=12, decimal_places=0, editable=False)
+ 
+    objects = TransaccionQuerySet.as_manager()
+ 
+    class Meta:
+        verbose_name = 'Transacción'
+        verbose_name_plural = 'Transacciones'
+        # La más reciente primero (y si dos caen en el mismo instante, la de número mayor).
+        ordering = ['-fecha_hora', '-id_transaccion']
+ 
+    def save(self, *args, **kwargs):
+        # Solo se permite CREAR. Si la fila ya existe en la base de datos, no se toca.
+        if not self._state.adding:
+            raise ValidationError('Las transacciones registradas no se pueden modificar.')
+ 
+        # El total lo calcula el modelo (precio guardado × cantidad). Decimal(str(...)) evita
+        # errores de redondeo y funciona aunque alguien pase el precio como texto o como float.
+        self.total = Decimal(str(self.precio)) * int(self.cantidad)
+        super().save(*args, **kwargs)
+ 
+    def delete(self, *args, **kwargs):
+        raise ValidationError('Las transacciones registradas no se pueden borrar.')
+ 
+    def __str__(self):
+        return f'#{self.id_transaccion} · {self.cantidad} x {self.nom_producto} ({self.fecha_hora:%d/%m/%Y %H:%M:%S})'
