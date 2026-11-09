@@ -61,23 +61,21 @@ class ImagenCarrusel(models.Model):
             self.orden = (ultimo.orden + 1) if ultimo else 1
         super().save(*args, **kwargs)
 
-class Persona(models.Model):
-    nombre = models.CharField(max_length=100, verbose_name='Nombre completo')
-    activo = models.BooleanField(default=True, verbose_name='Activo')
-    creado_en = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = 'Persona del núcleo familiar'
-        verbose_name_plural = 'Personas del núcleo familiar'
-        ordering = ['nombre']
-
-    def __str__(self):
-        return self.nombre
-
 class ConsumoPersonal(models.Model):
+
+    class Personas(models.TextChoices):
+        HOGAR = 'Hogar', 'Hogar'
+        CARLOS = 'Carlos', 'Carlos'
+        MARINA = 'Marina', 'Marina'
+        FERNANDO = 'Fernando', 'Fernando'
+        OSCAR = 'Oscar', 'Oscar'
+        SARA = 'Sara','Sara' 
+
     fecha = models.DateField(default=timezone.localdate, verbose_name='Fecha del consumo')
 
-    persona = models.ForeignKey(Persona, on_delete=models.PROTECT, related_name='consumos', verbose_name='Persona')
+    persona = models.CharField(
+        max_length=50, choices=Personas.choices, default=Personas.HOGAR, verbose_name='Persona'
+    )
 
     total = models.IntegerField( default=0, verbose_name='Total')
 
@@ -90,7 +88,7 @@ class ConsumoPersonal(models.Model):
         ordering = ['-fecha', '-id']
 
     def __str__(self):
-        return f'Consumo #{self.id} - {self.persona.nombre} - {self.fecha} - ${self.total}' 
+        return f'Consumo #{self.id} - {self.persona} - {self.fecha} - ${self.total}' 
 
 class DetalleConsumo(models.Model):
 

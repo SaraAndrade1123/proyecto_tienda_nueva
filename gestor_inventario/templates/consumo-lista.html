@@ -1,301 +1,626 @@
 {% extends 'layouts/base.html' %}
-{% block title %}Consumos - Tienda Nueva{% endblock %}
+{% block title %}Cierre de Caja - Tienda Nueva{% endblock %}
 {% block content %}
 
-<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
-<div class="w-full max-w-7xl mx-auto space-y-6">
+<!-- Flatpickr y Estilos Personalizados -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
+<style>
+    /* =========================================
+       ESTILOS DEL CALENDARIO (FLATPICKR)
+       ========================================= */
+    
+    .flatpickr-calendar {
+        max-width: calc(100vw - 2rem) !important;
+        border-radius: 1.5rem !important; /* Bordes redondos */
+        padding-bottom: 64px !important; /* Espacio para el footer */
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+        overflow: hidden !important; /* Crucial para que no se salgan las esquinas */
+    }
+
+    /* Ocultar la flecha del globo */
+    .flatpickr-calendar.arrowTop:before, .flatpickr-calendar.arrowTop:after,
+    .flatpickr-calendar.arrowBottom:before, .flatpickr-calendar.arrowBottom:after {
+        display: none !important;
+    }
+
+    /* Redondear la cabecera interna (mes y año) */
+    .flatpickr-months {
+        border-top-left-radius: 1.5rem !important;
+        border-top-right-radius: 1.5rem !important;
+        overflow: hidden;
+    }
+
+    /* --- MODO CLARO --- */
+    .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e4e4e7 !important; /* zinc-200 */
+    }
+    .flatpickr-day { color: #3f3f46 !important; /* zinc-700 */ }
+    .flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-weekdays, span.flatpickr-weekday {
+        background: #ffffff !important;
+        color: #71717a !important; /* zinc-500 */
+    }
+    .flatpickr-day:hover { background: #f4f4f5 !important; /* zinc-100 */ }
+    
+    /* Día de hoy (Borde sutil) */
+    .flatpickr-day.today {
+        border-color: #a1a1aa !important; /* zinc-400 */
+        color: #3f3f46 !important;
+    }
+    
+    /* Día seleccionado (Inicio y Fin del rango) */
+    .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, 
+    .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange,
+    .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus,
+    .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover {
+        background: #dc2626 !important; /* red-600 */
+        border-color: #dc2626 !important;
+        color: #ffffff !important;
+    }
+
+    /* Días dentro del rango (Fondo suave) */
+    .flatpickr-day.inRange {
+        box-shadow: -5px 0 0 #fee2e2, 5px 0 0 #fee2e2 !important;
+        background: #fee2e2 !important; /* red-100 */
+        color: #dc2626 !important; /* red-600 */
+        border-radius: 0 !important;
+    }
+
+    /* Fechas futuras deshabilitadas (MODO CLARO) */
+    .flatpickr-day.flatpickr-disabled {
+        color: #d4d4d8 !important; /* zinc-300 - Muy tenue */
+        background: transparent !important;
+        cursor: not-allowed;
+    }
+    .flatpickr-day.flatpickr-disabled:hover {
+        background: transparent !important;
+        color: #d4d4d8 !important;
+    }
+
+    /* --- MODO OSCURO --- */
+    .dark .flatpickr-calendar {
+        background: #18181b !important; /* zinc-900 */
+        border: 1px solid #27272a !important; /* zinc-800 */
+    }
+    .dark .flatpickr-day { color: #f4f4f5 !important; /* zinc-100 */ }
+    .dark .flatpickr-months .flatpickr-month, .dark .flatpickr-current-month .flatpickr-monthDropdown-months, .dark .flatpickr-weekdays, .dark span.flatpickr-weekday {
+        background: #18181b !important;
+        color: #a1a1aa !important; /* zinc-400 */
+    }
+    .dark .flatpickr-day:hover { background: #3f3f46 !important; /* zinc-700 */ }
+    .dark .flatpickr-day.prevMonthDay, .dark .flatpickr-day.nextMonthDay { color: #52525b !important; /* zinc-600 */ }
+    
+    /* Día de hoy en modo oscuro */
+    .dark .flatpickr-day.today {
+        border-color: #52525b !important; /* zinc-600 */
+        color: #f4f4f5 !important;
+    }
+
+    /* Días dentro del rango (MODO OSCURO) */
+    .dark .flatpickr-day.inRange {
+        box-shadow: -5px 0 0 #7f1d1d, 5px 0 0 #7f1d1d !important;
+        background: #7f1d1d !important; /* red-900 */
+        color: #fca5a5 !important; /* red-300 */
+    }
+
+    /* Fechas futuras deshabilitadas (MODO OSCURO) */
+    .dark .flatpickr-day.flatpickr-disabled {
+        color: #3f3f46 !important; /* zinc-700 - Muy tenue */
+        background: transparent !important;
+    }
+    .dark .flatpickr-day.flatpickr-disabled:hover {
+        background: transparent !important;
+        color: #3f3f46 !important;
+    }
+
+    /* =========================================
+       FOOTER DEL CALENDARIO (FECHA + BOTÓN)
+       ========================================= */
+    .flatpickr-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px 16px;
+        background: #ffffff;
+        border-top: 1px solid #e4e4e7;
+        border-radius: 0 0 1.5rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dark .flatpickr-footer {
+        background: #18181b;
+        border-top: 1px solid #27272a;
+    }
+
+    /* Texto de vista previa */
+    .flatpickr-preview {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #71717a; /* zinc-500 */
+        text-transform: capitalize;
+    }
+    .dark .flatpickr-preview { color: #a1a1aa; /* zinc-400 */ }
+
+    /* Botón de Aceptar */
+    .flatpickr-ok-btn {
+        padding: 0.4rem 1.5rem;
+        background: #dc2626;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 0.875rem;
+        border-radius: 0.75rem;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .flatpickr-ok-btn:hover { background: #b91c1c; }
+</style>
+
+<div class="min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 pb-24">
+    
     <!-- ENCABEZADO -->
-    <section class="relative overflow-hidden bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8">
-        <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10"></div>
-        <div class="absolute right-20 -bottom-24 w-48 h-48 rounded-full bg-black/5"></div>
-
-        <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+    <div class="bg-red-600 pb-24 pt-10 px-4 sm:px-6 lg:px-10 relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10"></div>
+        <div class="relative max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
                 <div class="flex items-center gap-2 text-red-100 mb-2">
-                    <i class="fa-solid fa-clipboard-list text-sm"></i>
-                    <span class="text-xs font-bold uppercase tracking-[0.18em]">Cierre de caja · Informe</span>
+                    <i class="fa-solid fa-cash-register text-sm"></i>
+                    <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                        {% if ver_todos %}Historial General{% elif mes %}Mes Seleccionado{% elif fecha_inicio or fecha_fin %}Rango de Fechas{% else %}Cierre de caja · Hoy{% endif %}
+                    </span>
                 </div>
-                <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Consumos</h1>
-                <p class="text-red-100 text-sm mt-2 max-w-xl">
-                    Registro de productos retirados de la tienda por el núcleo familiar.
-                </p>
+                <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                    {% if ver_todos %}Historial Completo{% elif mes %}Consumos del Mes{% elif fecha_inicio or fecha_fin %}Filtro por Fechas{% else %}Consumos de Hoy{% endif %}
+                </h1>
             </div>
-
-            <a href="{% url 'agregar_consumo' %}"
-               class="shrink-0 h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-lg transition-all active:scale-95">
-                <i class="fa-solid fa-plus"></i>
-                Nuevo consumo
+            <a href="{% url 'agregar_consumo' %}" class="hidden sm:inline-flex h-12 px-6 items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-red-600 rounded-2xl font-bold text-sm shadow-xl transition-all active:scale-95">
+                <i class="fa-solid fa-plus"></i> Nuevo consumo
             </a>
         </div>
-    </section>
-
-    <!-- MENSAJES -->
-    {% if messages %}
-    <div class="space-y-3">
-        {% for message in messages %}
-        <div class="flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm font-medium
-            {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-700 dark:bg-green-950/40 dark:border-green-900/60 dark:text-green-400
-            {% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-950/40 dark:border-yellow-900/60 dark:text-yellow-400
-            {% else %}bg-red-50 border-red-200 text-red-700 dark:bg-red-950/40 dark:border-red-900/60 dark:text-red-400{% endif %}">
-            <i class="fa-solid
-                {% if message.tags == 'success' %}fa-circle-check
-                {% elif message.tags == 'warning' %}fa-triangle-exclamation
-                {% else %}fa-circle-exclamation{% endif %}"></i>
-            <span>{{ message }}</span>
-        </div>
-        {% endfor %}
     </div>
-    {% endif %}
 
-    <!-- TARJETAS RESUMEN -->
-    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-400">
-                    <i class="fa-solid fa-dollar-sign"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] uppercase tracking-wider font-bold text-zinc-400">Total consumido</p>
-                    <p class="text-2xl font-black">${{ total_general|floatformat:0 }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-400">
-                    <i class="fa-solid fa-receipt"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] uppercase tracking-wider font-bold text-zinc-400">Registros</p>
-                    <p class="text-2xl font-black">{{ total_registros }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-400">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] uppercase tracking-wider font-bold text-zinc-400">Productos retirados</p>
-                    <p class="text-2xl font-black">{{ total_productos }}</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 -mt-16 relative z-10 space-y-6">
 
-    <!-- FILTROS -->
-    <section class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm p-5">
-        <form method="GET" class="flex flex-col lg:flex-row gap-3">
-            <div class="relative flex-1">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                <input type="text" name="buscar" value="{{ busqueda }}" placeholder="Buscar por persona o producto..."
-                       class="w-full h-12 pl-11 pr-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10">
+        <!-- TARJETAS RESUMEN -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0"><i class="fa-solid fa-dollar-sign text-lg"></i></div>
+                <div><p class="text-[10px] uppercase font-bold text-zinc-500">Total consumido</p><p class="text-xl sm:text-2xl font-black">${{ total_general|floatformat:0 }}</p></div>
             </div>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <div class="flex-1">
-                    <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}"
-                           class="w-full h-12 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/50 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0"><i class="fa-solid fa-receipt text-lg"></i></div>
+                <div><p class="text-[10px] uppercase font-bold text-zinc-500">Registros</p><p class="text-xl sm:text-2xl font-black">{{ total_registros }}</p></div>
+            </div>
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0"><i class="fa-solid fa-boxes-stacked text-lg"></i></div>
+                <div><p class="text-[10px] uppercase font-bold text-zinc-500">Productos retirados</p><p class="text-xl sm:text-2xl font-black">{{ total_productos }}</p></div>
+            </div>
+        </section>
+
+        <!-- FILTROS Y BÚSQUEDA (CON LA ETIQUETA OPEN CORREGIDA) -->
+        <details class="group bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-visible" {% if busqueda or fecha_inicio or fecha_fin or ver_todos or mes %}open{% endif %}>
+            <summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors rounded-2xl">
+                <div class="flex items-center gap-2 font-bold text-sm">
+                    <i class="fa-solid fa-filter text-red-600"></i> Buscar y Filtrar
                 </div>
-                <div class="flex-1">
-                    <input type="date" name="fecha_fin" value="{{ fecha_fin }}"
-                           class="w-full h-12 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm">
-                </div>
-                <button type="submit"
-                        class="h-12 px-6 inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-red-600/20 active:scale-95">
-                    <i class="fa-solid fa-filter"></i>
-                    Filtrar
-                </button>
-                {% if busqueda or fecha_inicio or fecha_fin %}
-                <a href="{% url 'ver_consumo' %}" title="Limpiar filtros"
-                   class="h-12 w-12 shrink-0 inline-flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-300 rounded-2xl transition-all active:scale-95">
-                    <i class="fa-solid fa-xmark"></i>
-                </a>
-                {% endif %}
-            </div>
-        </form>
-    </section>
+                <i class="fa-solid fa-chevron-down text-zinc-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <div class="p-4 border-t border-zinc-100 dark:border-zinc-800 relative">
+                <form method="GET" class="flex flex-col gap-3">
+                    
+                    <!-- 1. Buscador con Autocompletado -->
+                    <div class="relative w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+                        <input type="text" id="inputBuscar" name="buscar" value="{{ busqueda }}" autocomplete="off" placeholder="Buscar persona o producto..." class="w-full h-11 pl-11 pr-10 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-red-500">
+                        
+                        {% if busqueda %}
+                            <button type="button" onclick="limpiarBusqueda()" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-zinc-200 dark:bg-zinc-700 rounded-full text-zinc-500 hover:text-red-500 transition-colors" title="Quitar búsqueda">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        {% endif %}
 
-    <!-- RESUMEN POR PERSONA -->
-    {% if resumen_personas %}
-    <section class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden">
-        <div class="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/70 border-b border-zinc-200 dark:border-zinc-800">
-            <h2 class="text-sm font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                <i class="fa-solid fa-users text-red-600 mr-2"></i>Resumen por persona
-            </h2>
-        </div>
-        <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {% for r in resumen_personas %}
-            <div class="flex items-center justify-between px-6 py-3">
-                <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-9 h-9 shrink-0 rounded-full bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-400 text-xs font-black">
-                        {{ r.persona__nombre|first|upper }}
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold truncate">{{ r.persona__nombre }}</p>
-                        <p class="text-xs text-zinc-500">
-                            {{ r.cantidad_registros }} registro{{ r.cantidad_registros|pluralize }}
-                        </p>
-                    </div>
-                </div>
-                <p class="text-sm font-black text-red-600 dark:text-red-400 shrink-0">
-                    ${{ r.total_consumido|floatformat:0 }}
-                </p>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
-    <!-- LISTA DE CONSUMOS -->
-    <section>
-        <div class="flex items-end justify-between px-1 mb-4">
-            <div>
-                <h2 class="text-xl font-black text-zinc-900 dark:text-white">Historial de consumos</h2>
-                <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                    {% if consumos %}
-                        {{ consumos|length }} registro{{ consumos|length|pluralize }}
-                    {% else %}
-                        Sin registros
-                    {% endif %}
-                </p>
-            </div>
-            {% if busqueda or fecha_inicio or fecha_fin %}
-                <span class="inline-flex items-center gap-2 w-fit px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 text-xs font-bold">
-                    <i class="fa-solid fa-filter"></i>
-                    Filtro activo
-                </span>
-            {% endif %}
-        </div>
-
-        {% if consumos %}
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden">
-            <div class="hidden sm:grid grid-cols-[1fr_auto_auto] items-center gap-4 px-6 py-4 bg-zinc-50 dark:bg-zinc-800/70 border-b border-zinc-200 dark:border-zinc-800">
-                <span class="text-[11px] font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Persona / Fecha</span>
-                <span class="text-[11px] font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total</span>
-                <span class="text-[11px] font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400 pr-1">Acciones</span>
-            </div>
-
-            <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {% for consumo in consumos %}
-                <div class="px-4 sm:px-6 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div class="flex items-center gap-4 min-w-0">
-                            <div class="w-11 h-11 shrink-0 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-400">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-sm font-bold truncate text-zinc-900 dark:text-white">
-                                    {{ consumo.persona.nombre }}
-                                </p>
-                                <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                                    <i class="fa-regular fa-calendar mr-1"></i>{{ consumo.fecha|date:"d/m/Y" }}
-                                    · {{ consumo.detalles.count }} producto{{ consumo.detalles.count|pluralize }}
-                                </p>
-                            </div>
+                        <!-- Dropdown de Sugerencias -->
+                        <div id="sugerenciasDropdown" class="hidden absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                            <!-- Se llena con JS -->
                         </div>
+                    </div>
 
-                        <div class="flex items-center gap-3 sm:gap-4">
-                            <p class="text-lg font-black text-red-600 dark:text-red-400 sm:min-w-[90px] sm:text-right">
-                                ${{ consumo.total|floatformat:0 }}
-                            </p>
-
-                            <div class="flex items-center gap-2 sm:shrink-0">
-                                <a href="{% url 'detalle_consumo' consumo.id %}"
-                                   class="h-10 px-3 inline-flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl font-bold text-xs transition-all active:scale-95">
-                                    <i class="fa-solid fa-eye"></i>
-                                    <span class="hidden sm:inline">Ver</span>
-                                </a>
-                                <button type="button"
-                                        onclick="abrirModalEliminarConsumo('{{ consumo.id }}', '{{ consumo.persona.nombre|escapejs }}')"
-                                        title="Eliminar consumo"
-                                        class="w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-950/60 border border-zinc-200 dark:border-zinc-700 hover:border-red-200 dark:hover:border-red-900 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-all active:scale-90">
-                                    <i class="fa-solid fa-trash"></i>
+                    <!-- 2. Calendario de Rango y 3. Selector de Mes -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Calendario -->
+                        <div class="relative w-full" id="date-range-container">
+                            <div class="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
+                                <i class="fa-solid fa-calendar-days text-zinc-400"></i>
+                            </div>
+                            <input type="text" id="dateRangePicker" placeholder="Selecciona un rango..." readonly class="w-full h-11 pl-11 pr-10 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-red-500 cursor-pointer">
+                            <!-- INPUTS OCULTOS QUE GUARDAN EL RANGO -->
+                            <input type="hidden" name="fecha_inicio" id="fecha_inicio_hidden" value="{{ fecha_inicio }}">
+                            <input type="hidden" name="fecha_fin" id="fecha_fin_hidden" value="{{ fecha_fin }}">
+                            
+                            {% if fecha_inicio or fecha_fin %}
+                                <button type="button" onclick="limpiarFechas()" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-zinc-200 dark:bg-zinc-700 rounded-full text-zinc-500 hover:text-red-500 transition-colors z-10" title="Limpiar fechas">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
                                 </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Selector de Mes Personalizado -->
+                        <div class="relative w-full" id="custom-month-container">
+                            <div class="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
+                                <i class="fa-solid fa-calendar text-zinc-400"></i>
+                            </div>
+                            <button type="button" id="month-btn" class="w-full h-11 pl-11 pr-10 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-left flex items-center outline-none focus:border-red-500">
+                                <span id="month-label" class="truncate text-zinc-500">Cualquier mes</span>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none text-xs"></i>
+                            </button>
+                            <input type="hidden" name="mes" id="mes_hidden" value="{{ mes }}">
+                            
+                            {% if mes %}
+                                <button type="button" onclick="limpiarMes()" class="absolute right-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-zinc-200 dark:bg-zinc-700 rounded-full text-zinc-500 hover:text-red-500 transition-colors z-10" title="Limpiar mes">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            {% endif %}
+
+                            <!-- Dropdown de Meses (Oculto por defecto) -->
+                            <div id="month-dropdown" class="hidden absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                                <!-- Los meses se inyectan con JS -->
                             </div>
                         </div>
                     </div>
+
+                    <!-- 4. Botones -->
+                    <div class="flex flex-col sm:flex-row gap-2 mt-2">
+                        {% if ver_todos %}
+                            <a href="{% url 'ver_consumo' %}" class="flex-1 h-11 flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl font-bold text-sm hover:bg-zinc-300 transition-all border border-zinc-300 dark:border-zinc-700" title="Volver a la caja de hoy">
+                                <i class="fa-solid fa-box-open mr-2"></i> Caja de Hoy
+                            </a>
+                        {% else %}
+                            <a href="{% url 'ver_consumo' %}?ver_todos=1" class="flex-1 h-11 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl font-bold text-sm hover:bg-zinc-200 transition-all" title="Ver todos los registros históricos">
+                                <i class="fa-solid fa-clock-rotate-left mr-2"></i> Todo el Historial
+                            </a>
+                        {% endif %}
+
+                        <button type="submit" class="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all">
+                            <i class="fa-solid fa-filter mr-2"></i> Filtrar
+                        </button>
+                    </div>
+
+                    {% if busqueda or fecha_inicio or fecha_fin or mes %}
+                        <a href="{% url 'ver_consumo' %}" class="text-center text-xs text-red-600 dark:text-red-400 font-bold mt-2 hover:underline">
+                            Limpiar todos los filtros
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+        </details>
+
+        <!-- RESUMEN POR PERSONA -->
+        {% if resumen_personas %}
+        <section class="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="px-4 py-2.5 border-b border-zinc-100 dark:border-zinc-800">
+                <h2 class="text-[11px] font-black uppercase tracking-wider text-zinc-500"><i class="fa-solid fa-users text-red-600 mr-2"></i>Totales por persona</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-2 p-2">
+                {% for r in resumen_personas %}
+                <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full flex items-center justify-center font-black text-[10px] {% if r.persona == 'Hogar' %} bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 {% else %} bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400 {% endif %}">
+                            {% if r.persona == 'Hogar' %} <i class="fa-solid fa-house"></i> {% else %} {{ r.persona|first|upper }} {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-[13px] font-bold leading-tight">{{ r.persona }}</p>
+                            <p class="text-[10px] text-zinc-500 leading-tight">{{ r.cantidad_registros }} registro/os</p>
+                        </div>
+                    </div>
+                    <p class="font-black text-sm text-red-600 dark:text-red-400">${{ r.total_consumido|floatformat:0 }}</p>
                 </div>
                 {% endfor %}
             </div>
-        </div>
-        {% else %}
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm py-16 px-6 text-center">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-red-600 dark:text-red-400">
-                <i class="fa-solid fa-clipboard-list text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-black mt-5 text-zinc-900 dark:text-white">
-                {% if busqueda or fecha_inicio or fecha_fin %}No encontramos resultados{% else %}No hay consumos registrados{% endif %}
-            </h3>
-            <p class="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mt-2">
-                {% if busqueda or fecha_inicio or fecha_fin %}
-                    Ajusta los filtros o limpia la búsqueda para ver más consumos.
-                {% else %}
-                    Registra el primer consumo para comenzar el informe de cierre de caja.
-                {% endif %}
-            </p>
-            {% if busqueda or fecha_inicio or fecha_fin %}
-            <a href="{% url 'ver_consumo' %}"
-               class="inline-flex items-center gap-2 mt-6 px-5 h-11 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm font-bold transition-all active:scale-95">
-                <i class="fa-solid fa-rotate-left"></i> Limpiar filtros
-            </a>
-            {% else %}
-            <a href="{% url 'agregar_consumo' %}"
-               class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-red-600/20 transition-all active:scale-95">
-                <i class="fa-solid fa-plus"></i> Registrar consumo
-            </a>
-            {% endif %}
-        </div>
+        </section>
         {% endif %}
-    </section>
 
+        <!-- HISTORIAL -->
+        <section class="space-y-3">
+            <h2 class="text-lg font-black px-1">Historial</h2>
+            {% for consumo in consumos %}
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-red-200 dark:hover:border-red-900">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 {% if consumo.persona == 'Hogar' %} bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 {% else %} bg-zinc-100 dark:bg-zinc-800 text-zinc-400 {% endif %}">
+                        {% if consumo.persona == 'Hogar' %} <i class="fa-solid fa-house text-lg"></i> {% else %} <i class="fa-solid fa-user"></i> {% endif %}
+                    </div>
+                    <div>
+                        <p class="font-bold text-base">{{ consumo.persona }}</p>
+                        <div class="flex items-center gap-3 text-xs text-zinc-500 mt-1">
+                            <span><i class="fa-regular fa-calendar mr-1"></i>{{ consumo.fecha|date:"d M, Y" }}</span>
+                            <span class="w-1 h-1 rounded-full bg-zinc-300"></span>
+                            <span><i class="fa-solid fa-box mr-1"></i>{{ consumo.detalles.count }} items</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-zinc-100 dark:border-zinc-800">
+                    <p class="text-xl font-black text-red-600 dark:text-red-400 sm:order-1">${{ consumo.total|floatformat:0 }}</p>
+                    <div class="flex gap-2 sm:order-2">
+                        <a href="{% url 'detalle_consumo' consumo.id %}" class="h-10 px-4 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-zinc-700 dark:text-zinc-300 rounded-xl font-bold text-xs transition-colors">Ver ticket</a>
+                        <button onclick="abrirModalEliminarConsumo('{{ consumo.id }}', '{{ consumo.persona|escapejs }}')" class="w-10 h-10 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-red-50 hover:text-red-600 text-zinc-500 rounded-xl transition-colors"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-20 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800">
+                <div class="w-20 h-20 mx-auto bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center text-zinc-300 mb-4"><i class="fa-solid fa-receipt text-3xl"></i></div>
+                <h3 class="text-lg font-black">Sin registros</h3>
+                <p class="text-sm text-zinc-500 mt-1 max-w-xs mx-auto">No se encontraron consumos para mostrar.</p>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
 </div>
-</div>
+
+<!-- BOTÓN FLOTANTE (Solo Móvil) -->
+<a href="{% url 'agregar_consumo' %}" class="sm:hidden fixed bottom-6 right-6 w-16 h-16 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl shadow-red-600/40 active:scale-90 transition-transform z-40">
+    <i class="fa-solid fa-plus text-2xl"></i>
+</a>
 
 <!-- MODAL ELIMINAR -->
 <div id="modalEliminarConsumo" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="cerrarModalEliminarConsumo()"></div>
-    <div class="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-7">
-        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 flex items-center justify-center text-red-600 dark:text-red-500">
-            <i class="fa-solid fa-trash text-xl"></i>
-        </div>
-        <h2 class="text-xl font-black text-zinc-900 dark:text-zinc-100 mt-4">¿Eliminar consumo?</h2>
-        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">
-            Estás a punto de eliminar el consumo de
-            <span id="nombreConsumoEliminar" class="font-bold text-zinc-900 dark:text-zinc-200"></span>.
-            Esta acción no se puede deshacer.
-        </p>
-        <form id="formEliminarConsumo" method="POST" class="flex flex-col-reverse sm:flex-row gap-3 mt-6">
+    <div class="relative w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6">
+        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/60 flex items-center justify-center text-red-600 mb-4"><i class="fa-solid fa-trash text-xl"></i></div>
+        <h2 class="text-xl font-black">¿Eliminar consumo?</h2>
+        <p class="text-sm text-zinc-500 mt-2">Se eliminará el consumo de <span id="nombreConsumoEliminar" class="font-bold text-zinc-900 dark:text-zinc-100"></span> y el stock volverá al inventario.</p>
+        <form id="formEliminarConsumo" method="POST" class="flex gap-3 mt-6">
             {% csrf_token %}
-            <button type="button" onclick="cerrarModalEliminarConsumo()"
-                    class="flex-1 h-11 inline-flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl font-bold text-xs transition-all active:scale-95">
-                <i class="fa-solid fa-xmark"></i> Cancelar
-            </button>
-            <button type="submit"
-                    class="flex-1 h-11 inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs transition-all active:scale-95 shadow-md shadow-red-600/20">
-                <i class="fa-solid fa-trash"></i> Eliminar
-            </button>
+            <button type="button" onclick="cerrarModalEliminarConsumo()" class="flex-1 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-bold text-sm">Cancelar</button>
+            <button type="submit" class="flex-1 h-12 bg-red-600 text-white rounded-xl font-bold text-sm shadow-md">Eliminar</button>
         </form>
     </div>
 </div>
 
+<!-- Scripts -->
 <script>
-function abrirModalEliminarConsumo(id, nombre) {
-    document.getElementById("nombreConsumoEliminar").textContent = '"' + nombre + '"';
-    document.getElementById("formEliminarConsumo").action = "/consumo/" + id + "/eliminar/";
-    const m = document.getElementById("modalEliminarConsumo");
-    m.classList.remove("hidden");
-    m.classList.add("flex");
-    document.body.classList.add("overflow-hidden");
-}
-function cerrarModalEliminarConsumo() {
-    const m = document.getElementById("modalEliminarConsumo");
-    m.classList.add("hidden");
-    m.classList.remove("flex");
-    document.body.classList.remove("overflow-hidden");
-}
-document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarModalEliminarConsumo(); });
+    // --- 1. Buscador con Autocompletado ---
+    const inputBuscar = document.getElementById('inputBuscar');
+    const sugerenciasDropdown = document.getElementById('sugerenciasDropdown');
+    let timeoutBusqueda;
+
+    if (inputBuscar) {
+        inputBuscar.addEventListener('input', function() {
+            clearTimeout(timeoutBusqueda);
+            const q = this.value.trim();
+            
+            if (q.length < 1) {
+                sugerenciasDropdown.classList.add('hidden');
+                return;
+            }
+
+            timeoutBusqueda = setTimeout(async () => {
+                try {
+                    const res = await fetch(`{% url 'api_buscar_sugerencias' %}?q=${encodeURIComponent(q)}`);
+                    const data = await res.json();
+                    
+                    if (data.sugerencias && data.sugerencias.length > 0) {
+                        sugerenciasDropdown.innerHTML = data.sugerencias.map(s => `
+                            <div onclick="seleccionarSugerencia('${s.valor}')" class="px-4 py-2.5 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors border-b border-zinc-100 dark:border-zinc-700 last:border-0 flex items-center gap-2">
+                                <span>${s.texto}</span>
+                            </div>
+                        `).join('');
+                        sugerenciasDropdown.classList.remove('hidden');
+                    } else {
+                        sugerenciasDropdown.classList.add('hidden');
+                    }
+                } catch (err) { console.error(err); }
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!inputBuscar.contains(e.target) && !sugerenciasDropdown.contains(e.target)) {
+                sugerenciasDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    function seleccionarSugerencia(valor) {
+        inputBuscar.value = valor;
+        sugerenciasDropdown.classList.add('hidden');
+        inputBuscar.closest('form').submit();
+    }
+
+    function limpiarBusqueda() {
+        inputBuscar.value = '';
+        inputBuscar.closest('form').submit();
+    }
+
+    // --- 2. Lógica del Dropdown de Meses Personalizado ---
+    const monthBtn = document.getElementById('month-btn');
+    const monthDropdown = document.getElementById('month-dropdown');
+    const monthLabel = document.getElementById('month-label');
+    const monthHidden = document.getElementById('mes_hidden');
+    const containerMonth = document.getElementById('custom-month-container');
+
+    const hoy = new Date();
+    const mesActualUrl = "{{ mes }}";
+
+    // Opción "Cualquier mes"
+    const anyOption = document.createElement('div');
+    anyOption.className = "px-4 py-2.5 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors border-b border-zinc-100 dark:border-zinc-700";
+    anyOption.textContent = "Cualquier mes";
+    anyOption.onclick = () => {
+        monthHidden.value = "";
+        monthLabel.textContent = "Cualquier mes";
+        monthLabel.classList.remove('text-zinc-900', 'dark:text-white', 'font-bold');
+        monthLabel.classList.add('text-zinc-500');
+        monthDropdown.classList.add('hidden');
+    };
+    monthDropdown.appendChild(anyOption);
+
+    for (let i = 0; i < 24; i++) {
+        const date = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+        const nombreMes = date.toLocaleString('es-ES', { month: 'long' });
+        const label = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1) + ' ' + year;
+
+        const option = document.createElement('div');
+        option.className = "px-4 py-2.5 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors border-b border-zinc-100 dark:border-zinc-700 last:border-0";
+        option.textContent = label;
+        
+        if (value === mesActualUrl) {
+            monthLabel.textContent = label;
+            monthLabel.classList.remove('text-zinc-500');
+            monthLabel.classList.add('text-zinc-900', 'dark:text-white', 'font-bold');
+        }
+
+        option.onclick = () => {
+            monthHidden.value = value;
+            monthLabel.textContent = label;
+            monthLabel.classList.remove('text-zinc-500');
+            monthLabel.classList.add('text-zinc-900', 'dark:text-white', 'font-bold');
+            monthDropdown.classList.add('hidden');
+        };
+        monthDropdown.appendChild(option);
+    }
+
+    monthBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        monthDropdown.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!containerMonth.contains(e.target)) {
+            monthDropdown.classList.add('hidden');
+        }
+    });
+
+    function limpiarMes() {
+        monthHidden.value = "";
+        monthLabel.textContent = "Cualquier mes";
+        monthLabel.classList.remove('text-zinc-900', 'dark:text-white', 'font-bold');
+        monthLabel.classList.add('text-zinc-500');
+        monthBtn.closest('form').submit();
+    }
+
+    // --- 3. Inicializar Flatpickr con las mismas mejoras ---
+    const startVal = document.getElementById('fecha_inicio_hidden').value;
+    const endVal = document.getElementById('fecha_fin_hidden').value;
+    const dateRangeContainer = document.getElementById('date-range-container');
+    
+    let defaultDates = null;
+    if (startVal && endVal) defaultDates = [startVal, endVal];
+    else if (startVal) defaultDates = [startVal];
+
+    const fp = flatpickr("#dateRangePicker", {
+        mode: "range", // Permite seleccionar rangos
+        locale: "es",
+        dateFormat: "Y-m-d",
+        maxDate: "today", // Bloquea fechas futuras
+        defaultDate: defaultDates,
+        disableMobile: true,
+        clickOpens: false, // Desactivamos la apertura por defecto para controlarla nosotros
+        closeOnSelect: false, // Evita que se cierre al hacer clic
+        onChange: function(selectedDates, dateStr, instance) {
+            // 1. Actualizar la vista previa (Footer)
+            const preview = document.getElementById('date-preview');
+            if (preview && selectedDates.length > 0) {
+                if (selectedDates.length > 1) {
+                    preview.textContent = instance.formatDate(selectedDates[0], "d M") + " a " + instance.formatDate(selectedDates[1], "d M, Y");
+                } else {
+                    preview.textContent = instance.formatDate(selectedDates[0], "d M, Y");
+                }
+            } else if (preview) {
+                preview.textContent = "Selecciona un rango";
+            }
+
+            // 2. ACTUALIZAR LOS INPUTS OCULTOS PARA QUE DJANGO LOS RECIBA
+            if (selectedDates.length > 0) {
+                document.getElementById('fecha_inicio_hidden').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                document.getElementById('fecha_fin_hidden').value = selectedDates.length > 1 ? instance.formatDate(selectedDates[1], "Y-m-d") : instance.formatDate(selectedDates[0], "Y-m-d");
+            } else {
+                document.getElementById('fecha_inicio_hidden').value = '';
+                document.getElementById('fecha_fin_hidden').value = '';
+            }
+        },
+        onReady: function(selectedDates, dateStr, instance) {
+            // Crear el contenedor del footer
+            const footer = document.createElement("div");
+            footer.className = "flatpickr-footer";
+
+            // Texto de vista previa (Izquierda)
+            const preview = document.createElement("span");
+            preview.className = "flatpickr-preview";
+            preview.id = "date-preview";
+            if (selectedDates.length > 0) {
+                if (selectedDates.length > 1) {
+                    preview.textContent = instance.formatDate(selectedDates[0], "d M") + " a " + instance.formatDate(selectedDates[1], "d M, Y");
+                } else {
+                    preview.textContent = instance.formatDate(selectedDates[0], "d M, Y");
+                }
+            } else {
+                preview.textContent = "Selecciona un rango";
+            }
+
+            // Botón de Aceptar (Derecha)
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "flatpickr-ok-btn";
+            btn.textContent = "Aceptar";
+            btn.onclick = function() {
+                instance.close(); // Cierra el calendario al confirmar
+            };
+
+            // Armar el footer
+            footer.appendChild(preview);
+            footer.appendChild(btn);
+            instance.calendarContainer.appendChild(footer);
+        },
+        onOpen: function(selectedDates, dateStr, instance) {
+            setTimeout(() => {
+                if (window.innerWidth < 640) {
+                    instance.calendarContainer.style.left = '50%';
+                    instance.calendarContainer.style.transform = 'translateX(-50%)';
+                } else {
+                    const rect = instance.calendarContainer.getBoundingClientRect();
+                    const padding = 24;
+                    
+                    if (rect.left < padding) {
+                        instance.calendarContainer.style.left = padding + "px";
+                    }
+                    if (rect.right > window.innerWidth - padding) {
+                        instance.calendarContainer.style.left = (window.innerWidth - rect.width - padding) + "px";
+                    }
+                }
+            }, 10);
+        }
+    });
+
+    // Hacer que el contenedor completo del input abra/cierre el calendario
+    dateRangeContainer.addEventListener('click', function() {
+        fp.toggle();
+    });
+
+    function limpiarFechas() {
+        document.getElementById('fecha_inicio_hidden').value = '';
+        document.getElementById('fecha_fin_hidden').value = '';
+        document.getElementById('dateRangePicker').value = '';
+        document.getElementById('dateRangePicker').closest('form').submit();
+    }
+
+    // --- 4. Modal de eliminar ---
+    function abrirModalEliminarConsumo(id, nombre) {
+        document.getElementById("nombreConsumoEliminar").textContent = '"' + nombre + '"';
+        const urlBase = "{% url 'eliminar_consumo' 0 %}";
+        document.getElementById("formEliminarConsumo").action = urlBase.replace('/0/', '/' + id + '/');
+        const m = document.getElementById("modalEliminarConsumo");
+        m.classList.remove("hidden"); m.classList.add("flex"); document.body.classList.add("overflow-hidden");
+    }
+    function cerrarModalEliminarConsumo() {
+        const m = document.getElementById("modalEliminarConsumo");
+        m.classList.add("hidden"); m.classList.remove("flex"); document.body.classList.remove("overflow-hidden");
+    }
 </script>
 
 {% endblock %}

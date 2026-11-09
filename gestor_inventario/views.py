@@ -12,7 +12,7 @@ from django.contrib import messages
 
 from django.utils.dateparse import parse_date
 
-from .models import (Proveedor, VisitaProveedor, ImagenCarrusel, ConsumoPersonal, DetalleConsumo, Persona)
+from .models import (Proveedor, VisitaProveedor, ImagenCarrusel, ConsumoPersonal, DetalleConsumo)
 from productos.models import Producto
 from accounts.views import es_superadmin as es_admin
 
@@ -276,22 +276,39 @@ def ver_consumo(request):
     busqueda = request.GET.get('buscar', '').strip()
     fecha_inicio = request.GET.get('fecha_inicio', '')
     fecha_fin = request.GET.get('fecha_fin', '')
+    mes = request.GET.get('mes', '')
+
+    ver_todos = request.GET.get('ver_todos') == '1'
 
     consumos = (
-        ConsumoPersonal.objects.filter(activo=True).select_related('persona').prefetch_related('detalles__producto')
+        ConsumoPersonal.objects.filter(activo=True).prefetch_related('detalles__producto')
     )
+
+    if ver_todos:
+        pass
+
+    else:
+
+        if mes:
+            anio, mes_num = mes.split('-')
+            consumos = consumos.filter(fecha__year=anio, fecha__month=mes_num)
+
+        if fecha_inicio:
+                consumos = consumos.filter(fecha__gte=fecha_inicio)
+
+        if fecha_fin:
+                consumos = consumos.filter(fecha__lte=fecha_fin)
+
+        if not mes and not fecha_inicio and not fecha_fin and not busqueda:
+            hoy = timezone.localdate()
+            consumos = consumos.filter(fecha=hoy)
 
     if busqueda:
         consumos = consumos.filter(
-            Q(persona__nombre__icontains=busqueda) | Q(detalles__producto__nombre__icontains=busqueda)
+            Q(persona__icontains=busqueda) | Q(detalles__producto__nombre__icontains=busqueda)
         ).distinct()
-
-    if fecha_inicio:
-        consumos = consumos.filter(fecha__gte=fecha_inicio)
-    if fecha_fin:
-        consumos = consumos.filter(fecha__lte=fecha_fin)
-
-    consumos = consumos.order_by('-fecha','-id')
+    
+    consumos = consumos.order_by('-fecha', '-id')
 
     total_general = consumos.aggregate(total=Sum('total'))['total'] or 0
     total_registros = consumos.count()
@@ -300,7 +317,7 @@ def ver_consumo(request):
     )
 
     resumen_personas = (
-        consumos.values('persona__id', 'persona__nombre').annotate(total_consumido=Sum('total'), cantidad_registros=Count('id'),
+        consumos.values('persona').annotate(total_consumido=Sum('total'), cantidad_registros=Count('id'),
         )
         .order_by('-total_consumido')
     )
@@ -310,10 +327,12 @@ def ver_consumo(request):
         'busqueda' : busqueda,
         'fecha_inicio' : fecha_inicio,
         'fecha_fin' : fecha_fin,
+        'mes': mes,
         'total_general' : total_general,
         'total_registros' : total_registros,
         'total_productos' : total_productos,
-        'resumen_personas' : resumen_personas
+        'resumen_personas' : resumen_personas,
+        'ver_todos': ver_todos,
     })
 
 @login_required
@@ -331,10 +350,9 @@ def agregar_consumo(request):
                     {'ok':False, 'error' : 'Debes seleccionar a una persona.'},
                     status=400
                 )
-            persona = get_object_or_404(Persona, pk=persona_id, activo=True)
 
             consumo = ConsumoPersonal.objects.create(
-                persona=persona,
+                persona=persona_id,
                 fecha=fecha,
                 total=0,
                 activo=True
@@ -353,8 +371,18 @@ def agregar_consumo(request):
                 except Producto.DoesNotExist:
                     continue
 
+                if producto.existencias < cantidad:
+                    consumo.delete()
+                    return JsonResponse({
+                        'ok': False,
+                        'error': f'No hay suficiente stock de {producto.nombre}. Quedan {producto.existencias} unidades.'
+                    }, status=400)
+
                 precio = int(producto.precio_unitario)
                 subtotal = precio * cantidad
+                
+                producto.existencias -= cantidad
+                producto.save(update_fields=['existencias'])
 
                 DetalleConsumo.objects.create(
                     consumo=consumo,
@@ -376,32 +404,33 @@ def agregar_consumo(request):
 
             messages.success(
                 request,
-                f'Consumo registrado para {persona.nombre} con un total de ${total:,}.'
+                f'Consumo registrado para {persona_id} con un total de ${total:,}.'
             )
 
             return JsonResponse({
                 'ok': True,
                 'consumo_id': consumo.id,
-                'redirect': 'reverse('/inventario/consumo/')'
+                'redirect': '/inventario/consumo/'
             })
         except json.JSONDecodeError:
             return JsonResponse({'ok': False, 'error': 'Datos inválidos'}, status=400)
         except Exception as e:
             return JsonResponse({'ok': False, 'error': f'Error: {str(e)}'}, status=400)
-    personas = Persona.objects.filter(activo=True).order_by('nombre')
 
     productos = Producto.objects.all().order_by('nombre')
 
+    personas_choises = ConsumoPersonal.Personas.choices
+
     return render(request, 'consumo-agregar.html',{
-        'personas': personas,
         'productos': productos,
+        'personas_choices': personas_choises,
     })
 
 @login_required
 @user_passes_test(es_admin)
 def detalle_consumo(request, pk):
     consumo = get_object_or_404(
-        ConsumoPersonal.objects.select_related('persona'),
+        ConsumoPersonal.objects,
         pk=pk,
         activo=True
     )
@@ -416,10 +445,22 @@ def detalle_consumo(request, pk):
 @user_passes_test(es_admin)
 @require_POST
 def eliminar_consumo(request, pk):
-    consumo = get_object_or_404(ConsumoPersonal, pk=pk, activo=True)
-    consumo.activo = False
-    consumo.save(update_fields=['activo'])
-    messages.success(request, 'Consumo eliminado correctamente.')
+
+    try:
+        consumo = ConsumoPersonal.objects.get(pk=pk, activo=True)
+
+        for detalle in consumo.detalles.all():
+            producto = detalle.producto
+            producto.existencias += detalle.cantidad
+            producto.save(update_fields=['existencias'])
+
+        consumo.activo = False
+        consumo.save(update_fields=['activo'])
+
+        messages.success(request, 'Consumo eliminado correctamente y stock devuleto al inventario.')
+
+    except ConsumoPersonal.DoesNotExist:
+        messages.warning(request, 'El consumo que intentas eliminar ya no existe o ya ha sido eliminado .')
 
     return redirect('ver_consumo')
 
@@ -444,3 +485,29 @@ def buscar_productos_api(request):
     } for p in productos ] 
 
     return JsonResponse({'productos': data})
+
+@login_required
+@user_passes_test(es_admin)
+def buscar_sugerencias_api(request):
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'sugerencias': []})
+
+    sugerencias = []
+
+    for valor, texto in ConsumoPersonal.Personas.choices:
+        if q.lower() in texto.lower():
+            sugerencias.append({
+                'tipo': 'persona',
+                'valor': valor,
+                'texto': f"{texto}"
+            })
+
+    productos = Producto.objects.filter(nombre__icontains=q)[:5]
+    for p in productos:
+        sugerencias.append({
+            'tipo': 'producto',
+            'valor': p.nombre,
+            'texto': f"{p.nombre}"
+        })    
+    return JsonResponse({'sugerencias': sugerencias})
