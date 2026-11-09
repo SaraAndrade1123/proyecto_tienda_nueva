@@ -201,7 +201,7 @@
             </div>
         </section>
 
-        <!-- FILTROS Y BÚSQUEDA -->
+        <!-- FILTROS Y BÚSQUEDA (CON LA ETIQUETA OPEN CORREGIDA) -->
         <details class="group bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-visible" {% if busqueda or fecha_inicio or fecha_fin or ver_todos or mes %}open{% endif %}>
             <summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors rounded-2xl">
                 <div class="flex items-center gap-2 font-bold text-sm">
@@ -237,8 +237,10 @@
                                 <i class="fa-solid fa-calendar-days text-zinc-400"></i>
                             </div>
                             <input type="text" id="dateRangePicker" placeholder="Selecciona un rango..." readonly class="w-full h-11 pl-11 pr-10 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-red-500 cursor-pointer">
+                            <!-- INPUTS OCULTOS QUE GUARDAN EL RANGO -->
                             <input type="hidden" name="fecha_inicio" id="fecha_inicio_hidden" value="{{ fecha_inicio }}">
                             <input type="hidden" name="fecha_fin" id="fecha_fin_hidden" value="{{ fecha_fin }}">
+                            
                             {% if fecha_inicio or fecha_fin %}
                                 <button type="button" onclick="limpiarFechas()" class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-zinc-200 dark:bg-zinc-700 rounded-full text-zinc-500 hover:text-red-500 transition-colors z-10" title="Limpiar fechas">
                                     <i class="fa-solid fa-xmark text-xs"></i>
@@ -521,6 +523,7 @@
         clickOpens: false, // Desactivamos la apertura por defecto para controlarla nosotros
         closeOnSelect: false, // Evita que se cierre al hacer clic
         onChange: function(selectedDates, dateStr, instance) {
+            // 1. Actualizar la vista previa (Footer)
             const preview = document.getElementById('date-preview');
             if (preview && selectedDates.length > 0) {
                 if (selectedDates.length > 1) {
@@ -528,14 +531,25 @@
                 } else {
                     preview.textContent = instance.formatDate(selectedDates[0], "d M, Y");
                 }
+            } else if (preview) {
+                preview.textContent = "Selecciona un rango";
+            }
+
+            // 2. ACTUALIZAR LOS INPUTS OCULTOS PARA QUE DJANGO LOS RECIBA
+            if (selectedDates.length > 0) {
+                document.getElementById('fecha_inicio_hidden').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                document.getElementById('fecha_fin_hidden').value = selectedDates.length > 1 ? instance.formatDate(selectedDates[1], "Y-m-d") : instance.formatDate(selectedDates[0], "Y-m-d");
+            } else {
+                document.getElementById('fecha_inicio_hidden').value = '';
+                document.getElementById('fecha_fin_hidden').value = '';
             }
         },
         onReady: function(selectedDates, dateStr, instance) {
-            // 1. Crear el contenedor del footer
+            // Crear el contenedor del footer
             const footer = document.createElement("div");
             footer.className = "flatpickr-footer";
 
-            // 2. Crear el texto de vista previa (Izquierda)
+            // Texto de vista previa (Izquierda)
             const preview = document.createElement("span");
             preview.className = "flatpickr-preview";
             preview.id = "date-preview";
@@ -549,7 +563,7 @@
                 preview.textContent = "Selecciona un rango";
             }
 
-            // 3. Crear el botón de Aceptar (Derecha)
+            // Botón de Aceptar (Derecha)
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "flatpickr-ok-btn";
@@ -558,7 +572,7 @@
                 instance.close(); // Cierra el calendario al confirmar
             };
 
-            // 4. Armar el footer
+            // Armar el footer
             footer.appendChild(preview);
             footer.appendChild(btn);
             instance.calendarContainer.appendChild(footer);
@@ -566,11 +580,9 @@
         onOpen: function(selectedDates, dateStr, instance) {
             setTimeout(() => {
                 if (window.innerWidth < 640) {
-                    // En móviles: Centrar perfectamente en la pantalla
                     instance.calendarContainer.style.left = '50%';
                     instance.calendarContainer.style.transform = 'translateX(-50%)';
                 } else {
-                    // En PC: Evitar que se salga por los bordes
                     const rect = instance.calendarContainer.getBoundingClientRect();
                     const padding = 24;
                     
