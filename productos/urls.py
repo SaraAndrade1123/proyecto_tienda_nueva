@@ -1,9 +1,10 @@
 from django.urls import path
 from . import views
+from gestor_inventario.views import informacion_tienda   # la página de la tienda es la de Sara (carrusel, historia, medios de pago)
 
 
 urlpatterns = [
-    
+
     path('lista_productos/', views.lista_productos, name='lista_productos'),
     path('crear/', views.crear_producto, name='crear_producto'),
     path('editar/<int:id>/', views.editar_producto, name='editar_producto'),
@@ -15,11 +16,11 @@ urlpatterns = [
     path('vender/<int:id>/', views.vender_producto, name='vender_producto'),
 
     path('producto/<int:id>/', views.detalle_producto, name='detalle_producto'),
-    
+
     path('categorias/', views.lista_categorias, name='lista_categorias'),
-    path('categorias/crear/',views.crear_categoria,name='crear_categoria'),
-    path('categorias/editar/<int:id>/',views.editar_categoria,name='editar_categoria'),
-    path('categorias/eliminar/<int:id>/',views.eliminar_categoria,name='eliminar_categoria'),
+    path('categorias/crear/', views.crear_categoria, name='crear_categoria'),
+    path('categorias/editar/<int:id>/', views.editar_categoria, name='editar_categoria'),
+    path('categorias/eliminar/<int:id>/', views.eliminar_categoria, name='eliminar_categoria'),
     path('catalogo/', views.catalogo_productos, name='catalogo_productos'),
-    path('informacion/', views.informacion_tienda, name='informacion_tienda'),
+    path('informacion/', informacion_tienda, name='informacion_tienda'),
 ]
