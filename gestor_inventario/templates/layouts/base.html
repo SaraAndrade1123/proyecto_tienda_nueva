@@ -35,6 +35,19 @@
                     fontFamily: { sans: ['Tahoma', 'Verdana', 'Geneva', 'sans-serif'] },
                     colors: {
                         brand: { red: '#b91c1c', darkred: '#7f1d1d', darkbg: '#0f0f0f', darknav: '#1a1a1a', darkcard: '#1e1e1e' }
+                    },
+                    keyframes: {
+                        ring: {
+                            '0%, 100%': { transform: 'rotate(0)' },
+                            '10%': { transform: 'rotate(15deg)' },
+                            '20%': { transform: 'rotate(-10deg)' },
+                            '30%': { transform: 'rotate(5deg)' },
+                            '40%': { transform: 'rotate(-5deg)' },
+                            '50%': { transform: 'rotate(0)' },
+                        }
+                    },
+                    animation: {
+                        'ring-bell': 'ring 2s ease-in-out infinite',
                     }
                 }
             }
@@ -42,41 +55,58 @@
     </script>
 
     <style>
-        html, body { -webkit-tap-highlight-color: transparent; }
+        html, body { -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Asegura el scroll en móviles */
         #sidebar-scroll { 
             overscroll-behavior: contain; 
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
         }
         
-        /* Animación del puntito rojo */
-        @keyframes pulse-red {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: .6; transform: scale(1.2); }
+        /* Hamburguesa ajustada al tamaño del título */
+        .hamburger-line {
+            display: block; 
+            width: 20px; 
+            height: 2px; 
+            background-color: #ffffff; 
+            border-radius: 2px;
+            transition: all 0.3s ease-in-out;
         }
-        .dot-pulse { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .is-open .line-1 { transform: translateY(8px) rotate(45deg); }
+        .is-open .line-2 { opacity: 0; transform: scaleX(0); }
+        .is-open .line-3 { transform: translateY(-8px) rotate(-45deg); }
+        
+        /* Transición suave para el perfil */
+        .profile-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+        .profile-content.open {
+            max-height: 200px; /* Aumentado para acomodar el rol */
+            opacity: 1;
+        }
     </style>
 </head>
-<body class="bg-white text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
+<body class="bg-zinc-100 text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
 
     <!-- FONDO OSCURO PARA MÓVIL -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity backdrop-blur-sm"></div>
 
     <!-- BARRA LATERAL (SIDEBAR) -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-brand-darknav shadow-2xl z-50 transform -translate-x-full flex flex-col border-r border-gray-200 dark:border-gray-800 overflow-hidden">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-zinc-50 dark:bg-brand-darknav shadow-2xl z-50 transform -translate-x-full flex flex-col overflow-hidden">
         
-        <!-- Cabecera del Sidebar -->
-        <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
-            <a href="/" class="flex items-center space-x-3 text-xl font-bold tracking-widest uppercase text-brand-red dark:text-white">
-                <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-8 h-8 object-contain rounded-full">
-                <span>Tienda Nueva</span>
+        <!-- Cabecera del Sidebar (ROJO SÓLIDO - Alineado 100%) -->
+        <div class="w-full p-4 sm:p-5 text-white flex items-center justify-between gap-3 shrink-0" style="background-color: #b91c1c;">
+            <a href="/" class="flex items-center gap-2.5 min-w-0">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-8 h-8 object-contain rounded-full border-2 border-white/30 shrink-0">
+                <span class="text-lg font-bold tracking-wider uppercase truncate">Tienda Nueva</span>
             </a>
-            <button id="close-sidebar" class="p-2 text-gray-500 hover:text-brand-red dark:text-gray-400 dark:hover:text-white transition">
+            <button id="close-sidebar" class="p-2 text-white hover:text-red-200 transition transform hover:rotate-90 duration-300 shrink-0 rounded-lg hover:bg-white/10">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
@@ -85,81 +115,96 @@
         <div id="sidebar-scroll" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-2">
             
             <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Principal</p>
-            <a href="{% url 'informacion_tienda' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-store w-5 text-center text-brand-red"></i> Información
+            <a href="{% url 'informacion_tienda' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-store w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Información
             </a>
-            <a href="{% url 'catalogo_productos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-tags w-5 text-center text-brand-red"></i> Catálogo
+            <a href="{% url 'catalogo_productos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-tags w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Catálogo
             </a>
 
             {% if user.is_authenticated and user.is_staff %}
             <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6">Administración</p>
-            <a href="{% url 'lista_productos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-box-open w-5 text-center text-brand-red"></i> Productos
+            <a href="{% url 'lista_productos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-box-open w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Productos
             </a>
-            <a href="{% url 'lista_categorias' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-tags w-5 text-center text-brand-red"></i> Categorías
+            <a href="{% url 'lista_categorias' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-tags w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Categorías
             </a>
-            <a href="{% url 'ver_consumo' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-chart-pie w-5 text-center text-brand-red"></i> Consumos
+            <a href="{% url 'ver_consumo' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-chart-pie w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Consumos
             </a>
-            <a href="{% url 'proveedores' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-truck-field w-5 text-center text-brand-red"></i> Proveedores
+            <a href="{% url 'proveedores' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-truck-field w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Proveedores
             </a>
-            <a href="{% url 'grupos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-user-shield w-5 text-center text-brand-red"></i> Grupos & Usuarios
+            <a href="{% url 'grupos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-user-shield w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Grupos & Usuarios
             </a>
-            <a href="/" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
-                <i class="fa-solid fa-cash-register w-5 text-center text-brand-red"></i> Cierre de caja
+            <a href="/" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
+                <i class="fa-solid fa-cash-register w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Cierre de caja
             </a>
             {% endif %}
+            
+            <!-- SE HA ELIMINADO LA GUÍA DE ROLES Y PERMISOS AQUÍ -->
+            
         </div>
 
-        <!-- Footer del Sidebar (Tema y Perfil) -->
-        <div class="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2 shrink-0 bg-gray-50/50 dark:bg-brand-darknav">
+        <!-- Footer del Sidebar -->
+        <div class="p-4 border-t border-zinc-200 dark:border-gray-800 space-y-2 shrink-0 bg-zinc-50 dark:bg-brand-darknav">
             
-            <!-- 1. Modo Oscuro / Claro -->
-            <button id="theme-toggle" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition focus:outline-none">
+            <button id="theme-toggle" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition focus:outline-none">
                 <i id="theme-icon" class="fa-solid fa-moon w-5 text-center text-brand-red"></i>
                 <span id="theme-text">Modo Oscuro</span>
             </button>
 
             {% if user.is_authenticated %}
-            <!-- 2. Perfil con Acordeón -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-brand-darkcard mt-2">
-                <!-- Botón del Acordeón -->
-                <button id="profile-btn" class="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition focus:outline-none">
+            <!-- Perfil con Acordeón Animado -->
+            <div class="border border-zinc-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-brand-darkcard transition-all duration-300 hover:border-brand-red dark:hover:border-red-500 shadow-sm">
+                <button id="profile-btn" class="w-full flex items-center justify-between px-3 py-2.5 hover:bg-zinc-50 dark:hover:bg-red-950/20 transition focus:outline-none group">
                     <div class="flex items-center gap-2 min-w-0">
                         {% if user.perfil and user.perfil.foto %}
-                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-200 dark:border-gray-700">
+                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-200 dark:border-gray-700 group-hover:border-brand-red transition-colors">
                         {% else %}
-                            <div class="w-8 h-8 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-sm shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                                 {{ user.username|first|upper }}
                             </div>
                         {% endif %}
                         <div class="text-left min-w-0">
-                            <p class="text-xs font-bold truncate text-gray-800 dark:text-gray-200">
+                            <p class="text-xs font-bold truncate text-gray-800 dark:text-gray-200 group-hover:text-brand-red dark:group-hover:text-red-400 transition-colors">
                                 {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
                             </p>
                             <p class="text-[10px] text-gray-500 truncate">{{ user.email }}</p>
                         </div>
                     </div>
-                    <i id="profile-chevron" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300"></i>
+                    <i id="profile-chevron" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300 group-hover:text-brand-red"></i>
                 </button>
                 
-                <!-- Contenido del Acordeón (Oculto por defecto) -->
-                <div id="profile-content" class="hidden border-t border-gray-100 dark:border-gray-700 p-2 space-y-1">
-                    <a href="{% url 'editar_perfil' %}" class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold transition">
-                        <i class="fa-regular fa-pen-to-square text-brand-red"></i> Editar perfil
-                    </a>
-                    <a href="{% url 'logout' %}" class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold transition">
-                        <i class="fa-solid fa-right-from-bracket text-red-500"></i> Cerrar Sesión
-                    </a>
+                <div id="profile-content" class="profile-content border-t border-gray-100 dark:border-gray-700 bg-zinc-50 dark:bg-brand-darknav">
+                    <div class="p-2 space-y-1.5">
+                        
+                        <!-- ROL ACTUAL (Mejorado con icono fa-user-shield) -->
+                        <div class="flex items-center justify-between px-2.5 py-1.5 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-100 dark:border-red-900/50 mb-2">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                <i class="fa-solid fa-user-shield text-brand-red mr-1"></i> Rol
+                            </span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-100 text-brand-red dark:bg-red-900/60 dark:text-red-300 whitespace-nowrap">
+                                {% if user.is_superuser %}Super Admin
+                                {% elif user.is_staff %}Administrador
+                                {% elif user.groups.all %}Trabajador
+                                {% else %}Cliente{% endif %}
+                            </span>
+                        </div>
+
+                        <a href="{% url 'editar_perfil' %}" class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 text-xs font-semibold transition-colors">
+                            <i class="fa-regular fa-pen-to-square"></i> Editar perfil
+                        </a>
+                        <a href="{% url 'logout' %}" class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-brand-red hover:text-white text-red-600 dark:text-red-400 text-xs font-bold transition-colors">
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                        </a>
+                    </div>
                 </div>
             </div>
             {% else %}
-            <!-- Botón de Iniciar Sesión si no está autenticado -->
-            <a href="{% url 'login' %}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-brand-red text-white hover:bg-brand-darkred font-bold transition mt-2">
+            <a href="{% url 'login' %}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-brand-red text-white hover:bg-brand-darkred font-bold transition mt-2 shadow-md hover:-translate-y-0.5 transform duration-200">
                 <i class="fa-regular fa-user w-5 text-center"></i> Iniciar Sesión
             </a>
             {% endif %}
@@ -167,43 +212,55 @@
     </aside>
 
     <!-- BARRA SUPERIOR STICKY -->
-    <header id="main-header" class="sticky top-0 w-full bg-brand-red dark:bg-brand-darknav text-white shadow-sm z-30 transition-shadow duration-300">
-        <div class="px-4 h-16 flex items-center justify-between">
+    <header id="main-header" class="sticky top-0 w-full text-white shadow-md z-30 transition-all duration-300 border-none" style="background-color: #b91c1c;">
+        <div class="px-3 sm:px-5 h-16 flex items-center justify-between">
             
-            <button id="open-sidebar" class="p-2 -ml-2 rounded-lg hover:bg-white/10 transition focus:outline-none">
-                <i class="fa-solid fa-bars text-2xl"></i>
-            </button>
+            <!-- Hamburguesa y Logo -->
+            <div class="flex items-center gap-4">
+                <button id="open-sidebar" class="p-1.5 rounded-lg transition-all duration-200 focus:outline-none active:scale-95 flex items-center justify-center hover:bg-white/20" aria-label="Abrir menú">
+                    <div id="hamburger-icon" class="flex flex-col gap-[6px] items-center justify-center">
+                        <span class="hamburger-line line-1"></span>
+                        <span class="hamburger-line line-2"></span>
+                        <span class="hamburger-line line-3"></span>
+                    </div>
+                </button>
 
-            <a href="/" class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-lg font-bold tracking-widest uppercase hidden sm:flex">
-                <span>Tienda Nueva</span>
-            </a>
+                <a href="/" class="flex items-center gap-2 text-lg font-bold tracking-widest uppercase hover:text-red-200 transition-colors duration-200">
+                    <span>Tienda Nueva</span>
+                </a>
+            </div>
 
-            <div class="flex items-center gap-2 sm:gap-4">
-                <!-- SOLO CAMPANITA -->
+            <!-- Campanita de Notificaciones -->
+            <div class="flex items-center gap-2 sm:gap-4 pr-1 sm:pr-3">
                 <div class="relative" id="notification-container">
-                    <button id="notification-btn" class="p-2 rounded-full hover:bg-white/10 transition relative focus:outline-none">
-                        <i class="fa-regular fa-bell text-xl"></i>
-                        <span id="notification-count" class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-black text-white bg-black dark:bg-brand-darkred rounded-full border-2 border-white dark:border-brand-darkcard shadow-md">
+                    <button id="notification-btn" class="p-2 rounded-full hover:bg-white/20 transition-all duration-200 relative focus:outline-none active:scale-95 group">
+                        <i class="fa-regular fa-bell text-xl text-white group-hover:animate-ring-bell"></i>
+                        <span id="notification-count" class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black text-black bg-yellow-400 rounded-full border-2 border-brand-red dark:bg-brand-red dark:text-white dark:border-brand-darkcard shadow-lg">
                             0
                         </span>
                     </button>
 
                     <!-- Dropdown de Notificaciones -->
-                    <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden z-[100] transition-all">
+                    <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-2xl shadow-2xl border border-red-100 dark:border-gray-800 overflow-hidden z-[100] transition-all transform origin-top-right">
                         
-                        <div class="p-3.5 border-b border-brand-darkred dark:border-brand-darkred flex justify-between items-center bg-brand-red dark:bg-brand-darkred text-white">
-                            <h3 class="font-bold text-sm flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-white dot-pulse"></span>
+                        <div class="p-3.5 border-b border-red-100 dark:border-gray-800 flex justify-between items-center bg-red-50 dark:bg-brand-darknav">
+                            <h3 class="font-bold text-sm text-brand-red dark:text-white flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-brand-red dot-pulse"></span>
                                 Notificaciones
                             </h3>
                         </div>
                         
-                        <div id="notif-list" class="max-h-[60vh] sm:max-h-80 overflow-y-auto no-scrollbar">
-                            <!-- Se llena con JS -->
-                        </div>
+                        <div id="notif-list" class="max-h-64 overflow-y-auto no-scrollbar"></div>
                         
-                        <div id="notif-empty" class="p-8 text-center text-gray-400 dark:text-gray-500 hidden">
-                            <div class="w-14 h-14 mx-auto bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center mb-3 text-brand-red dark:text-red-400">
+                        <div class="border-t border-red-100 dark:border-gray-800 p-2.5 text-center bg-zinc-50 dark:bg-brand-darknav">
+                            <p id="notif-more-text" class="text-xs font-bold text-gray-500 mb-2 hidden"></p>
+                            <a href="{% url 'ver_notificaciones' %}" class="w-full py-2.5 bg-brand-red text-white rounded-xl text-xs font-bold block hover:bg-brand-darkred transition-colors shadow-sm active:scale-95">
+                                <i class="fa-solid fa-list-ul mr-1"></i> Ver historial completo
+                            </a>
+                        </div>
+
+                        <div id="notif-empty" class="p-8 text-center text-gray-400 dark:text-gray-500 hidden bg-red-50/30 dark:bg-transparent">
+                            <div class="w-14 h-14 mx-auto bg-red-100 dark:bg-red-950/30 rounded-full flex items-center justify-center mb-3 text-brand-red dark:text-red-400">
                                 <i class="fa-regular fa-face-laugh-beam text-2xl"></i>
                             </div>
                             <p class="text-sm font-bold text-gray-800 dark:text-white">Estás al día</p>
@@ -215,7 +272,7 @@
         </div>
     </header>
 
-    <main class="w-full flex-1 bg-white dark:bg-brand-darkbg transition-colors duration-500">
+    <main class="w-full flex-1 bg-zinc-100 dark:bg-brand-darkbg transition-colors duration-500">
         {% block content %}{% endblock %}
     </main>
 
@@ -236,7 +293,7 @@
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Contacto</h4>
                 <p class="leading-relaxed opacity-90"><i class="fa-brands fa-whatsapp mr-2"></i> 3117150356</p>
                 <p class="leading-relaxed opacity-90"><i class="fa-solid fa-phone mr-2"></i> 3163980459</p>
-                <a href="mailto:luzmarinar883@gmail.com" class="hover:text-gray-200 dark:hover:text-brand-red transition mt-1 opacity-90">
+                <a href="mailto:luzmarinar883@gmail.com" class="hover:text-gray-200 dark:hover:text-red-400 transition mt-1 opacity-90">
                     <i class="fa-solid fa-envelope mr-2"></i> luzmarinar883@gmail.com
                 </a>
             </div>
@@ -248,20 +305,23 @@
 
     <!-- LÓGICA JAVASCRIPT -->
     <script>
-        // 1. SIDEBAR (Menú Lateral)
+        // 1. SIDEBAR Y ANIMACIÓN HAMBURGUESA
         const sidebar = document.getElementById('sidebar');
         const openBtn = document.getElementById('open-sidebar');
         const closeBtn = document.getElementById('close-sidebar');
         const backdrop = document.getElementById('sidebar-backdrop');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
 
         function openSidebar() {
             sidebar.classList.remove('-translate-x-full');
             backdrop.classList.remove('hidden');
+            hamburgerIcon.classList.add('is-open'); 
             document.body.style.overflow = 'hidden'; 
         }
         function closeSidebar() {
             sidebar.classList.add('-translate-x-full');
             backdrop.classList.add('hidden');
+            hamburgerIcon.classList.remove('is-open'); 
             document.body.style.overflow = ''; 
         }
 
@@ -269,14 +329,14 @@
         if(closeBtn) closeBtn.addEventListener('click', closeSidebar);
         if(backdrop) backdrop.addEventListener('click', closeSidebar);
 
-        // 2. ACORDEÓN DE PERFIL
+        // 2. ACORDEÓN DE PERFIL ANIMADO
         const profileBtn = document.getElementById('profile-btn');
         const profileContent = document.getElementById('profile-content');
         const profileChevron = document.getElementById('profile-chevron');
 
         if (profileBtn && profileContent) {
             profileBtn.addEventListener('click', () => {
-                profileContent.classList.toggle('hidden');
+                profileContent.classList.toggle('open');
                 profileChevron.classList.toggle('rotate-180');
             });
         }
@@ -284,35 +344,115 @@
         // 3. NOTIFICACIONES
         const notifBtn = document.getElementById('notification-btn');
         const notifDropdown = document.getElementById('notification-dropdown');
+        const notifList = document.getElementById('notif-list');
+        const notifEmpty = document.getElementById('notif-empty');
+        const badge = document.getElementById('notification-count');
+        const notifMoreText = document.getElementById('notif-more-text');
+
+        const MAX_VISIBLE_NOTIFS = 3;
+        const EXPIRATION_MS = 5 * 60 * 1000;
+        const isAdmin = {% if user.is_authenticated and user.is_staff %}true{% else %}false{% endif %};
+
+        let allNotifs = [];
+        try {
+            allNotifs = JSON.parse(localStorage.getItem('tienda_notifs') || '[]');
+        } catch (e) {}
+
+        const djangoMessages = [
+            {% for message in messages %}
+                { text: "{{ message|escapejs }}", tags: "{{ message.tags|escapejs }}", timestamp: Date.now() },
+            {% endfor %}
+        ];
+
+        let validNewMessages = djangoMessages.filter(msg => {
+            if (isAdmin) return true;
+            return !msg.text.toLowerCase().includes('stock') && !msg.text.toLowerCase().includes('producto agregado');
+        });
+
+        if (validNewMessages.length > 0) {
+            allNotifs = [...validNewMessages, ...allNotifs];
+            try {
+                localStorage.setItem('tienda_notifs', JSON.stringify(allNotifs));
+            } catch (e) {}
+        }
+
+        function cleanAndRender() {
+            const now = Date.now();
+            allNotifs = allNotifs.filter(n => (now - (n.timestamp || now)) < EXPIRATION_MS);
+            try {
+                localStorage.setItem('tienda_notifs', JSON.stringify(allNotifs));
+            } catch (e) {}
+
+            notifList.innerHTML = '';
+            notifEmpty.classList.add('hidden');
+            notifMoreText.classList.add('hidden');
+
+            if (allNotifs.length === 0) {
+                badge.classList.add('hidden');
+                notifEmpty.classList.remove('hidden');
+                return;
+            }
+
+            badge.classList.remove('hidden');
+            badge.innerText = allNotifs.length > 9 ? '9+' : allNotifs.length;
+
+            const displayNotifs = allNotifs.slice(0, MAX_VISIBLE_NOTIFS);
+            
+            displayNotifs.forEach(notif => {
+                let icon = 'fa-circle-exclamation';
+                let iconColor = 'text-red-600 dark:text-red-400';
+                let bgColor = 'bg-red-50 dark:bg-red-950/30';
+                let borderColor = 'border-red-500';
+
+                if (notif.tags === 'success') {
+                    icon = 'fa-circle-check';
+                    iconColor = 'text-green-600 dark:text-green-400';
+                    bgColor = 'bg-green-50 dark:bg-green-950/30';
+                    borderColor = 'border-green-500';
+                } else if (notif.tags === 'warning') {
+                    icon = 'fa-triangle-exclamation';
+                    iconColor = 'text-yellow-600 dark:text-yellow-400';
+                    bgColor = 'bg-yellow-50 dark:bg-yellow-950/30';
+                    borderColor = 'border-yellow-500';
+                }
+
+                notifList.innerHTML += `
+                    <div class="relative p-3.5 border-b border-gray-100 dark:border-gray-800 flex gap-3 hover:bg-red-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${borderColor}"></div>
+                        <div class="shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center shadow-sm">
+                            <i class="fa-solid ${icon} ${iconColor} text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0 pr-1">
+                            <p class="text-[13px] font-medium leading-snug text-gray-800 dark:text-gray-200">${notif.text}</p>
+                            <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
+                                <i class="fa-regular fa-clock"></i> Hace un momento
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (allNotifs.length > MAX_VISIBLE_NOTIFS) {
+                notifMoreText.classList.remove('hidden');
+                const restantes = allNotifs.length - MAX_VISIBLE_NOTIFS;
+                notifMoreText.innerText = `Y ${restantes} notificacione${restantes === 1 ? '' : 's'} más que no se vieron...`;
+            }
+        }
 
         if (notifBtn && notifDropdown) {
             notifBtn.addEventListener('click', (e) => { 
                 e.stopPropagation(); 
                 notifDropdown.classList.toggle('hidden'); 
-                
-                const badge = document.getElementById('notification-count');
-                if(badge) badge.classList.add('hidden');
-                try {
-                    localStorage.setItem('tienda_notifs', '[]');
-                } catch (e) {}
             });
         }
 
         document.addEventListener('click', (e) => {
-            if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) notifDropdown.classList.add('hidden');
-        });
-
-        // 4. EFECTO DE SCROLL
-        const header = document.getElementById('main-header');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 10) {
-                header.classList.add('shadow-xl');
-                header.classList.remove('shadow-sm');
-            } else {
-                header.classList.add('shadow-sm');
-                header.classList.remove('shadow-xl');
+            if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                notifDropdown.classList.add('hidden');
             }
         });
+
+        cleanAndRender();
 
         // 5. TEMA OSCURO / CLARO
         const htmlElement = document.documentElement;
@@ -338,83 +478,6 @@
             applyThemeIcons();
         });
         applyThemeIcons();
-
-        // 6. NOTIFICACIONES PERSISTENTES
-        let savedNotifs = [];
-        try {
-            savedNotifs = JSON.parse(localStorage.getItem('tienda_notifs') || '[]');
-        } catch (e) {}
-
-        const djangoMessages = [
-            {% for message in messages %}
-                { text: "{{ message|escapejs }}", tags: "{{ message.tags|escapejs }}" },
-            {% endfor %}
-        ];
-
-        if (djangoMessages.length > 0) {
-            savedNotifs = [...djangoMessages, ...savedNotifs];
-            try {
-                localStorage.setItem('tienda_notifs', JSON.stringify(savedNotifs));
-            } catch (e) {}
-        }
-
-        function renderNotifications() {
-            const list = document.getElementById('notif-list');
-            const empty = document.getElementById('notif-empty');
-            const badge = document.getElementById('notification-count');
-
-            if (!list || !empty || !badge) return;
-
-            list.innerHTML = ''; 
-
-            if (savedNotifs.length === 0) {
-                badge.classList.add('hidden');
-                empty.classList.remove('hidden');
-                return;
-            }
-
-            badge.classList.remove('hidden');
-            badge.innerText = savedNotifs.length > 9 ? '9+' : savedNotifs.length;
-            empty.classList.add('hidden');
-
-            savedNotifs.forEach(notif => {
-                let icon = 'fa-circle-exclamation';
-                let iconColor = 'text-red-600 dark:text-red-400';
-                let bgColor = 'bg-red-50 dark:bg-red-950/30';
-                let borderColor = 'border-red-500';
-
-                if (notif.tags === 'success') {
-                    icon = 'fa-circle-check';
-                    iconColor = 'text-green-600 dark:text-green-400';
-                    bgColor = 'bg-green-50 dark:bg-green-950/30';
-                    borderColor = 'border-green-500';
-                } else if (notif.tags === 'warning') {
-                    icon = 'fa-triangle-exclamation';
-                    iconColor = 'text-yellow-600 dark:text-yellow-400';
-                    bgColor = 'bg-yellow-50 dark:bg-yellow-950/30';
-                    borderColor = 'border-yellow-500';
-                }
-
-                list.innerHTML += `
-                    <div class="relative p-3.5 border-b border-gray-100 dark:border-gray-800 flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 ${borderColor}"></div>
-                        
-                        <div class="shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center shadow-sm">
-                            <i class="fa-solid ${icon} ${iconColor} text-sm"></i>
-                        </div>
-                        
-                        <div class="flex-1 min-w-0 pr-1">
-                            <p class="text-[13px] font-medium leading-snug text-gray-800 dark:text-gray-200">${notif.text}</p>
-                            <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
-                                <i class="fa-regular fa-clock"></i> Justo ahora
-                            </p>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        renderNotifications();
     </script>
 </body>
 </html>
