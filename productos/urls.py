@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from gestor_inventario.views import informacion_tienda
 
 
 urlpatterns = [
@@ -13,6 +12,8 @@ urlpatterns = [
     path('stock/aumentar/<int:id>/', views.aumentar_stock, name='aumentar_stock'),
     path('stock/disminuir/<int:id>/', views.disminuir_stock, name='disminuir_stock'),
 
+    path('vender/<int:id>/', views.vender_producto, name='vender_producto'),
+
     path('producto/<int:id>/', views.detalle_producto, name='detalle_producto'),
     
     path('categorias/', views.lista_categorias, name='lista_categorias'),
@@ -20,6 +21,5 @@ urlpatterns = [
     path('categorias/editar/<int:id>/',views.editar_categoria,name='editar_categoria'),
     path('categorias/eliminar/<int:id>/',views.eliminar_categoria,name='eliminar_categoria'),
     path('catalogo/', views.catalogo_productos, name='catalogo_productos'),
-   
-    path('informacion/', informacion_tienda, name='informacion_tienda'),
-]   
+    path('informacion/', views.informacion_tienda, name='informacion_tienda'),
+]

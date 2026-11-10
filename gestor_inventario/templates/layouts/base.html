@@ -32,17 +32,9 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Tahoma', 'Verdana', 'Geneva', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Tahoma', 'Verdana', 'Geneva', 'sans-serif'] },
                     colors: {
-                        brand: {
-                            red: '#b91c1c',
-                            darkred: '#7f1d1d',
-                            darkbg: '#0f0f0f',
-                            darknav: '#1a1a1a',
-                            darkcard: '#1e1e1e',
-                        }
+                        brand: { red: '#b91c1c', darkred: '#7f1d1d', darkbg: '#0f0f0f', darknav: '#1a1a1a', darkcard: '#1e1e1e' }
                     }
                 }
             }
@@ -50,242 +42,185 @@
     </script>
 
     <style>
-        /* Elimina el highlight azul al tocar en móvil */
-        html, body {
-            -webkit-tap-highlight-color: transparent;
+        html, body { -webkit-tap-highlight-color: transparent; }
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Asegura el scroll en móviles */
+        #sidebar-scroll { 
+            overscroll-behavior: contain; 
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
-
-        /* Animación del menú móvil: pausada y elegante */
-        #mobile-menu {
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(-6px);
-            transition:
-                max-height 0.65s cubic-bezier(0.25, 0.1, 0.25, 1),
-                opacity 0.5s ease-in-out,
-                transform 0.65s cubic-bezier(0.25, 0.1, 0.25, 1);
-            will-change: max-height, opacity, transform;
+        
+        /* Animación del puntito rojo */
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .6; transform: scale(1.2); }
         }
-        #mobile-menu.open {
-            max-height: 100vh;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Rotación tranquila del ícono hamburguesa: media vuelta suave */
-        #menu-btn i {
-            transform: rotate(0deg);
-            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
-        }
-        #menu-btn.active i {
-            transform: rotate(180deg);
-        }
+        .dot-pulse { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
-<body class="bg-white text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans">
+<body class="bg-white text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
 
-    <nav class="bg-brand-red dark:bg-brand-darknav text-white shadow-md sticky top-0 z-50 transition-colors duration-500">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center max-w-6xl">
+    <!-- FONDO OSCURO PARA MÓVIL -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity backdrop-blur-sm"></div>
 
-            <a href="/" class="flex items-center space-x-3 text-xl font-bold tracking-widest uppercase">
-
-                <div class="p-1 rounded-full flex items-center justify-center">
-    		    <img src="{% static 'img/logo.png' %}" alt="Logo de Tienda Nueva" class="w-10 h-10 object-contain rounded-full">
-                </div>
-                   
-              
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-brand-darknav shadow-2xl z-50 transform -translate-x-full flex flex-col border-r border-gray-200 dark:border-gray-800 overflow-hidden">
+        
+        <!-- Cabecera del Sidebar -->
+        <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
+            <a href="/" class="flex items-center space-x-3 text-xl font-bold tracking-widest uppercase text-brand-red dark:text-white">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-8 h-8 object-contain rounded-full">
                 <span>Tienda Nueva</span>
             </a>
-
-            <!-- Menú de escritorio: Navegación primero, luego usuario -->
-		{% load static %}
-            <div class="hidden md:flex items-center space-x-8 text-sm font-semibold">
-                <!-- Navegación principal (siempre visible) -->
-                <a href="{% url 'informacion_tienda' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
-                <a href="{% url 'catalogo_productos' %}" class="hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
-
-                <!-- Botón hamburguesa escritorio: SOLO para staff/admin -->
-                {% if user.is_authenticated and user.is_staff %}
-                <div class="relative" id="desktop-more-container">
-                    <button id="desktop-more-btn" class="p-2 rounded-lg hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0" title="Más opciones">
-                        <i class="fa-solid fa-bars text-xl"></i>
-                    </button>
-                    <div id="desktop-more-dropdown" class="hidden absolute right-0 mt-4 w-60 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-xl shadow-2xl border-t-4 border-brand-red dark:border-brand-red overflow-hidden z-50">
-                        <a href="{% url 'lista_productos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                            <i class="fa-solid fa-box-open w-5 text-brand-red"></i> Productos
-                        </a>
-                        <a href="{% url 'lista_categorias' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                            <i class="fa-solid fa-tags w-5 text-brand-red"></i> Categorías
-                        </a>
-                        <a href="{% url 'grupos' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                            <i class="fa-solid fa-user-shield w-5 text-brand-red"></i> Grupos & Usuarios
-                        </a>
-                        <a href="{% url 'proveedores' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                            <i class="fa-solid fa-truck-field w-5 text-brand-red"></i> Proveedores
-                        </a>
-                        <a href="{% url 'ver_consumo' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                            <i class="fa-solid fa-chart-pie w-5 text-brand-red"></i> Consumo
-                        </a>
-                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                            <i class="fa-solid fa-percent w-5 text-brand-red"></i> pp
-                        </a>
-                        <a href="/" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-600">
-                            <i class="fa-solid fa-cash-register w-5 text-brand-red"></i> Cierre de caja
-                        </a>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Toggle de tema -->
-                <button id="theme-toggle-desktop" class="p-2 rounded-lg hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0" title="Cambiar tema">
-                    <i id="theme-icon-desktop" class="fa-solid fa-moon text-lg"></i>
-                </button>
-
-                <!-- Perfil de usuario -->
-                {% if user.is_authenticated %}
-                    <div class="relative" id="user-menu-container">
-                        <button id="user-menu-btn" class="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0">
-                            {% if user.perfil and user.perfil.foto %}
-                                <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover border-2 border-white/70">
-                            {% else %}
-                                <div class="w-8 h-8 rounded-full bg-white text-brand-red flex items-center justify-center font-bold text-sm border-2 border-white/70">
-                                    {{ user.username|first|upper }}
-                                </div>
-                            {% endif %}
-
-                            <span class="text-sm font-semibold max-w-[120px] truncate opacity-90 group-hover:opacity-100 dark:opacity-80 dark:group-hover:opacity-100 transition-opacity duration-200">
-                                {{ user.username }}
-                            </span>
-
-                            <i class="fa-solid fa-chevron-down text-xs opacity-80 group-hover:opacity-100 transition-opacity duration-200"></i>
-                        </button>
-
-                        <div id="user-menu-dropdown" class="hidden absolute right-0 mt-4 w-64 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-xl shadow-2xl border-t-4 border-brand-red dark:border-brand-red overflow-hidden z-50">
-                            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-brand-darknav">
-                                <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
-                                    {% if user.get_full_name %}
-                                        {{ user.get_full_name }}
-                                    {% else %}
-                                        {{ user.username }}
-                                    {% endif %}
-                                </p>
-                                <!-- Email + badge alineados -->
-                                <div class="flex items-center gap-2 mt-1">
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate flex-1 min-w-0 mr-auto">
-                                        {{ user.email }}
-                                    </p>
-                                    {% if user.is_staff %}
-                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-brand-red text-white dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
-                                            Admin
-                                        </span>
-                                    {% else %}
-                                        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-brand-red text-white dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
-                                            Cliente
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <a href="{% url 'editar_perfil' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition">
-                                <i class="fa-regular fa-pen-to-square w-5 text-brand-red"></i> Editar perfil
-                            </a>
-                            <a href="{% url 'logout' %}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-brand-red/10 dark:hover:bg-brand-red/20 hover:text-brand-red dark:hover:text-red-400 transition border-t border-gray-100 dark:border-gray-600">
-                                <i class="fa-solid fa-right-from-bracket w-5 text-brand-red"></i> Cerrar sesión
-                            </a>
-                        </div>
-                    </div>
-                {% else %}
-                    <a href="{% url 'login' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/15 hover:bg-white/25 active:bg-white/25 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition text-sm font-bold focus:outline-none focus:ring-0">
-                        <i class="fa-regular fa-user"></i> Iniciar Sesión
-                    </a>
-                {% endif %}
-            </div>
-
-            <!-- Botón hamburguesa móvil -->
-            <button id="menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/20 active:bg-white/20 dark:hover:bg-gray-800 dark:active:bg-gray-800 transition focus:outline-none focus:ring-0">
-                <i class="fa-solid fa-bars text-xl text-white"></i>
+            <button id="close-sidebar" class="p-2 text-gray-500 hover:text-brand-red dark:text-gray-400 dark:hover:text-white transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
 
-        <!-- Menú móvil: muestra TODAS las opciones de navegación -->
-        <div id="mobile-menu" class="md:hidden bg-brand-darkred dark:bg-brand-darknav border-t border-white/20 dark:border-gray-600">
-            <div class="container mx-auto px-4 py-4 max-w-6xl flex flex-col space-y-4 text-white">
+        <!-- Contenido del Sidebar (Scrollable) -->
+        <div id="sidebar-scroll" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-2">
+            
+            <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Principal</p>
+            <a href="{% url 'informacion_tienda' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-store w-5 text-center text-brand-red"></i> Información
+            </a>
+            <a href="{% url 'catalogo_productos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-tags w-5 text-center text-brand-red"></i> Catálogo
+            </a>
 
-                {% if user.is_authenticated %}
-                    <div class="flex items-center gap-3 pb-3 border-b border-white/20 dark:border-gray-600">
+            {% if user.is_authenticated and user.is_staff %}
+            <p class="px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-6">Administración</p>
+            <a href="{% url 'lista_productos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-box-open w-5 text-center text-brand-red"></i> Productos
+            </a>
+            <a href="{% url 'lista_categorias' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-tags w-5 text-center text-brand-red"></i> Categorías
+            </a>
+            <a href="{% url 'ver_consumo' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-chart-pie w-5 text-center text-brand-red"></i> Consumos
+            </a>
+            <a href="{% url 'proveedores' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-truck-field w-5 text-center text-brand-red"></i> Proveedores
+            </a>
+            <a href="{% url 'grupos' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-user-shield w-5 text-center text-brand-red"></i> Grupos & Usuarios
+            </a>
+            <a href="/" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition">
+                <i class="fa-solid fa-cash-register w-5 text-center text-brand-red"></i> Cierre de caja
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Footer del Sidebar (Tema y Perfil) -->
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2 shrink-0 bg-gray-50/50 dark:bg-brand-darknav">
+            
+            <!-- 1. Modo Oscuro / Claro -->
+            <button id="theme-toggle" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition focus:outline-none">
+                <i id="theme-icon" class="fa-solid fa-moon w-5 text-center text-brand-red"></i>
+                <span id="theme-text">Modo Oscuro</span>
+            </button>
+
+            {% if user.is_authenticated %}
+            <!-- 2. Perfil con Acordeón -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-brand-darkcard mt-2">
+                <!-- Botón del Acordeón -->
+                <button id="profile-btn" class="w-full flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition focus:outline-none">
+                    <div class="flex items-center gap-2 min-w-0">
                         {% if user.perfil and user.perfil.foto %}
-                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-10 h-10 rounded-full object-cover border-2 border-white/70 flex-shrink-0">
+                            <img src="{{ user.perfil.foto.url }}" alt="{{ user.username }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-200 dark:border-gray-700">
                         {% else %}
-                            <div class="w-10 h-10 rounded-full bg-white text-brand-red flex items-center justify-center font-bold border-2 border-white/70 flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-sm shrink-0">
                                 {{ user.username|first|upper }}
                             </div>
                         {% endif %}
-                        <div class="flex-1 min-w-0">
-                            <p class="font-bold text-sm truncate">
-                                {% if user.get_full_name %}
-                                    {{ user.get_full_name }}
-                                {% else %}
-                                    {{ user.username }}
-                                {% endif %}
+                        <div class="text-left min-w-0">
+                            <p class="text-xs font-bold truncate text-gray-800 dark:text-gray-200">
+                                {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
                             </p>
-                            <p class="text-xs opacity-80 truncate">{{ user.email }}</p>
+                            <p class="text-[10px] text-gray-500 truncate">{{ user.email }}</p>
                         </div>
-                        {% if user.is_staff %}
-                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white text-brand-red dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
-                                Admin
-                            </span>
-                        {% else %}
-                            <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white text-brand-red dark:bg-brand-red/20 dark:text-red-400 dark:border dark:border-brand-red/50">
-                                Cliente
-                            </span>
-                        {% endif %}
                     </div>
-                {% endif %}
-
-                <!-- Opciones principales -->
-                <a href="{% url 'informacion_tienda' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Información</a>
-                <a href="{% url 'catalogo_productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Catálogo</a>
-
-                <!-- Opciones de administrador (solo staff) -->
-                {% if user.is_authenticated and user.is_staff %}
-                    <a href="{% url 'lista_productos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Productos</a>
-                    <a href="{% url 'lista_categorias' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Categorías</a>
-                    <a href="{% url 'grupos' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Grupos & Usuarios</a>
-                    <a href="{% url 'proveedores' %}" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Proveedores</a>
-                    <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Consumo</a>
-                    <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">pp</a>
-                    <a href="/" class="text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">Cierre de caja</a>
-                {% endif %}
-
-                <hr class="border-white/20 dark:border-gray-600">
-
-                {% if user.is_authenticated %}
-                    <a href="{% url 'editar_perfil' %}" class="flex items-center gap-2 text-sm font-semibold hover:text-gray-200 dark:hover:text-brand-red transition">
-                        <i class="fa-regular fa-pen-to-square"></i> Editar perfil
-                    </a>
-                    <a href="{% url 'logout' %}" class="flex items-center gap-2 text-sm font-bold text-white hover:text-gray-200 dark:hover:text-brand-red transition">
-                        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
-                    </a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="flex items-center gap-2 text-sm font-bold text-white hover:text-gray-200 dark:hover:text-brand-red transition">
-                        <i class="fa-regular fa-user"></i> Iniciar Sesión
-                    </a>
-                {% endif %}
-
-                <button id="theme-toggle-mobile" class="flex items-center gap-2 text-sm font-semibold text-left text-white hover:text-gray-200 dark:hover:text-brand-red transition focus:outline-none mt-2">
-                    <i id="theme-icon-mobile" class="fa-solid fa-moon text-lg"></i>
-                    <span id="theme-text-mobile">Modo Oscuro</span>
+                    <i id="profile-chevron" class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300"></i>
                 </button>
+                
+                <!-- Contenido del Acordeón (Oculto por defecto) -->
+                <div id="profile-content" class="hidden border-t border-gray-100 dark:border-gray-700 p-2 space-y-1">
+                    <a href="{% url 'editar_perfil' %}" class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold transition">
+                        <i class="fa-regular fa-pen-to-square text-brand-red"></i> Editar perfil
+                    </a>
+                    <a href="{% url 'logout' %}" class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 text-xs font-bold transition">
+                        <i class="fa-solid fa-right-from-bracket text-red-500"></i> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <!-- Botón de Iniciar Sesión si no está autenticado -->
+            <a href="{% url 'login' %}" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-brand-red text-white hover:bg-brand-darkred font-bold transition mt-2">
+                <i class="fa-regular fa-user w-5 text-center"></i> Iniciar Sesión
+            </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- BARRA SUPERIOR STICKY -->
+    <header id="main-header" class="sticky top-0 w-full bg-brand-red dark:bg-brand-darknav text-white shadow-sm z-30 transition-shadow duration-300">
+        <div class="px-4 h-16 flex items-center justify-between">
+            
+            <button id="open-sidebar" class="p-2 -ml-2 rounded-lg hover:bg-white/10 transition focus:outline-none">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+
+            <a href="/" class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-lg font-bold tracking-widest uppercase hidden sm:flex">
+                <span>Tienda Nueva</span>
+            </a>
+
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- SOLO CAMPANITA -->
+                <div class="relative" id="notification-container">
+                    <button id="notification-btn" class="p-2 rounded-full hover:bg-white/10 transition relative focus:outline-none">
+                        <i class="fa-regular fa-bell text-xl"></i>
+                        <span id="notification-count" class="hidden absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-black text-white bg-black dark:bg-brand-darkred rounded-full border-2 border-white dark:border-brand-darkcard shadow-md">
+                            0
+                        </span>
+                    </button>
+
+                    <!-- Dropdown de Notificaciones -->
+                    <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-brand-darkcard text-gray-800 dark:text-gray-200 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden z-[100] transition-all">
+                        
+                        <div class="p-3.5 border-b border-brand-darkred dark:border-brand-darkred flex justify-between items-center bg-brand-red dark:bg-brand-darkred text-white">
+                            <h3 class="font-bold text-sm flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-white dot-pulse"></span>
+                                Notificaciones
+                            </h3>
+                        </div>
+                        
+                        <div id="notif-list" class="max-h-[60vh] sm:max-h-80 overflow-y-auto no-scrollbar">
+                            <!-- Se llena con JS -->
+                        </div>
+                        
+                        <div id="notif-empty" class="p-8 text-center text-gray-400 dark:text-gray-500 hidden">
+                            <div class="w-14 h-14 mx-auto bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center mb-3 text-brand-red dark:text-red-400">
+                                <i class="fa-regular fa-face-laugh-beam text-2xl"></i>
+                            </div>
+                            <p class="text-sm font-bold text-gray-800 dark:text-white">Estás al día</p>
+                            <p class="text-xs mt-1">No tienes notificaciones pendientes.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="w-full min-h-screen bg-white dark:bg-brand-darkbg transition-colors duration-500">
-        {% block content %}
-        {% endblock %}
+    <main class="w-full flex-1 bg-white dark:bg-brand-darkbg transition-colors duration-500">
+        {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-brand-red dark:bg-brand-darknav text-white dark:text-gray-400 shadow-md mt-12 py-12 transition-colors duration-500">
+    <!-- FOOTER -->
+    <footer class="bg-brand-red dark:bg-brand-darknav text-white dark:text-gray-400 shadow-md mt-auto py-12 transition-colors duration-500">
         <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10 text-sm max-w-5xl text-left">
             <div class="flex flex-col items-start text-left">
                 <h4 class="font-bold text-lg mb-4 text-white tracking-widest uppercase">Información Fiscal</h4>
@@ -311,82 +246,175 @@
         </div>
     </footer>
 
+    <!-- LÓGICA JAVASCRIPT -->
     <script>
-        // Menú móvil con animación suave y rotación del ícono
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        menuBtn.addEventListener('click', () => {
-            const isOpen = mobileMenu.classList.toggle('open');
-            menuBtn.classList.toggle('active', isOpen);
+        // 1. SIDEBAR (Menú Lateral)
+        const sidebar = document.getElementById('sidebar');
+        const openBtn = document.getElementById('open-sidebar');
+        const closeBtn = document.getElementById('close-sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+            document.body.style.overflow = ''; 
+        }
+
+        if(openBtn) openBtn.addEventListener('click', openSidebar);
+        if(closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if(backdrop) backdrop.addEventListener('click', closeSidebar);
+
+        // 2. ACORDEÓN DE PERFIL
+        const profileBtn = document.getElementById('profile-btn');
+        const profileContent = document.getElementById('profile-content');
+        const profileChevron = document.getElementById('profile-chevron');
+
+        if (profileBtn && profileContent) {
+            profileBtn.addEventListener('click', () => {
+                profileContent.classList.toggle('hidden');
+                profileChevron.classList.toggle('rotate-180');
+            });
+        }
+
+        // 3. NOTIFICACIONES
+        const notifBtn = document.getElementById('notification-btn');
+        const notifDropdown = document.getElementById('notification-dropdown');
+
+        if (notifBtn && notifDropdown) {
+            notifBtn.addEventListener('click', (e) => { 
+                e.stopPropagation(); 
+                notifDropdown.classList.toggle('hidden'); 
+                
+                const badge = document.getElementById('notification-count');
+                if(badge) badge.classList.add('hidden');
+                try {
+                    localStorage.setItem('tienda_notifs', '[]');
+                } catch (e) {}
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) notifDropdown.classList.add('hidden');
         });
 
-        // Menú de usuario (dropdown)
-        const userMenuBtn = document.getElementById('user-menu-btn');
-        const userMenuDropdown = document.getElementById('user-menu-dropdown');
-        if (userMenuBtn && userMenuDropdown) {
-            userMenuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                userMenuDropdown.classList.toggle('hidden');
-                document.getElementById('desktop-more-dropdown')?.classList.add('hidden');
-            });
-            document.addEventListener('click', (e) => {
-                if (!userMenuDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
-                    userMenuDropdown.classList.add('hidden');
-                }
-            });
-        }
+        // 4. EFECTO DE SCROLL
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-xl');
+                header.classList.remove('shadow-sm');
+            } else {
+                header.classList.add('shadow-sm');
+                header.classList.remove('shadow-xl');
+            }
+        });
 
-        // Botón hamburguesa escritorio (más opciones) - solo existe para staff
-        const desktopMoreBtn = document.getElementById('desktop-more-btn');
-        const desktopMoreDropdown = document.getElementById('desktop-more-dropdown');
-        if (desktopMoreBtn && desktopMoreDropdown) {
-            desktopMoreBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                desktopMoreDropdown.classList.toggle('hidden');
-                document.getElementById('user-menu-dropdown')?.classList.add('hidden');
-            });
-            document.addEventListener('click', (e) => {
-                if (!desktopMoreDropdown.contains(e.target) && !desktopMoreBtn.contains(e.target)) {
-                    desktopMoreDropdown.classList.add('hidden');
-                }
-            });
-        }
-
-        // Tema oscuro/claro
+        // 5. TEMA OSCURO / CLARO
         const htmlElement = document.documentElement;
-        const iconDesktop = document.getElementById('theme-icon-desktop');
-        const iconMobile = document.getElementById('theme-icon-mobile');
-        const textMobile = document.getElementById('theme-text-mobile');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
 
         function applyThemeIcons() {
             const isDark = htmlElement.classList.contains('dark');
-            [iconDesktop, iconMobile].forEach(icon => {
-                if (!icon) return;
-                icon.classList.toggle('fa-moon', !isDark);
-                icon.classList.toggle('fa-sun', isDark);
-            });
-            if (textMobile) textMobile.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+            if (themeIcon) {
+                themeIcon.classList.toggle('fa-moon', !isDark);
+                themeIcon.classList.toggle('fa-sun', isDark);
+            }
+            if (themeText) themeText.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
         }
 
-        function toggleTheme() {
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
             const isDark = htmlElement.classList.contains('dark');
             if (isDark) {
-                htmlElement.classList.remove('dark');
-                htmlElement.classList.add('light');
-                localStorage.setItem('theme', 'light');
+                htmlElement.classList.remove('dark'); htmlElement.classList.add('light'); localStorage.setItem('theme', 'light');
             } else {
-                htmlElement.classList.remove('light');
-                htmlElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
+                htmlElement.classList.remove('light'); htmlElement.classList.add('dark'); localStorage.setItem('theme', 'dark');
             }
             applyThemeIcons();
+        });
+        applyThemeIcons();
+
+        // 6. NOTIFICACIONES PERSISTENTES
+        let savedNotifs = [];
+        try {
+            savedNotifs = JSON.parse(localStorage.getItem('tienda_notifs') || '[]');
+        } catch (e) {}
+
+        const djangoMessages = [
+            {% for message in messages %}
+                { text: "{{ message|escapejs }}", tags: "{{ message.tags|escapejs }}" },
+            {% endfor %}
+        ];
+
+        if (djangoMessages.length > 0) {
+            savedNotifs = [...djangoMessages, ...savedNotifs];
+            try {
+                localStorage.setItem('tienda_notifs', JSON.stringify(savedNotifs));
+            } catch (e) {}
         }
 
-        document.getElementById('theme-toggle-desktop')?.addEventListener('click', toggleTheme);
-        document.getElementById('theme-toggle-mobile')?.addEventListener('click', toggleTheme);
+        function renderNotifications() {
+            const list = document.getElementById('notif-list');
+            const empty = document.getElementById('notif-empty');
+            const badge = document.getElementById('notification-count');
 
-        applyThemeIcons();
+            if (!list || !empty || !badge) return;
+
+            list.innerHTML = ''; 
+
+            if (savedNotifs.length === 0) {
+                badge.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            badge.classList.remove('hidden');
+            badge.innerText = savedNotifs.length > 9 ? '9+' : savedNotifs.length;
+            empty.classList.add('hidden');
+
+            savedNotifs.forEach(notif => {
+                let icon = 'fa-circle-exclamation';
+                let iconColor = 'text-red-600 dark:text-red-400';
+                let bgColor = 'bg-red-50 dark:bg-red-950/30';
+                let borderColor = 'border-red-500';
+
+                if (notif.tags === 'success') {
+                    icon = 'fa-circle-check';
+                    iconColor = 'text-green-600 dark:text-green-400';
+                    bgColor = 'bg-green-50 dark:bg-green-950/30';
+                    borderColor = 'border-green-500';
+                } else if (notif.tags === 'warning') {
+                    icon = 'fa-triangle-exclamation';
+                    iconColor = 'text-yellow-600 dark:text-yellow-400';
+                    bgColor = 'bg-yellow-50 dark:bg-yellow-950/30';
+                    borderColor = 'border-yellow-500';
+                }
+
+                list.innerHTML += `
+                    <div class="relative p-3.5 border-b border-gray-100 dark:border-gray-800 flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${borderColor}"></div>
+                        
+                        <div class="shrink-0 w-8 h-8 rounded-full ${bgColor} flex items-center justify-center shadow-sm">
+                            <i class="fa-solid ${icon} ${iconColor} text-sm"></i>
+                        </div>
+                        
+                        <div class="flex-1 min-w-0 pr-1">
+                            <p class="text-[13px] font-medium leading-snug text-gray-800 dark:text-gray-200">${notif.text}</p>
+                            <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
+                                <i class="fa-regular fa-clock"></i> Justo ahora
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        renderNotifications();
     </script>
-    <script src="https://unpkg.com/lucide@latest"></script>
 </body>
 </html>

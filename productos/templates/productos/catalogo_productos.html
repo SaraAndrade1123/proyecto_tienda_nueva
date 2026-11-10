@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load static i18n %}
+{% load static i18n pesos %}
 
 {% block title %}Catálogo - Tienda Nueva{% endblock %}
 
@@ -64,18 +64,14 @@
         overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
     }
 
-    /* ---------- Banner a todo el ancho ---------- */
+    /* ---------- Banner (círculos planos y foto que se desvanece; el filtro cabalga sobre su borde inferior) ---------- */
     .cat-hero {
         position: relative;
         color: #fff;
         background: var(--red-hero);
-        padding: 2.5rem 1.25rem 12.5rem;
+        padding: 2.25rem 1.25rem 4.75rem;
     }
-    .cat-hero__bg {
-        position: absolute; inset: 0;
-        overflow: hidden;
-        pointer-events: none;
-    }
+    .cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
     .cat-hero__bg::before {
         content: "";
         position: absolute; inset: 0;
@@ -91,15 +87,39 @@
             radial-gradient(circle 5rem at 93% 76%, var(--vino) calc(100% - 1px), transparent 100%),
             radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
     }
-    .cat-hero__in {
-        position: relative; z-index: 1;
-        max-width: 96rem;
-        margin: 0 auto;
+    .cat-hero__in { position: relative; z-index: 1; max-width: 96rem; margin: 0 auto; }
+    .cat-hero__txt { width: 100%; min-width: 0; max-width: 40rem; }
+    .cat-hero h1 {
+        margin: 0;
+        font-size: clamp(2.75rem, 1.1rem + 4.2vw, 4rem);
+        line-height: .92;
+        font-weight: 800; font-stretch: 110%;
+        letter-spacing: -.035em;
+        text-wrap: balance;
+    }
+    .cat-hero p { margin: 1rem 0 0; max-width: 34rem; font-size: 1.125rem; line-height: 1.45; color: #fff; }
+
+    /* Foto de fondo: se desvanece hacia el rojo (a la izquierda en escritorio, hacia arriba en móvil) */
+    .cat-hero__photo {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 8.5rem;
+        pointer-events: none;
+        background:
+            linear-gradient(0deg, rgba(127, 29, 29, .12), rgba(185, 28, 28, .45)),
+            var(--foto) 50% 40% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+                mask-image: linear-gradient(to top, #000 30%, transparent 100%);
     }
     @media (min-width: 900px) {
-        .cat-hero { padding: 2.75rem 2.5rem 5.25rem; }
-        .cat-hero__in { min-height: 14.5rem; display: flex; align-items: center; }
-
+        .cat-hero { padding: 2.75rem 2.5rem 4.25rem; }
+        .cat-hero__in { min-height: 11.5rem; display: flex; align-items: center; }
+        .cat-hero__photo {
+            left: auto; top: 0; height: auto; width: min(62%, 64rem);
+            background:
+                linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%),
+                var(--foto) 50% 22% / cover no-repeat;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+        }
         /* En escritorio los círculos se anclan al borde izquierdo del texto, no al de la ventana */
         .cat-hero__bg::before {
             --izq: max(2.5rem, calc(50% - 48rem));
@@ -111,131 +131,87 @@
         }
     }
 
-    .cat-hero h1 {
-        margin: 0;
-        font-size: clamp(2.75rem, 1.1rem + 4.2vw, 4rem);
-        font-weight: 800;
-        font-stretch: 110%;
-        line-height: .92;
-        letter-spacing: -.035em;
-    }
-    .cat-hero p {
-        margin: 1rem 0 0;
-        max-width: 28ch;
-        font-size: 1.125rem;
-        line-height: 1.45;
-        color: #fff;
-    }
+    /* ---------- Filtro: una píldora que cabalga sobre el borde inferior del banner ----------
+       Texto + categoría en una sola pieza. En el teléfono la categoría queda debajo del texto. */
+    .cat-filtro { position: relative; z-index: 4; max-width: 96rem; margin: -2.5rem auto 0; padding: 0 .75rem; }
+    @media (min-width: 640px)  { .cat-filtro { padding: 0 1.5rem; } }
+    @media (min-width: 900px)  { .cat-filtro { margin-top: -1.875rem; } }
+    @media (min-width: 1024px) { .cat-filtro { padding: 0 2.5rem; } }
 
-    /* Buscador: texto + desplegable de categoría + botón (una sola píldora) */
-    .cat-hero__txt { container: hero-txt / inline-size; width: 100%; min-width: 0; max-width: 40rem; }
     .cat-search {
+        --linea: #f0eeec;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas: "q btn" "cat cat";
-        align-items: center; gap: .25rem .5rem;
-        margin-top: 1.75rem;
-        max-width: 42rem;
-        padding: .375rem .375rem .375rem 1.15rem;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "q" "cat";
+        align-items: center;
+        max-width: 54rem; margin: 0 auto;
+        padding: .5rem .5rem .5rem .625rem;
         color: #1c1917;
         background: #fff;
         border-radius: 1.75rem;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 1px rgba(127, 29, 29, .08);
+        transition: box-shadow .2s;
     }
-    .cat-search--solo { grid-template-areas: "q btn"; }
-    .cat-search:focus-within { outline: 3px solid #450a0a; outline-offset: 3px; }
-    .cat-search__q { grid-area: q; display: flex; align-items: center; gap: .5rem; min-width: 0; }
-    .cat-search__q svg { flex: none; width: 1.1rem; height: 1.1rem; color: #78716c; }
+    .dark .cat-search {
+        --linea: #3a3532;
+        color: #f5f5f4; background: #211f1e;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 1px #3a3532;
+    }
+    .cat-search--solo { grid-template-areas: "q"; border-radius: 999px; }
+    .cat-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 3px var(--red); }
+    .dark .cat-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 3px #f87171; }
+    .cat-search__q { grid-area: q; display: flex; align-items: center; gap: .75rem; min-width: 0; }
+    .cat-search__lupa {
+        flex: none; width: 2.5rem; height: 2.5rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: var(--red); background: var(--ta-soft);
+    }
+    .dark .cat-search__lupa { color: #f87171; }
+    .cat-search__lupa svg { width: 1.1rem; height: 1.1rem; }
     .cat-search input {
         flex: 1 1 auto; min-width: 0;
-        height: 2.75rem;
-        padding: 0;
-        font: inherit; font-size: 1rem;
-        color: #1c1917;
-        background: transparent;
+        height: 2.75rem; padding: 0;
+        font: inherit; font-size: 1.0625rem; font-weight: 500;
+        color: inherit; background: transparent;
         border: 0; outline: 0;
     }
-    .cat-search input::placeholder { color: #78716c; }
-    .cat-search__cat { grid-area: cat; min-width: 0; margin-right: .75rem; border-top: 2px solid #f0eeec; }
+    .cat-search input::placeholder { color: var(--muted); font-weight: 400; }
+    .cat-search input::-webkit-search-cancel-button {
+        -webkit-appearance: none; appearance: none;
+        width: 2.25rem; height: 2.25rem; margin: 0; cursor: pointer;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2378716c' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l9 9M12.5 3.5l-9 9'/%3E%3C/svg%3E") center / .8rem no-repeat;
+    }
+    .cat-search__cat { grid-area: cat; min-width: 0; margin: .25rem .5rem 0 .75rem; border-top: 2px solid var(--linea); }
     .cat-search select {
         display: block; width: 100%; height: 2.75rem;
         padding: 0 2rem 0 0;
-        font: inherit; font-size: .9375rem; font-weight: 600;
-        color: #1c1917; color-scheme: light;
+        font: inherit; font-size: .9375rem; font-weight: 700;
+        color: inherit; color-scheme: light;
         text-overflow: ellipsis;
         background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right .1rem center / .8rem;
         border: 0; outline: 0; border-radius: 999px;
         appearance: none; -webkit-appearance: none;
         cursor: pointer;
     }
-    .cat-search select:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
-    .cat-search button {
-        grid-area: btn;
-        height: 2.75rem; padding: 0 1.4rem;
-        font: inherit; font-weight: 700;
-        color: #fff; background: #1c1917;
-        border: 0; border-radius: 999px;
-        cursor: pointer;
-        transition: background-color .15s;
-    }
-    .cat-search button:hover { background: #000; }
-    .cat-search button:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
-    /* Con espacio suficiente todo va en una sola fila */
-    @container hero-txt (min-width: 36rem) {
-        .cat-search { grid-template-columns: minmax(0, 1fr) minmax(0, 13.5rem) auto; grid-template-areas: "q cat btn"; border-radius: 999px; }
-        .cat-search--solo { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "q btn"; }
-        .cat-search__cat { margin-right: 0; padding-left: .9rem; border-top: 0; border-left: 2px solid #f0eeec; }
+    .dark .cat-search select { color-scheme: dark; }
+    /* La lista que se despliega la dibuja el navegador: sin estos colores, en modo oscuro salía letra clara sobre fondo blanco */
+    .cat-search select option { color: #1c1917; background: #fff; font-weight: 600; }
+    .dark .cat-search select option { color: #f5f5f4; background: #211f1e; }
+    .cat-search select:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    @media (min-width: 560px) {
+        .cat-search { grid-template-columns: minmax(0, 1fr) minmax(0, 15rem); grid-template-areas: "q cat"; border-radius: 999px; }
+        .cat-search--solo { grid-template-columns: minmax(0, 1fr); grid-template-areas: "q"; }
+        .cat-search__cat { margin: 0 .75rem 0 0; padding-left: 1rem; border-top: 0; border-left: 2px solid var(--linea); }
     }
 
-    /* Foto de fondo: se desvanece hacia el rojo de base.html (a la izquierda en escritorio, hacia arriba en móvil) */
-    .cat-hero__photo {
-        position: absolute; left: 0; right: 0; bottom: 0; height: 14rem;
-        pointer-events: none;
-        background:
-            linear-gradient(0deg, rgba(127, 29, 29, .12), rgba(185, 28, 28, .45)),
-            var(--foto) 50% 40% / cover no-repeat;
-        -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
-                mask-image: linear-gradient(to top, #000 30%, transparent 100%);
-    }
-    @media (min-width: 900px) {
-        .cat-hero__photo {
-            left: auto; top: 0; height: auto; width: min(62%, 64rem);
-            background:
-                linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%),
-                var(--foto) 50% 22% / cover no-repeat;
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
-                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
-        }
-    }
-
-    /* Círculo que muerde el borde inferior del banner */
-    .cat-notch {
-        position: absolute; left: 50%; bottom: 0;
-        z-index: 2;
-        width: 5.5rem; height: 5.5rem;
-        display: flex; align-items: center; justify-content: center;
-        border-radius: 50%;
-        background: var(--page);
-        transform: translate(-50%, 50%);
-    }
-    .cat-notch span {
-        width: 3.5rem; height: 3.5rem;
-        display: flex; align-items: center; justify-content: center;
-        border-radius: 50%;
-        color: #fff; background: var(--red-hero);
-        transition: transform .2s;
-    }
-    .cat-notch:hover span { transform: translateY(.2rem); }
-    .cat-notch svg { width: 1.4rem; height: 1.4rem; }
-    .cat-notch:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
-
-    /* ---------- Contenedor del catálogo ---------- */
+    /* ---------- Contenedor ---------- */
     .cat-wrap {
         max-width: 96rem;
         margin: 0 auto;
-        padding: 3.75rem .75rem 2.5rem;
+        padding: 1.25rem .75rem 2.5rem;
     }
-    @media (min-width: 640px)  { .cat-wrap { padding: 4.25rem 1.5rem 3rem; } }
-    @media (min-width: 1024px) { .cat-wrap { padding: 4.5rem 2.5rem 3.5rem; } }
+    @media (min-width: 640px)  { .cat-wrap { padding: 1.5rem 1.5rem 3rem; } }
+    @media (min-width: 1024px) { .cat-wrap { padding: 1.75rem 2.5rem 3.5rem; } }
 
     .cat-board {
         scroll-margin-top: 5rem;
@@ -276,6 +252,12 @@
     .cat-clear:focus-visible, .cat-btn:focus-visible {
         outline: 2px solid var(--red); outline-offset: 2px;
     }
+
+    .cat-head__side { flex-wrap: wrap; gap: .25rem 1rem; }
+    .cat-grid[hidden], .cat-clear[hidden], .cat-empty[hidden] { display: none; }
+    .cat-card mark { padding: 0 .08em; color: inherit; background: #ffd9d3; border-radius: .2rem; }       /* lo que se va escribiendo, resaltado en el nombre */
+    .dark .cat-card mark { background: #6b2a25; }
+    .cat-card:hover mark, .cat-card:focus-within mark { color: #450a0a; }
 
     /* ---------- Tarjetas altas ---------- */
     .cat-grid {
@@ -367,7 +349,10 @@
         margin: 0;
         max-width: 100%;
         font-size: 1rem; font-weight: 700; line-height: 1.2;
-        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
     }
     @media (min-width: 560px) { .cat-name { font-size: 1.1875rem; } }
@@ -496,50 +481,52 @@
             <div class="cat-hero__txt">
                 <h1>Productos</h1>
                 <p>Lo que hay en la tienda, con su precio y cuánto queda.</p>
+            </div>
+        </div>
+    </header>
 
-                <form class="cat-search{% if not categorias %} cat-search--solo{% endif %}" role="search" method="get" action="{% url 'catalogo_productos' %}">
-                    <div class="cat-search__q">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+    {# Filtro en tiempo real: las tarjetas se van filtrando mientras escribes. Sin JavaScript funciona igual: escribe y pulsa Enter. #}
+    {% if productos or busqueda or categoria_seleccionada %}
+        <div class="cat-filtro">
+            <form class="cat-search{% if not categorias %} cat-search--solo{% endif %}" id="buscador" role="search" method="get" action="{% url 'catalogo_productos' %}" data-categoria="{{ categoria_seleccionada }}"{% if busqueda %} data-parcial{% endif %}>
+                <div class="cat-search__q">
+                    <span class="cat-search__lupa" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                             <circle cx="11" cy="11" r="7"></circle>
                             <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
                         </svg>
-                        <label class="cat-sr" for="buscar">Buscar producto por nombre</label>
-                        <input
-                            type="search"
-                            id="buscar"
-                            name="buscar"
-                            value="{{ busqueda }}"
-                            placeholder="Buscar por nombre"
-                            autocomplete="off"
-                        >
+                    </span>
+                    <label class="cat-sr" for="buscar">Buscar productos por nombre</label>
+                    <input
+                        type="search"
+                        id="buscar"
+                        name="buscar"
+                        value="{{ busqueda }}"
+                        placeholder="Buscar productos por nombre"
+                        aria-controls="filas"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        enterkeyhint="search"
+                    >
+                </div>
+
+                {% if categorias %}
+                    <div class="cat-search__cat">
+                        <label class="cat-sr" for="categoria">Filtrar por categoría</label>
+                        <select id="categoria" name="categoria">
+                            <option value="">Todas las categorías</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}"{% if categoria_seleccionada == categoria.id|stringformat:'s' %} selected{% endif %}>{{ categoria.nombre }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
+                {% endif %}
 
-                    {% if categorias %}
-                        <div class="cat-search__cat">
-                            <label class="cat-sr" for="categoria">Filtrar por categoría</label>
-                            <select id="categoria" name="categoria">
-                                <option value="">Todas las categorías</option>
-                                {% for categoria in categorias %}
-                                    <option value="{{ categoria.id }}"{% if categoria_seleccionada == categoria.id|stringformat:'s' %} selected{% endif %}>{{ categoria.nombre }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    {% endif %}
-
-                    <button type="submit">Buscar</button>
-                </form>
-            </div>
+                <button type="submit" class="cat-sr">Buscar</button>
+            </form>
         </div>
-
-        <a class="cat-notch" href="#catalogo" aria-label="Ir al catálogo">
-            <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 5v14"></path>
-                    <path d="M5 12l7 7 7-7"></path>
-                </svg>
-            </span>
-        </a>
-    </header>
+    {% endif %}
 
 
     <div class="cat-wrap">
@@ -549,20 +536,13 @@
                 <h2 id="catalogo-titulo">Catálogo general.</h2>
 
                 <div class="cat-head__side">
-                    <p class="cat-count" role="status">
-                        {% if busqueda or categoria_seleccionada %}Resultados{% if busqueda %} para «{{ busqueda }}»{% endif %}{% if categoria_seleccionada %}{% for categoria in categorias %}{% if categoria_seleccionada == categoria.id|stringformat:'s' %} en {{ categoria.nombre }}{% endif %}{% endfor %}{% endif %}: {% endif %}<strong>{{ productos|length }}</strong> producto{{ productos|length|pluralize }}
-                    </p>
-
-                    {% if busqueda or categoria_seleccionada %}
-                        <a class="cat-clear" href="{% url 'catalogo_productos' %}">Quitar filtros</a>
-                    {% endif %}
+                    <p class="cat-count" id="contador" role="status"><span id="contador-pre">{% if busqueda or categoria_seleccionada %}Resultados{% if busqueda %} para «{{ busqueda }}»{% endif %}{% if categoria_seleccionada %}{% for categoria in categorias %}{% if categoria_seleccionada == categoria.id|stringformat:'s' %} en {{ categoria.nombre }}{% endif %}{% endfor %}{% endif %}: {% endif %}</span><strong id="contador-n">{{ productos|length }}</strong><span id="contador-s"> producto{{ productos|length|pluralize }}</span></p>
+                    <a class="cat-clear" id="quitar" href="{% url 'catalogo_productos' %}"{% if not busqueda and not categoria_seleccionada %} hidden{% endif %}>Quitar filtros</a>
                 </div>
             </div>
 
 
-            {% if productos %}
-
-                <ul class="cat-grid">
+            <ul class="cat-grid" id="filas"{% if not productos %} hidden{% endif %}>
 
                     {% for producto in productos %}
                         <li>
@@ -606,7 +586,7 @@
                                     {% endwith %}
                                 </p>
 
-                                <p class="cat-price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
+                                <p class="cat-price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|pesos }}{% endlanguage %}</p>
 
                                 {% if producto.existencias > 5 %}
                                     <p class="cat-stock">{{ producto.existencias }} disponibles</p>
@@ -624,37 +604,219 @@
                         </li>
                     {% endfor %}
 
-                </ul>
+            </ul>
 
-            {% else %}
-
-                <div class="cat-empty">
-                    <div class="cat-empty__disc">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path>
-                            <path d="M3 8l9 5 9-5"></path>
-                            <path d="M12 13v8"></path>
-                        </svg>
-                    </div>
-
-                    {% if busqueda or categoria_seleccionada %}
-                        <h3>No encontramos productos con ese filtro</h3>
-                        <p>Revisa cómo escribiste el nombre o prueba con otra categoría.</p>
-                        <a class="cat-btn" href="{% url 'catalogo_productos' %}">Ver todo el catálogo</a>
-                    {% else %}
-                        <h3>Aún no hay productos en el catálogo</h3>
-                        <p>Cuando se agreguen, los verás aquí con su precio y cuánto queda.</p>
-                        {% if user.is_superuser %}
-                            <a class="cat-btn" href="{% url 'crear_producto' %}">Agregar un producto</a>
-                        {% endif %}
-                    {% endif %}
+            <div class="cat-empty" id="sin-filtro"{% if productos or not busqueda and not categoria_seleccionada %} hidden{% endif %}>
+                <div class="cat-empty__disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path d="M16.5 16.5L21 21"></path>
+                    </svg>
                 </div>
+                <h3>No encontramos productos con ese filtro</h3>
+                <p id="sin-filtro-p">Revisa cómo escribiste el nombre o prueba con otra palabra.</p>
+                <a class="cat-btn" id="ver-todos" href="{% url 'catalogo_productos' %}">Ver todo el catálogo</a>
+            </div>
 
-            {% endif %}
+            <div class="cat-empty" id="sin-productos"{% if productos or busqueda or categoria_seleccionada %} hidden{% endif %}>
+                <div class="cat-empty__disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path>
+                        <path d="M3 8l9 5 9-5"></path>
+                        <path d="M12 13v8"></path>
+                    </svg>
+                </div>
+                <h3>Aún no hay productos en el catálogo</h3>
+                <p>Cuando se agreguen, los verás aquí con su precio y cuánto queda.</p>
+                {% if user.is_superuser %}
+                    <a class="cat-btn" href="{% url 'crear_producto' %}">Agregar un producto</a>
+                {% endif %}
+            </div>
 
         </section>
     </div>
 
 </div>
+
+<script>
+/* Filtro en tiempo real. La lista misma se va filtrando mientras escribes (sin pedir nada al servidor por tecla).
+   Si la página llegó ya filtrada por texto, se pide UNA vez la lista completa para poder filtrar todos los productos. */
+(function () {
+    var form = document.getElementById('buscador');
+    var ul = document.getElementById('filas');
+    if (!form || !ul) return;
+    var input = document.getElementById('buscar');
+    var quitar = document.getElementById('quitar');
+    var sinFiltro = document.getElementById('sin-filtro');
+    var sinFiltroP = document.getElementById('sin-filtro-p');
+    var verTodos = document.getElementById('ver-todos');
+    var categoria = form.getAttribute('data-categoria') || '';
+    var completa = !form.hasAttribute('data-parcial');       /* false = la página trae solo los productos de una búsqueda */
+    var AYUDA = 'Revisa cómo escribiste el nombre o prueba con otra palabra.';
+
+    function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function palabras(s) { return norm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+
+    /* Distancia de edición (para perdonar una letra mal escrita) */
+    function lev(a, b) {
+        var m = a.length, n = b.length, i, j, prev = [], cur = [];
+        for (j = 0; j <= n; j++) prev[j] = j;
+        for (i = 1; i <= m; i++) {
+            cur = [i];
+            for (j = 1; j <= n; j++) {
+                cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+            }
+            prev = cur;
+        }
+        return prev[n];
+    }
+
+    /* ¿La fila se parece a lo escrito? null = no. Se mira el nombre (por palabra, por trozo y con una letra de error) */
+    function puntuar(p, q) {
+        var suma = 0;
+        for (var k = 0; k < q.tokens.length; k++) {
+            var t = q.tokens[k], mejor = 99, i, w, d;
+            for (i = 0; i < p.w.length; i++) {
+                w = p.w[i];
+                if (w === t) mejor = Math.min(mejor, 0);
+                else if (w.indexOf(t) === 0) mejor = Math.min(mejor, 1);
+                else if (w.indexOf(t) > 0) mejor = Math.min(mejor, 3);
+                else if (t.length >= 5) {                          /* con menos letras «coca» y «cola» se confundirían */
+                    d = lev(t, w.slice(0, t.length));
+                    if (d <= (t.length >= 7 ? 2 : 1)) mejor = Math.min(mejor, 4 + d);
+                }
+            }
+            if (mejor === 99 && p.c.indexOf(t) >= 0) mejor = 3;      /* «cocacola» encuentra «Coca-Cola» */
+            if (mejor === 99) return null;
+            suma += mejor;
+        }
+        return suma;
+    }
+
+    /* Resalta lo que escribió la persona dentro del nombre */
+    function resaltar(el, nombre, tokens) {
+        var n = norm(nombre), marcas = [];
+        if (n.length === nombre.length) {
+            tokens.forEach(function (t) { var i = n.indexOf(t); if (i >= 0) marcas.push([i, i + t.length]); });
+        }
+        marcas.sort(function (a, b) { return a[0] - b[0]; });
+        var fusion = [];
+        marcas.forEach(function (m) {
+            var u = fusion[fusion.length - 1];
+            if (u && m[0] <= u[1]) u[1] = Math.max(u[1], m[1]); else fusion.push(m.slice());
+        });
+        var pos = 0;
+        fusion.forEach(function (m) {
+            if (m[0] > pos) el.appendChild(document.createTextNode(nombre.slice(pos, m[0])));
+            var mk = document.createElement('mark');
+            mk.textContent = nombre.slice(m[0], m[1]);
+            el.appendChild(mk);
+            pos = m[1];
+        });
+        if (pos < nombre.length) el.appendChild(document.createTextNode(nombre.slice(pos)));
+    }
+
+    /* Contador «N productos»: se actualiza con el filtro */
+    var cPre = document.getElementById('contador-pre');
+    var cN = document.getElementById('contador-n');
+    var cS = document.getElementById('contador-s');
+    var selCat = document.getElementById('categoria');
+    var preInicial = cPre ? cPre.textContent : '';
+    function contar(n, texto) {
+        if (!cN) return;
+        var nomCat = (categoria && selCat && selCat.selectedIndex >= 0) ? selCat.options[selCat.selectedIndex].text : '';
+        cPre.textContent = texto ? 'Resultados para «' + texto + '»' + (nomCat ? ' en ' + nomCat : '') + ': ' : preInicial.indexOf('para') >= 0 ? (nomCat ? 'Resultados en ' + nomCat + ': ' : '') : preInicial;
+        cN.textContent = n;
+        cS.textContent = ' producto' + (n === 1 ? '' : 's');
+    }
+
+    /* Las filas de la lista, con lo necesario para compararlas */
+    var filas = [];
+    function leer() {
+        filas = Array.prototype.map.call(ul.children, function (li) {
+            var elNombre = li.querySelector('.cat-name');
+            var nombre = elNombre.textContent.trim();
+            return {
+                li: li, el: elNombre, nombre: nombre, marcado: false,
+                w: palabras(nombre),
+                c: norm(nombre).replace(/[^a-z0-9]/g, '')
+            };
+        });
+    }
+    leer();
+
+    function pintarNombre(f, tokens) {
+        if (!tokens.length) { if (f.marcado) { f.el.textContent = f.nombre; f.marcado = false; } return; }
+        f.el.textContent = '';
+        resaltar(f.el, f.nombre, tokens);
+        f.marcado = true;
+    }
+
+    function aplicar() {
+        var texto = input.value.trim();
+        var tokens = palabras(texto);
+        var q = { tokens: tokens, junto: norm(texto).replace(/[^a-z0-9]/g, '') };
+        var n = 0;
+        filas.forEach(function (f) {
+            var ok = !tokens.length || puntuar(f, q) !== null;
+            f.li.hidden = !ok;
+            if (ok) n++;
+            pintarNombre(f, ok ? tokens : []);
+        });
+
+        ul.hidden = n === 0;
+        sinFiltro.hidden = !(n === 0 && filas.length > 0);
+        sinFiltroP.textContent = texto ? 'No hay nada parecido a «' + texto + '». ' + AYUDA : AYUDA;
+        quitar.hidden = !(texto || categoria);
+        contar(n, texto);
+    }
+
+    /* Si la página llegó filtrada, trae (una vez) la lista completa y la pone en lugar de las filas filtradas */
+    var cargando = null;
+    function cargar() {
+        if (completa) return Promise.resolve();
+        if (!cargando) {
+            var url = form.getAttribute('action') + (categoria ? '?categoria=' + encodeURIComponent(categoria) : '');
+            cargando = fetch(url, { credentials: 'same-origin' })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(function (t) {
+                    var nuevas = new DOMParser().parseFromString(t, 'text/html').querySelectorAll('#filas > li');
+                    if (!nuevas.length) return;
+                    ul.textContent = '';
+                    Array.prototype.forEach.call(nuevas, function (li) { ul.appendChild(document.importNode(li, true)); });
+                    leer();
+                    completa = true;
+                })
+                .catch(function () { /* sin conexión: se filtra lo que ya hay en pantalla */ });
+        }
+        return cargando;
+    }
+
+    input.addEventListener('focus', function () { cargar().then(aplicar); });      /* al traer la lista completa se vuelve a filtrar con lo que ya está escrito */
+    input.addEventListener('input', function () { cargar().then(aplicar); });
+    if (selCat) {                                                 /* al cambiar de categoría se pide la lista de esa categoría al servidor */
+        selCat.addEventListener('change', function () {
+            var p = new URLSearchParams();
+            if (selCat.value) p.set('categoria', selCat.value);
+            if (input.value.trim()) p.set('buscar', input.value.trim());
+            window.location.href = form.getAttribute('action') + (p.toString() ? '?' + p.toString() : '');
+        });
+    }
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();                                   /* ya está filtrado: Enter solo cierra el teclado en el teléfono */
+        if (window.matchMedia('(pointer: coarse)').matches) input.blur();
+    });
+    if (verTodos && !categoria) {
+        verTodos.addEventListener('click', function (e) {
+            e.preventDefault();
+            input.value = '';
+            cargar().then(aplicar);
+            input.focus();
+        });
+    }
+    /* Al volver con «atrás» el navegador puede devolver el texto escrito pero no la lista filtrada */
+    window.addEventListener('pageshow', function () { if (input.value !== input.defaultValue) cargar().then(aplicar); });
+}());
+</script>
 
 {% endblock %}
