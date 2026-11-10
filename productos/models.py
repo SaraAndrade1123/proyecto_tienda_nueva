@@ -3,6 +3,7 @@ from decimal import Decimal
  
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 class Categoria(models.Model):
@@ -66,6 +67,10 @@ class Producto(models.Model):
         null=True,
         blank=True
     )
+    
+    class Meta:
+        # Siempre en orden alfabético (sin importar mayúsculas): lista, catálogo y admin
+        ordering = [Lower('nombre')]
 
     def __str__(self):
         return self.nombre

@@ -511,3 +511,7 @@ def buscar_sugerencias_api(request):
             'texto': f"{p.nombre}"
         })    
     return JsonResponse({'sugerencias': sugerencias})
+
+@login_required
+def ver_notificaciones(request):
+    return render(request, 'notificaciones.html')
