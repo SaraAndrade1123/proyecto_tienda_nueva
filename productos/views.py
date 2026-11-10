@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.db.models import ProtectedError
 from .models import Producto, Categoria
 from .forms import ProductoForm, CategoriaForm
+from django.db.models.functions import Lower
 
 
 def solo_superusuario(vista):
@@ -36,7 +37,7 @@ def lista_productos(request):
 
     categoria_seleccionada = request.GET.get('categoria', '').strip()
 
-    productos = Producto.objects.select_related('categoria').all()
+    productos = Producto.objects.select_related('categoria').order_by((Lower('nombre')))
 
     if busqueda:
 

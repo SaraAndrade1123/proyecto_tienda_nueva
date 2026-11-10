@@ -66,7 +66,7 @@
 
     /* ---------- Banner a todo el ancho ---------- */
     .cat-hero {
-        position: relative;
+        position: relative; z-index: 20;   /* por encima del tablero: la cascada de categorías baja sobre él */
         color: #fff;
         background: var(--red-hero);
         padding: 2.5rem 1.25rem 12.5rem;
@@ -92,7 +92,7 @@
             radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
     }
     .cat-hero__in {
-        position: relative; z-index: 1;
+        position: relative; z-index: 3;   /* sobre el círculo del borde (z-index 2) para que la cascada no quede tapada */
         max-width: 96rem;
         margin: 0 auto;
     }
@@ -128,7 +128,7 @@
     }
 
     /* Buscador: texto + desplegable de categoría + botón (una sola píldora) */
-    .cat-hero__txt { container: hero-txt / inline-size; width: 100%; min-width: 0; max-width: 40rem; }
+    .cat-hero__txt { width: 100%; min-width: 0; max-width: 40rem; }
     .cat-search {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -168,7 +168,7 @@
         cursor: pointer;
     }
     .cat-search select:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
-    .cat-search button {
+    .cat-search > button {
         grid-area: btn;
         height: 2.75rem; padding: 0 1.4rem;
         font: inherit; font-weight: 700;
@@ -177,13 +177,140 @@
         cursor: pointer;
         transition: background-color .15s;
     }
-    .cat-search button:hover { background: #000; }
-    .cat-search button:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
+    .cat-search > button:hover { background: #000; }
+    .cat-search > button:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
     /* Con espacio suficiente todo va en una sola fila */
-    @container hero-txt (min-width: 36rem) {
+    @media (min-width: 38.5rem) {
         .cat-search { grid-template-columns: minmax(0, 1fr) minmax(0, 13.5rem) auto; grid-template-areas: "q cat btn"; border-radius: 999px; }
         .cat-search--solo { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "q btn"; }
         .cat-search__cat { margin-right: 0; padding-left: .9rem; border-top: 0; border-left: 2px solid #f0eeec; }
+    }
+
+    /* ---------- Cascada de categorías ----------
+       Con JavaScript el <select> nativo se oculta y se muestra esta lista propia (mismo valor, mismo envío del formulario).
+       Sin JavaScript queda el <select> de arriba, que funciona igual. */
+    .cat-search { position: relative; }
+    .cat-search__cat.is-enhanced select { display: none; }
+
+    /* Disparador: 48 px de alto en móvil (mínimo cómodo para el dedo), 44 px desde tablet */
+    .cat-dd__btn {
+        display: flex; align-items: center; gap: .6rem;
+        width: 100%; height: 3rem; padding: 0 .1rem 0 0;
+        font: inherit; font-size: 1rem; font-weight: 600; text-align: left;
+        color: #1c1917; background: transparent;
+        border: 0; border-radius: 999px; cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .cat-dd__btn:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
+    .cat-dd__val { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cat-dd__chev { flex: none; width: .8rem; height: .8rem; color: #78716c; transition: transform .2s; }
+    .cat-search__cat.is-open .cat-dd__chev { transform: rotate(180deg); color: #b91c1c; }
+
+    /* Marca de cada categoría: punto de su color (el mismo reparto de tonos que las tarjetas) o rejilla para "Todas" */
+    .cat-dd__mark {
+        flex: none; display: inline-flex; align-items: center; justify-content: center;
+        width: .9rem; height: .9rem; border-radius: 50%;
+        background: var(--dot, #d6d0cc); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .16);
+    }
+    .cat-dd__mark svg { width: 1rem; height: 1rem; }
+    .cat-dd__mark.is-all { width: 1rem; height: 1rem; color: #78716c; background: none; box-shadow: none; border-radius: 0; }
+    [data-tono$="1"], [data-tono$="5"], [data-tono$="9"] { --dot: #f1998c; }
+    [data-tono$="2"], [data-tono$="6"]                   { --dot: #f4b184; }
+    [data-tono$="3"], [data-tono$="7"]                   { --dot: #cdc3bd; }
+    [data-tono$="0"], [data-tono$="4"], [data-tono$="8"] { --dot: #ec90ab; }
+
+    /* ----- Móvil (base): hoja que sube desde abajo, con fondo oscurecido ----- */
+    html.cat-lock { overflow: hidden; }                       /* el fondo no se desplaza mientras la hoja está abierta */
+    .cat-hero.is-cat-open { z-index: 60; }                    /* por encima del menú fijo de arriba (z-50) mientras está abierta */
+    .cat-dd__veil {
+        position: fixed; inset: 0; z-index: 1;
+        background: rgba(28, 10, 10, .58);
+        opacity: 0; visibility: hidden;
+        transition: opacity .26s, visibility 0s linear .26s;
+    }
+    .cat-search__cat.is-open .cat-dd__veil { opacity: 1; visibility: visible; transition-delay: 0s; }
+    .cat-dd__panel {
+        position: fixed; z-index: 2; left: 0; right: 0; bottom: 0;
+        display: flex; flex-direction: column;
+        max-height: min(34rem, 82vh); max-height: min(34rem, 82dvh);
+        padding: 0 .75rem calc(.75rem + env(safe-area-inset-bottom, 0px));
+        color: #1c1917; color-scheme: light;
+        background: #fff;
+        border-radius: 1.5rem 1.5rem 0 0;
+        box-shadow: 0 -1rem 2.5rem -.75rem rgba(69, 10, 10, .5);
+        transform: translateY(104%); visibility: hidden; pointer-events: none;
+        transition: transform .28s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .28s;
+    }
+    .cat-search__cat.is-open .cat-dd__panel { transform: none; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+    .cat-dd__head {
+        position: relative; flex: none;
+        display: flex; align-items: center; gap: .5rem;
+        padding: 1.15rem .25rem .4rem .75rem;
+        touch-action: none;                                   /* el arrastre hacia abajo lo maneja el script */
+    }
+    .cat-dd__head::before {                                   /* asa de arrastre */
+        content: ""; position: absolute; top: .5rem; left: 50%;
+        width: 2.5rem; height: .3rem; margin-left: -1.25rem;
+        border-radius: 999px; background: #e7dcd9;
+    }
+    .cat-dd__cap { flex: 1 1 auto; margin: 0; font-size: 1.0625rem; font-weight: 800; letter-spacing: -.01em; color: #1c1917; }
+    .cat-dd__x {
+        flex: none; display: inline-flex; align-items: center; justify-content: center;
+        width: 2.75rem; height: 2.75rem; padding: 0;
+        color: #57534e; background: #f5f0ee;
+        border: 0; border-radius: 50%; cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .cat-dd__x svg { width: 1rem; height: 1rem; }
+    .cat-dd__x:focus-visible { outline: 2px solid #1c1917; outline-offset: 2px; }
+    .cat-dd__list {
+        position: relative; flex: 1 1 auto; min-height: 0;
+        margin: 0; padding: .1rem 0; list-style: none; outline: 0;
+        overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin; scrollbar-color: #e6d3cf transparent;
+    }
+    .cat-dd__opt {
+        position: relative;
+        display: flex; align-items: center; gap: .8rem;
+        min-height: 3rem; padding: .45rem .85rem;                /* filas de 48 px: cómodas para el dedo */
+        font-size: 1rem; font-weight: 600; line-height: 1.2;
+        border-radius: .95rem; cursor: pointer; user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color .12s, color .12s;
+    }
+    .cat-dd__txt { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+    .cat-dd__check { flex: none; width: 1rem; height: 1rem; opacity: 0; }
+    .cat-dd__opt.is-active { background: #fdf0ee; }
+    .cat-dd__opt[aria-selected="true"] { color: #fff; background: #b91c1c; }
+    .cat-dd__opt[aria-selected="true"].is-active { background: #991b1b; }
+    .cat-dd__opt[aria-selected="true"] .cat-dd__check { opacity: 1; }
+    .cat-dd__opt[aria-selected="true"] .cat-dd__mark { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .75); }
+    .cat-dd__opt[aria-selected="true"] .cat-dd__mark.is-all { color: #fff; }
+    /* Raya fina entre "Todas" y las categorías */
+    .cat-dd__opt.is-all + .cat-dd__opt { margin-top: .6rem; }
+    .cat-dd__opt.is-all + .cat-dd__opt::before { content: ""; position: absolute; left: .5rem; right: .5rem; top: -.35rem; border-top: 1px solid #f1e4e1; }
+
+    /* ----- Desde 38.5rem (la píldora cabe en una fila): la lista cuelga bajo la categoría ----- */
+    @media (min-width: 38.5rem) {
+        .cat-hero.is-cat-open { z-index: 20; }
+        .cat-dd__veil, .cat-dd__x { display: none; }
+        .cat-dd__btn { height: 2.75rem; font-size: .9375rem; }
+        .cat-dd__panel {
+            position: absolute; z-index: 30; left: auto; right: 0; bottom: auto; top: calc(100% + .625rem);
+            display: block; width: min(20rem, 100%); max-height: none;
+            padding: .35rem .45rem .5rem;
+            border-radius: 1.35rem;
+            box-shadow: 0 0 0 1px rgba(127, 29, 29, .08), 0 .5rem 1rem -.5rem rgba(69, 10, 10, .3), 0 1.75rem 2.75rem -1rem rgba(69, 10, 10, .6);
+            opacity: 0;
+            transform: translateY(-.4rem) scale(.98); transform-origin: top right;
+            transition: opacity .16s, transform .16s, visibility 0s linear .16s;
+        }
+        .cat-search__cat.is-open .cat-dd__panel { opacity: 1; }
+        .cat-dd__head { display: block; padding: 0; touch-action: auto; }
+        .cat-dd__head::before { display: none; }
+        .cat-dd__cap { padding: .55rem .75rem .4rem; font-size: .6875rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #78716c; }
+        .cat-dd__list { max-height: min(24rem, 60vh); }
+        .cat-dd__opt { min-height: 2.6rem; gap: .7rem; padding: .35rem .75rem; font-size: .9375rem; border-radius: .9rem; }
     }
 
     /* Foto de fondo: se desvanece hacia el rojo de base.html (a la izquierda en escritorio, hacia arriba en móvil) */
@@ -282,7 +409,7 @@
         list-style: none; margin: 0; padding: 0;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1.25rem .75rem;
+        gap: 1rem .625rem;                      /* teléfono: tarjetas compactas */
     }
     @media (min-width: 560px)  { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 1.75rem 1.25rem; } }
     /* Pantallas anchas: cinco por fila, con las tarjetas un poco más compactas para que quepan */
@@ -303,11 +430,11 @@
         position: relative;
         height: 100%;
         display: flex; flex-direction: column; align-items: center;
-        padding: 1rem .75rem 1.1rem;
+        padding: .75rem .5rem .85rem;
         text-align: center;
         color: var(--c-ink);
         background: var(--c-bg);
-        border-radius: 1.5rem;
+        border-radius: 1.25rem;
         transition: background-color .25s, color .25s, transform .25s, box-shadow .25s;
     }
     @media (min-width: 560px) { .cat-card { padding: 1.25rem 1.25rem 1.4rem; border-radius: 1.75rem; } }
@@ -329,15 +456,15 @@
     .cat-stage {
         position: relative;
         width: 100%;
-        height: 10rem;
+        height: 6.5rem;
         display: flex; align-items: center; justify-content: center;
-        margin-bottom: .875rem;
+        margin-bottom: .5rem;
     }
     @media (min-width: 560px) { .cat-stage { height: 13rem; margin-bottom: 1rem; } }
 
     .cat-disc {
         position: absolute; left: 50%; top: 50%;
-        width: 6.25rem; height: 6.25rem;
+        width: 4.5rem; height: 4.5rem;
         border-radius: 50%;
         background: var(--c-disc);
         transform: translate(-50%, -50%);
@@ -348,7 +475,7 @@
     .cat-img {
         position: relative;
         display: block;
-        max-width: 94%; max-height: 8.25rem;
+        max-width: 92%; max-height: 5.5rem;
         object-fit: contain;
         border-radius: .5rem;
         transition: transform .25s;
@@ -359,42 +486,48 @@
     .cat-none {
         position: relative;
         display: flex; flex-direction: column; align-items: center; gap: .35rem;
-        font-size: .875rem; color: var(--c-mute);
+        font-size: .75rem; color: var(--c-mute);
     }
-    .cat-none svg { width: 2rem; height: 2rem; }
+    .cat-none svg { width: 1.5rem; height: 1.5rem; }
+    @media (min-width: 560px) { .cat-none { font-size: .875rem; } .cat-none svg { width: 2rem; height: 2rem; } }
 
     .cat-name {
         margin: 0;
         max-width: 100%;
-        font-size: 1rem; font-weight: 700; line-height: 1.2;
+        font-size: .875rem; font-weight: 700; line-height: 1.2;
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         overflow: hidden;
     }
     @media (min-width: 560px) { .cat-name { font-size: 1.1875rem; } }
 
-    .cat-size { margin: .25rem 0 0; font-size: .875rem; color: var(--c-mute); }
+    .cat-size { margin: .15rem 0 0; font-size: .75rem; color: var(--c-mute); }
+    @media (min-width: 560px) { .cat-size { margin-top: .25rem; font-size: .875rem; } }
 
     .cat-price {
-        margin: .625rem 0 0;
+        margin: .4rem 0 0;
         display: inline-flex; align-items: baseline; gap: .1rem;
-        font-size: 1.625rem; font-weight: 800; font-stretch: 75%;
+        font-size: 1.3rem; font-weight: 800; font-stretch: 75%;
         line-height: 1;
         letter-spacing: .005em;
         font-variant-numeric: tabular-nums;
         color: var(--c-price);
     }
-    .cat-price small { font-size: .95rem; font-weight: 700; font-stretch: 100%; }
-    @media (min-width: 560px) { .cat-price { font-size: 2rem; } }
+    .cat-price small { font-size: .8rem; font-weight: 700; font-stretch: 100%; }
+    @media (min-width: 560px) { .cat-price { margin-top: .625rem; font-size: 2rem; } .cat-price small { font-size: .95rem; } }
 
     .cat-stock {
-        margin: .6rem 0 0;
-        display: inline-flex; align-items: center; gap: .4rem;
-        font-size: .875rem; font-weight: 600;
+        margin: .4rem 0 0;
+        display: inline-flex; align-items: center; gap: .35rem;
+        font-size: .75rem; font-weight: 600;
         color: var(--c-mute);
     }
     .cat-stock::before {
-        content: ""; width: .5rem; height: .5rem; border-radius: 50%;
+        content: ""; width: .4rem; height: .4rem; border-radius: 50%;
         background: #16a34a;
+    }
+    @media (min-width: 560px) {
+        .cat-stock { margin-top: .6rem; gap: .4rem; font-size: .875rem; }
+        .cat-stock::before { width: .5rem; height: .5rem; }
     }
     .cat-stock.is-low { color: var(--c-warn); }
     .cat-stock.is-low::before { background: currentColor; }
@@ -405,16 +538,16 @@
         margin-top: auto;
         padding-top: 0;
         display: inline-flex; align-items: center; justify-content: center;
-        height: 2.25rem; padding: 0 1.1rem;
-        font-size: .875rem; font-weight: 700;
+        height: 2rem; padding: 0 .9rem;
+        font-size: .8125rem; font-weight: 700;
         color: var(--c-btn-ink);
         background: var(--c-btn);
         border-radius: 999px;
         text-decoration: none;
         transition: background-color .25s, color .25s;
     }
-    .cat-stock + .cat-more { margin-top: 1rem; }
-    @media (min-width: 560px) { .cat-more { height: 2.5rem; padding: 0 1.4rem; font-size: .9375rem; } }
+    .cat-stock + .cat-more { margin-top: .65rem; }
+    @media (min-width: 560px) { .cat-more { height: 2.5rem; padding: 0 1.4rem; font-size: .9375rem; } .cat-stock + .cat-more { margin-top: 1rem; } }
     /* Toda la tarjeta es un enlace */
     .cat-more::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
     .cat-card { isolation: isolate; }
@@ -438,14 +571,15 @@
     .cat-stamp {
         position: absolute; left: 50%; top: 50%;
         transform: translate(-50%, -50%) rotate(-8deg);
-        padding: .1rem .6rem;
-        font-size: 1.25rem; font-weight: 800; font-stretch: 85%;
+        padding: .05rem .4rem;
+        font-size: .9375rem; font-weight: 800; font-stretch: 85%;
         letter-spacing: .02em;
         color: var(--red);
-        border: 3px solid var(--red);
-        border-radius: .375rem;
+        border: 2px solid var(--red);
+        border-radius: .3rem;
         background: color-mix(in srgb, var(--c-bg) 78%, transparent);
     }
+    @media (min-width: 560px) { .cat-stamp { padding: .1rem .6rem; font-size: 1.25rem; border-width: 3px; border-radius: .375rem; } }
     .dark .cat-stamp { color: #f87171; border-color: #f87171; }
     .cat-card:hover .cat-stamp, .cat-card:focus-within .cat-stamp { color: #fff; border-color: #fff; background: transparent; }
 
@@ -494,7 +628,7 @@
 
         <div class="cat-hero__in">
             <div class="cat-hero__txt">
-                <h1>Productos</h1>
+                <h1>Catalogo</h1>
                 <p>Lo que hay en la tienda, con su precio y cuánto queda.</p>
 
                 <form class="cat-search{% if not categorias %} cat-search--solo{% endif %}" role="search" method="get" action="{% url 'catalogo_productos' %}">
@@ -515,12 +649,12 @@
                     </div>
 
                     {% if categorias %}
-                        <div class="cat-search__cat">
-                            <label class="cat-sr" for="categoria">Filtrar por categoría</label>
+                        <div class="cat-search__cat" data-dd>
+                            <label class="cat-sr" for="categoria" id="categoria-etq">Filtrar por categoría</label>
                             <select id="categoria" name="categoria">
                                 <option value="">Todas las categorías</option>
                                 {% for categoria in categorias %}
-                                    <option value="{{ categoria.id }}"{% if categoria_seleccionada == categoria.id|stringformat:'s' %} selected{% endif %}>{{ categoria.nombre }}</option>
+                                    <option value="{{ categoria.id }}" data-tono="{{ categoria.id }}"{% if categoria_seleccionada == categoria.id|stringformat:'s' %} selected{% endif %}>{{ categoria.nombre }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -656,5 +790,204 @@
     </div>
 
 </div>
+
+{% if categorias %}
+<script>
+/* Cascada de categorías: reemplaza el <select> nativo por una lista propia (accesible con teclado).
+   El <select> sigue en el formulario (oculto), así que el envío y el filtro funcionan igual que antes. */
+(function () {
+    var caja = document.querySelector('[data-dd]');
+    if (!caja) return;
+    var sel = caja.querySelector('select');
+    if (!sel) return;
+
+    var SVG_CHEV  = '<svg class="cat-dd__chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>';
+    var SVG_GRID  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1.4"/><rect x="9" y="2" width="5" height="5" rx="1.4"/><rect x="2" y="9" width="5" height="5" rx="1.4"/><rect x="9" y="9" width="5" height="5" rx="1.4"/></svg>';
+    var SVG_X     = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>';
+    var SVG_CHECK = '<svg class="cat-dd__check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>';
+
+    function crear(tag, clase, attrs) {
+        var el = document.createElement(tag);
+        if (clase) el.className = clase;
+        for (var k in (attrs || {})) el.setAttribute(k, attrs[k]);
+        return el;
+    }
+    function marca(tono, todas) {
+        var m = crear('span', 'cat-dd__mark' + (todas ? ' is-all' : ''), { 'aria-hidden': 'true' });
+        if (todas) m.innerHTML = SVG_GRID;
+        else if (tono) m.setAttribute('data-tono', tono);
+        return m;
+    }
+
+    var opciones = Array.prototype.map.call(sel.options, function (o) {
+        return { valor: o.value, texto: o.text.trim(), tono: o.getAttribute('data-tono') };
+    });
+
+    /* Botón que muestra la categoría elegida */
+    var boton = crear('button', 'cat-dd__btn', {
+        type: 'button', 'aria-haspopup': 'listbox', 'aria-expanded': 'false',
+        'aria-controls': 'categoria-lista', 'aria-labelledby': 'categoria-etq categoria-val'
+    });
+    var valor = crear('span', 'cat-dd__val', { id: 'categoria-val' });
+    boton.appendChild(valor);
+    boton.insertAdjacentHTML('beforeend', SVG_CHEV);
+
+    /* Panel con la lista */
+    var panel = crear('div', 'cat-dd__panel');
+    var cabeza = crear('div', 'cat-dd__head');
+    var cap = crear('div', 'cat-dd__cap', { 'aria-hidden': 'true' });   /* div, no p: .cat-hero p pinta el texto de blanco */
+    cap.textContent = 'Categorías';
+    var cierre = crear('button', 'cat-dd__x', { type: 'button', 'aria-label': 'Cerrar la lista de categorías' });
+    cierre.innerHTML = SVG_X;
+    cabeza.appendChild(cap);
+    cabeza.appendChild(cierre);
+    var lista = crear('ul', 'cat-dd__list', {
+        id: 'categoria-lista', role: 'listbox', tabindex: '-1', 'aria-labelledby': 'categoria-etq'
+    });
+    var items = opciones.map(function (o, i) {
+        var li = crear('li', 'cat-dd__opt' + (o.valor === '' ? ' is-all' : ''), {
+            id: 'categoria-op-' + i, role: 'option', 'aria-selected': 'false'
+        });
+        if (o.tono) li.setAttribute('data-tono', o.tono);
+        var txt = crear('span', 'cat-dd__txt');
+        txt.textContent = o.texto;
+        li.appendChild(marca(o.tono, o.valor === ''));
+        li.appendChild(txt);
+        li.insertAdjacentHTML('beforeend', SVG_CHECK);
+        li.addEventListener('click', function () { elegir(i, true); });
+        li.addEventListener('mousemove', function () { activar(i); });
+        lista.appendChild(li);
+        return li;
+    });
+    panel.appendChild(cabeza);
+    panel.appendChild(lista);
+    var velo = crear('div', 'cat-dd__veil', { 'aria-hidden': 'true' });
+
+    caja.appendChild(boton);
+    caja.appendChild(velo);
+    caja.appendChild(panel);
+    caja.classList.add('is-enhanced');
+
+    var hero = caja.closest('.cat-hero');
+    var escritorio = window.matchMedia('(min-width: 38.5rem)');   /* mismo punto de corte que el CSS: debajo es hoja inferior */
+    var activo = -1, abierto = false, escrito = '', t = null;
+
+    function indiceElegido() {
+        for (var i = 0; i < opciones.length; i++) if (opciones[i].valor === sel.value) return i;
+        return 0;
+    }
+    function pintar() {
+        var i = indiceElegido();
+        items.forEach(function (li, j) { li.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+        valor.textContent = opciones[i].texto;
+        var antes = boton.querySelector('.cat-dd__mark');
+        if (antes) antes.remove();
+        boton.insertBefore(marca(opciones[i].tono, opciones[i].valor === ''), valor);
+    }
+    function activar(i, desplazar) {
+        if (i < 0 || i >= items.length) return;
+        if (activo >= 0) items[activo].classList.remove('is-active');
+        activo = i;
+        items[i].classList.add('is-active');
+        lista.setAttribute('aria-activedescendant', items[i].id);
+        if (desplazar) {
+            var arriba = items[i].offsetTop, abajo = arriba + items[i].offsetHeight;
+            if (arriba < lista.scrollTop) lista.scrollTop = arriba;
+            else if (abajo > lista.scrollTop + lista.clientHeight) lista.scrollTop = abajo - lista.clientHeight;
+        }
+    }
+    function abrir(i) {
+        if (abierto) return;
+        abierto = true;
+        caja.classList.add('is-open');
+        if (hero) hero.classList.add('is-cat-open');
+        if (!escritorio.matches) document.documentElement.classList.add('cat-lock');
+        boton.setAttribute('aria-expanded', 'true');
+        activar(typeof i === 'number' ? i : indiceElegido(), true);
+        lista.focus({ preventScroll: true });
+    }
+    function cerrar(devolverFoco) {
+        if (!abierto) return;
+        abierto = false;
+        caja.classList.remove('is-open');
+        if (hero) hero.classList.remove('is-cat-open');
+        document.documentElement.classList.remove('cat-lock');
+        panel.style.transition = ''; panel.style.transform = '';
+        boton.setAttribute('aria-expanded', 'false');
+        if (activo >= 0) items[activo].classList.remove('is-active');
+        activo = -1;
+        lista.removeAttribute('aria-activedescendant');
+        if (devolverFoco) boton.focus({ preventScroll: true });
+    }
+    function elegir(i, cerrarLuego) {
+        if (sel.value !== opciones[i].valor) {
+            sel.value = opciones[i].valor;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        pintar();
+        if (cerrarLuego) cerrar(true);
+    }
+
+    boton.addEventListener('click', function () { abierto ? cerrar(false) : abrir(); });
+    boton.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            abrir(e.key === 'ArrowUp' ? opciones.length - 1 : undefined);
+            if (e.key === 'ArrowUp') activar(indiceElegido(), true);
+        }
+    });
+    lista.addEventListener('keydown', function (e) {
+        var k = e.key;
+        if (k === 'ArrowDown')      { e.preventDefault(); activar(Math.min(activo + 1, items.length - 1), true); }
+        else if (k === 'ArrowUp')   { e.preventDefault(); activar(Math.max(activo - 1, 0), true); }
+        else if (k === 'Home')      { e.preventDefault(); activar(0, true); }
+        else if (k === 'End')       { e.preventDefault(); activar(items.length - 1, true); }
+        else if (k === 'Enter' || k === ' ') { e.preventDefault(); elegir(activo < 0 ? indiceElegido() : activo, true); }
+        else if (k === 'Escape')    { e.preventDefault(); cerrar(true); }
+        else if (k === 'Tab')       { cerrar(false); }
+        else if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            /* Escribir las primeras letras salta a la categoría que empieza así */
+            escrito += k.toLowerCase();
+            clearTimeout(t); t = setTimeout(function () { escrito = ''; }, 600);
+            for (var i = 0; i < opciones.length; i++) {
+                if (opciones[i].texto.toLowerCase().indexOf(escrito) === 0) { activar(i, true); break; }
+            }
+        }
+    });
+    document.addEventListener('pointerdown', function (e) { if (abierto && !caja.contains(e.target)) cerrar(false); });
+    velo.addEventListener('click', function () { cerrar(true); });
+    cierre.addEventListener('click', function () { cerrar(true); });
+    if (escritorio.addEventListener) escritorio.addEventListener('change', function () { cerrar(false); });
+    window.addEventListener('pagehide', function () { cerrar(false); });
+
+    /* Hoja inferior: se cierra arrastrando la cabecera hacia abajo */
+    var y0 = null, dy = 0;
+    cabeza.addEventListener('pointerdown', function (e) {
+        if (escritorio.matches || !abierto || e.target.closest('.cat-dd__x')) return;
+        y0 = e.clientY; dy = 0;
+        panel.style.transition = 'none';
+        try { cabeza.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    cabeza.addEventListener('pointermove', function (e) {
+        if (y0 === null) return;
+        dy = Math.max(0, e.clientY - y0);
+        panel.style.transform = 'translateY(' + dy + 'px)';
+    });
+    function soltar() {
+        if (y0 === null) return;
+        var cerrarYa = dy > 90;
+        y0 = null; dy = 0;
+        panel.style.transition = ''; panel.style.transform = '';
+        if (cerrarYa) cerrar(true);
+    }
+    cabeza.addEventListener('pointerup', soltar);
+    cabeza.addEventListener('pointercancel', soltar);
+    sel.addEventListener('change', pintar);
+    window.addEventListener('pageshow', pintar);   /* al volver atrás el navegador restaura el valor del select */
+
+    pintar();
+}());
+</script>
+{% endif %}
 
 {% endblock %}
