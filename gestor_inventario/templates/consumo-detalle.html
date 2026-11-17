@@ -1,0 +1,115 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Ticket de Consumo - Tienda Nueva{% endblock %}
+{% block content %}
+
+<div class="min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 flex flex-col items-center print:bg-white print:py-0">
+
+    <!-- NAVEGACIÓN SUPERIOR -->
+    <div class="w-full max-w-md flex items-center justify-between mb-6 print:hidden">
+        <a href="{% url 'ver_consumo' %}" class="w-10 h-10 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center shadow-sm border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <span class="text-xs font-black uppercase tracking-widest text-zinc-400">Recibo de consumo</span>
+        <div class="w-10"></div>
+    </div>
+
+    <!-- EL TICKET -->
+    <div class="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative print:shadow-none print:border-none print:max-w-full">
+        
+        <div class="absolute top-0 left-0 w-full h-2 bg-red-600 print:hidden"></div>
+
+        <div class="p-6 sm:p-8">
+            <!-- Cabecera del ticket -->
+            <div class="text-center pb-6 border-b-2 border-dashed border-zinc-200 dark:border-zinc-700">
+                <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4
+                    {% if consumo.persona == 'Hogar' %}
+                        bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400
+                    {% else %}
+                        bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400
+                    {% endif %}">
+                    {% if consumo.persona == 'Hogar' %}
+                        <i class="fa-solid fa-house text-2xl"></i>
+                    {% else %}
+                        <i class="fa-solid fa-receipt text-2xl"></i>
+                    {% endif %}
+                </div>
+                
+                <h1 class="text-2xl font-black text-zinc-900 dark:text-white">
+                    {% if consumo.persona == 'Hogar' %}Consumo del Hogar{% else %}{{ consumo.persona }}{% endif %}
+                </h1>
+                <p class="text-sm font-medium text-zinc-500 mt-1">{{ consumo.fecha|date:"l, d \d\e F \d\e Y" }}</p>
+                <div class="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                    <i class="fa-solid fa-hashtag"></i> Ticket #{{ consumo.id|stringformat:"05d" }}
+                </div>
+            </div>
+
+            <!-- Lista de productos -->
+            <div class="py-6 space-y-4">
+                {% for d in detalles %}
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                        <p class="font-bold text-sm text-zinc-900 dark:text-zinc-100">{{ d.producto.nombre }}</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">{{ d.cantidad }} x ${{ d.precio_unitario|floatformat:0 }}</p>
+                    </div>
+                    <p class="font-black text-sm">${{ d.subtotal|floatformat:0 }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Total -->
+            <div class="pt-6 border-t-2 border-dashed border-zinc-200 dark:border-zinc-700">
+                <div class="flex items-end justify-between">
+                    <span class="text-sm font-bold text-zinc-500 uppercase tracking-wider">Total</span>
+                    <span class="text-3xl font-black text-red-600 dark:text-red-500">${{ consumo.total|floatformat:0 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Código de barras falso -->
+        <div class="bg-zinc-50 dark:bg-zinc-800/50 p-4 flex flex-col items-center justify-center border-t border-zinc-100 dark:border-zinc-800 print:hidden">
+            <div class="flex gap-1 h-8 opacity-40">
+                <div class="w-1 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-2 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-1 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-3 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-1 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-2 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-1 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-1 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-3 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-2 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-1 bg-zinc-900 dark:bg-zinc-100"></div><div class="w-2 bg-zinc-900 dark:bg-zinc-100"></div>
+            </div>
+            <p class="text-[10px] font-mono mt-2 text-zinc-500 uppercase tracking-widest">Tienda Nueva</p>
+        </div>
+    </div>
+
+    <!-- ACCIONES TÁCTILES -->
+    <div class="w-full max-w-md flex gap-3 mt-6 print:hidden">
+        <button onclick="window.print()" class="flex-1 h-14 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-200 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95">
+            <i class="fa-solid fa-print"></i> Imprimir
+        </button>
+        <button onclick="abrirModalEliminarConsumo('{{ consumo.id }}', '{{ consumo.persona|escapejs }}')" class="flex-1 h-14 bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95">
+            <i class="fa-solid fa-trash"></i> Eliminar
+        </button>
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminarConsumo" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="cerrarModalEliminarConsumo()"></div>
+    <div class="relative w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6">
+        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/60 flex items-center justify-center text-red-600 mb-4"><i class="fa-solid fa-trash text-xl"></i></div>
+        <h2 class="text-xl font-black text-zinc-900 dark:text-white">¿Eliminar consumo?</h2>
+        <p class="text-sm text-zinc-500 mt-2">El stock de los productos volverá automáticamente al inventario.</p>
+        <form id="formEliminarConsumo" method="POST" class="flex gap-3 mt-6">
+            {% csrf_token %}
+            <button type="button" onclick="cerrarModalEliminarConsumo()" class="flex-1 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-bold text-sm">Cancelar</button>
+            <button type="submit" class="flex-1 h-12 bg-red-600 text-white rounded-xl font-bold text-sm shadow-md">Eliminar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirModalEliminarConsumo(id, nombre) {
+    const urlBase = "{% url 'eliminar_consumo' 0 %}";
+    document.getElementById("formEliminarConsumo").action = urlBase.replace('/0/', '/' + id + '/');
+    const m = document.getElementById("modalEliminarConsumo");
+    m.classList.remove("hidden"); m.classList.add("flex"); document.body.classList.add("overflow-hidden");
+}
+function cerrarModalEliminarConsumo() {
+    const m = document.getElementById("modalEliminarConsumo");
+    m.classList.add("hidden"); m.classList.remove("flex"); document.body.classList.remove("overflow-hidden");
+}
+</script>
+{% endblock %}

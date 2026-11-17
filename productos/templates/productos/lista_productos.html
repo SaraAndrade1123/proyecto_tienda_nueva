@@ -5,653 +5,633 @@
 
 {% block content %}
 
+{# Fuente de esta pantalla. Si más adelante quieres usarla en todo el sitio, mueve estas tres líneas al <head> de base.html #}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
 
 <style>
-/* =====================================================================
-   Tienda Nueva · Pantallas de productos
-   ---------------------------------------------------------------------
-   CÓMO ESTÁ ORGANIZADO ESTE CSS (léelo antes de tocar nada)
-
-   1. TOKENS en tres niveles:
-        primitivos  --red-700, --white …   valores crudos, sin significado
-        semánticos  --color-brand, --color-text …  el "para qué" de cada valor
-        componente  --card-bg, --card-price …  viven en el componente y las
-                                              variantes solo los reasignan
-      Los componentes usan tokens semánticos o de componente, nunca primitivos.
-      El modo oscuro (.dark) redefine SOLO los semánticos.
-   2. NOMBRES con BEM:  cat-bloque__elemento  y estados  is-activo.
-      Todo cuelga de .cat para no chocar con Tailwind ni con base.html.
-   3. ORDEN: tokens → base → layout → componentes → pantallas → preferencias
-      del usuario (movimiento reducido, contraste forzado, impresión).
-   4. SIN @layer a propósito: Tailwind (CDN) escribe CSS sin capas y las capas
-      del navegador perderían contra él.
-   ===================================================================== */
-
-
-/* ===== 1. TOKENS ================================================== */
-
-.cat {
-    /* 1a · Primitivos */
-    --red-950: #450a0a;
-    --red-900: #7f1d1d;
-    --red-800: #991b1b;
-    --red-700: #b91c1c;
-    --red-600: #dc2626;
-    --red-400: #f87171;
-    --white: #ffffff;
-
-    /* 1b · Escalas (no cambian con el tema) */
-    --space-1: .25rem;  --space-2: .5rem;  --space-3: .75rem; --space-4: 1rem;
-    --space-5: 1.5rem;  --space-6: 2rem;   --space-7: 3rem;
-    --radius-md: 1.25rem; --radius-lg: 1.75rem; --radius-xl: 2.5rem; --radius-pill: 999px;
-    --dur-fast: .15s; --dur-base: .25s;
-    --font-sans: "Archivo", Verdana, Tahoma, sans-serif;
-
-    /* 1c · Semánticos (modo claro) */
-    --color-page: #ffffff;
-    --color-board: #fbf6f5;
-    --color-field: #ffffff;
-    --color-border: #e7ddda;
-    --color-text: #1c1917;
-    --color-muted: #6b645e;
-    --color-brand: var(--red-700);        /* rellenos: botones, chips activos */
-    --color-brand-text: var(--red-700);   /* texto y enlaces sobre superficies */
-    --color-brand-hero: var(--red-600);
-    --color-brand-deep: var(--red-900);   /* hover de rellenos */
-    --color-brand-ink: var(--red-950);
-    --color-on-brand: var(--white);
-    --color-ok: #15803d;
-    --color-warn: #92400e;
-    --color-ok-bg: #e4f4e8;
-    --color-warn-bg: #fdf0d2;
-    --color-maroon: #4a0e0e;               /* bloque oscuro de texto */
-    --color-on-maroon: #fff1e6;
-
-    /* Tonos de categoría (suave = fondo, fuerte = disco/borde) */
-    --tone-a-soft: #ffe8e5;  --tone-a-strong: #ffc7c0;
-    --tone-b-soft: #fff0e6;  --tone-b-strong: #ffd3b8;
-    --tone-c-soft: #f4f1ef;  --tone-c-strong: #e3ddd9;
-    --tone-d-soft: #fde7ec;  --tone-d-strong: #f8b9c9;
-    --tone-soft: var(--tone-c-soft);
-    --tone-strong: var(--tone-c-strong);
-
-    font-family: var(--font-sans);
-    color: var(--color-text);
-    background: var(--color-page);
-}
-
-.dark .cat {
-    --color-page: #0f0f0f;
-    --color-board: #151515;
-    --color-field: #1e1e1e;
-    --color-border: #3a3532;
-    --color-text: #f5f5f4;
-    --color-muted: #a8a29e;
-    --color-brand-text: var(--red-400);
-    --color-ok: #4ade80;
-    --color-warn: #fbbf24;
-    --color-ok-bg: #14281b;
-    --color-warn-bg: #2e2410;
-    --color-maroon: #2a0b0b;
-    --color-on-maroon: #f5e6dc;
-
-    --tone-a-soft: #2b1816;  --tone-a-strong: #45221f;
-    --tone-b-soft: #2b1d15;  --tone-b-strong: #47291a;
-    --tone-c-soft: #242221;  --tone-c-strong: #373331;
-    --tone-d-soft: #2b1720;  --tone-d-strong: #46212f;
-}
-
-/* El tono lo decide el id de la categoría: cada categoría conserva su color */
-.cat [data-tono$="1"], .cat [data-tono$="5"], .cat [data-tono$="9"] { --tone-soft: var(--tone-a-soft); --tone-strong: var(--tone-a-strong); }
-.cat [data-tono$="2"], .cat [data-tono$="6"]                         { --tone-soft: var(--tone-b-soft); --tone-strong: var(--tone-b-strong); }
-.cat [data-tono$="3"], .cat [data-tono$="7"]                         { --tone-soft: var(--tone-c-soft); --tone-strong: var(--tone-c-strong); }
-.cat [data-tono$="0"], .cat [data-tono$="4"], .cat [data-tono$="8"] { --tone-soft: var(--tone-d-soft); --tone-strong: var(--tone-d-strong); }
-
-
-/* ===== 2. BASE ==================================================== */
-
-.cat, .cat * { box-sizing: border-box; }
-:where(.cat) :where(h1, h2, h3, p, ul, ol, dl, dd) { margin: 0; }   /* :where() = especificidad 0: cualquier clase .cat-* lo puede sobrescribir */
-:where(.cat) :where(ul, ol) { padding: 0; list-style: none; }
-.cat a { text-decoration: none; }
-.cat [hidden] { display: none !important; }
-
-.cat-sr {
-    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
-
-/* Foco visible en todo lo interactivo (WCAG 2.4.7) */
-.cat a:focus-visible, .cat button:focus-visible, .cat input:focus-visible,
-.cat select:focus-visible, .cat textarea:focus-visible, .cat summary:focus-visible {
-    outline: 3px solid var(--color-brand-text); outline-offset: 2px;
-}
-.cat-hero a:focus-visible, .cat-hero button:focus-visible, .cat-band a:focus-visible { outline-color: var(--white); }
-
-
-/* ===== 3. LAYOUT ================================================== */
-
-/* 3a · Banner */
-.cat-hero {
-    position: relative;
-    padding: 2.5rem 1.25rem 5.25rem;
-    color: var(--white);
-    background: var(--color-brand-hero);
-}
-@media (min-width: 900px) { .cat-hero { padding: 3.25rem 2.5rem 6rem; } }
-
-.cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.cat-hero__bg::before {
-    content: ""; position: absolute; inset: -40%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
-    background-size: 320px 72px;
-    transform: rotate(-9deg);
-}
-.cat-hero__in {
-    position: relative;
-    max-width: 80rem; margin: 0 auto;
-    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
-    gap: var(--space-5) var(--space-6);
-}
-.cat-hero__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
-.cat-hero h1 {
-    font-size: clamp(2.5rem, 1.3rem + 4.6vw, 4.5rem);
-    font-weight: 800; font-stretch: 110%; line-height: .95; letter-spacing: -.035em;
-}
-.cat-hero--name h1 {
-    max-width: 22ch; text-wrap: balance; overflow-wrap: anywhere;
-    font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem); line-height: 1.02;
-}
-.cat-hero p { margin-top: .9rem; max-width: 34ch; font-size: 1.0625rem; line-height: 1.45; }
-.cat-hero p strong { font-weight: 800; }
-
-.cat-eyebrow {
-    display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: .75rem;
-    font-size: .8125rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-}
-.cat-eyebrow::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: currentColor; }
-
-/* Migas de pan */
-.cat-crumbs { margin-bottom: .75rem; }
-.cat-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; font-size: .875rem; font-weight: 600; }
-.cat-crumbs li { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
-.cat-crumbs li + li::before { content: "/"; opacity: .7; }
-.cat-crumbs a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, .55); }
-.cat-crumbs a:hover { text-decoration-color: var(--white); }
-.cat-crumbs [aria-current] { max-width: 18ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .92; }
-
-/* 3b · Contenedores */
-.cat-wrap { position: relative; max-width: 80rem; margin: -2.75rem auto 0; padding: 0 .75rem 2.5rem; }
-@media (min-width: 640px)  { .cat-wrap { padding: 0 1.5rem 3rem; } }
-@media (min-width: 1024px) { .cat-wrap { padding: 0 2.5rem 3.5rem; } }
-.cat-wrap--narrow { max-width: 62rem; }
-.cat-wrap--wide { max-width: 76rem; }
-
-.cat-board {
-    position: relative;
-    padding: 1.25rem .875rem 1.5rem;
-    background: var(--color-board); border-radius: var(--radius-lg);
-}
-@media (min-width: 640px) {
-    .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: var(--radius-xl); }
-}
-
-/* Banda de cierre (como la franja de suscripción de la referencia) */
-.cat-band {
-    position: relative; overflow: hidden;
-    padding: 2.25rem 1.25rem; color: var(--color-on-maroon); background: var(--color-maroon);
-}
-.cat-band::before {
-    content: ""; position: absolute; inset: -40%; transform: rotate(-9deg); opacity: .6; pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%23b91c1c' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E");
-    background-size: 320px 72px;
-}
-.cat-band__in {
-    position: relative; max-width: 80rem; margin: 0 auto;
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-6);
-}
-.cat-band h2 { max-width: 26ch; font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.15; }
-.cat-band p { margin-top: .35rem; max-width: 44ch; color: var(--color-on-maroon); opacity: .9; }
-@media (min-width: 900px) { .cat-band { padding: 2.75rem 2.5rem; } }
-
-
-/* ===== 4. COMPONENTES ============================================= */
-
-/* 4a · Botón  (variantes: --light --ghost --danger) */
-.cat-btn {
-    --btn-bg: var(--color-brand); --btn-ink: var(--color-on-brand); --btn-border: var(--color-brand);
-    --btn-bg-hover: var(--color-brand-deep); --btn-ink-hover: var(--color-on-brand); --btn-border-hover: var(--color-brand-deep);
-    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
-    height: 2.75rem; padding: 0 1.5rem;
-    font: inherit; font-weight: 700; font-size: .9375rem; white-space: nowrap;
-    color: var(--btn-ink); background: var(--btn-bg);
-    border: 2px solid var(--btn-border); border-radius: var(--radius-pill);
-    cursor: pointer;
-    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-}
-.cat-btn svg { width: 1.05rem; height: 1.05rem; flex: none; }
-.cat-btn:hover { color: var(--btn-ink-hover); background: var(--btn-bg-hover); border-color: var(--btn-border-hover); }
-.cat-btn[disabled], .cat-btn[aria-busy="true"] { opacity: .75; cursor: progress; }
-.cat-btn--light { --btn-bg: var(--white); --btn-ink: var(--color-brand-deep); --btn-border: var(--white);
-                  --btn-bg-hover: var(--color-brand-ink); --btn-border-hover: var(--color-brand-ink); }
-.cat-btn--ghost { --btn-bg: transparent; --btn-ink: var(--color-text); --btn-border: var(--color-border);
-                  --btn-bg-hover: var(--tone-soft); --btn-ink-hover: var(--color-text); --btn-border-hover: var(--tone-strong); }
-.cat-hero .cat-btn--ghost, .cat-band .cat-btn--ghost { --btn-ink: var(--white); --btn-border: rgba(255, 255, 255, .7);
-                  --btn-bg-hover: var(--white); --btn-ink-hover: var(--color-brand-deep); --btn-border-hover: var(--white); }
-.cat-btn--danger { --btn-bg: var(--red-800); --btn-border: var(--red-800); --btn-bg-hover: var(--red-950); --btn-border-hover: var(--red-950); }
-.cat-spin {
-    width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent;
-    animation: cat-spin .7s linear infinite;
-}
-@keyframes cat-spin { to { transform: rotate(360deg); } }
-
-/* 4b · Mensajes (success / warning / error) */
-.cat-msgs { display: grid; gap: .625rem; margin-bottom: 1.25rem; }
-.cat-msg {
-    display: flex; align-items: flex-start; gap: var(--space-3); padding: .85rem 1.1rem;
-    font-size: .9375rem; font-weight: 600; line-height: 1.4;
-    color: var(--color-text); background: var(--tone-c-soft);
-    border-radius: 1.1rem 1.1rem 1.1rem .3rem;
-}
-.cat-msg::before { content: ""; flex: none; width: .7rem; height: .7rem; margin-top: .3rem; border-radius: 50%; background: var(--color-muted); }
-.cat-msg.is-success { background: var(--color-ok-bg); }
-.cat-msg.is-success::before { background: #16a34a; }
-.cat-msg.is-warning { background: var(--color-warn-bg); }
-.cat-msg.is-warning::before { background: #d97706; }
-.cat-msg.is-error { background: var(--tone-a-soft); }
-.cat-msg.is-error::before { background: var(--color-brand-text); }
-
-/* 4c · Chips de categoría */
-.cat-cats { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: 1.5rem; }
-.cat-cat {
-    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 2.5rem; padding: 0 1.1rem 0 .8rem;
-    font-size: .9375rem; font-weight: 600; color: var(--color-text); background: var(--tone-soft);
-    border-radius: var(--radius-pill);
-    transition: background-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
-}
-.cat-cat i { width: .8rem; height: .8rem; border-radius: 50%; background: var(--tone-strong); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18); }
-.cat-cat.is-all { padding-left: 1.1rem; }
-.cat-cat:hover { background: var(--tone-strong); }
-.cat-cat.is-on { color: var(--color-on-brand); background: var(--color-brand); }
-.cat-cat.is-on i { background: var(--white); box-shadow: none; }
-
-
-/* 4d · Tarjeta de producto  (estados: :hover/:focus-within activa, .is-out agotado) */
-.cat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem .75rem; }
-@media (min-width: 560px) { .cat-grid { grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr)); gap: 1.75rem 1.25rem; } }
-.cat-grid > li { min-width: 0; }
-
-.cat-card {
-    --card-bg: var(--tone-soft); --card-ink: var(--color-text); --card-mute: var(--color-muted); --card-disc: var(--tone-strong);
-    --card-price: var(--color-brand-text);
-    --card-btn: var(--color-brand); --card-btn-ink: var(--color-on-brand); --card-warn: var(--color-warn); --card-line: var(--color-border);
-    position: relative; isolation: isolate; height: 100%;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 1rem .75rem 1.1rem; text-align: center;
-    color: var(--card-ink); background: var(--card-bg); border-radius: 1.5rem;
-    transition: background-color var(--dur-base), color var(--dur-base), transform var(--dur-base), box-shadow var(--dur-base);
-}
-@media (min-width: 560px) { .cat-card { padding: 1.25rem 1.25rem 1.4rem; border-radius: var(--radius-lg); } }
-
-.cat-card:hover, .cat-card:focus-within {
-    --card-bg: var(--red-700); --card-ink: var(--white); --card-mute: rgba(255, 255, 255, .86); --card-disc: rgba(255, 255, 255, .16);
-    --card-price: var(--white); --card-btn: var(--white); --card-btn-ink: var(--red-700); --card-warn: var(--white); --card-line: rgba(255, 255, 255, .6);
-    transform: translateY(-.4rem); box-shadow: 0 1.25rem 1.75rem -1rem rgba(127, 29, 29, .55);
-}
-
-/* El producto es ~30 % más grande que el círculo: el disco queda centrado detrás y la imagen sobresale. */
-.cat-stage { position: relative; width: 100%; height: 10rem; display: flex; align-items: center; justify-content: center; margin-bottom: .875rem; }
-@media (min-width: 560px) { .cat-stage { height: 13rem; margin-bottom: 1rem; } }
-.cat-disc {
-    position: absolute; left: 50%; top: 50%; width: 6.25rem; height: 6.25rem; border-radius: 50%;
-    background: var(--card-disc); transform: translate(-50%, -50%); transition: background-color var(--dur-base);
-}
-@media (min-width: 560px) { .cat-disc { width: 9.25rem; height: 9.25rem; } }
-.cat-img { position: relative; display: block; max-width: 94%; max-height: 8.25rem; object-fit: contain; border-radius: .5rem; transition: transform var(--dur-base); }
-@media (min-width: 560px) { .cat-img { max-width: 84%; max-height: 12rem; } }
-.cat-card:hover .cat-img, .cat-card:focus-within .cat-img { transform: translateY(-.5rem) scale(1.07); }
-.cat-none { position: relative; display: flex; flex-direction: column; align-items: center; gap: .35rem; font-size: .875rem; color: var(--card-mute); }
-.cat-none svg { width: 2rem; height: 2rem; }
-
-.cat-card__cat {
-    display: inline-flex; align-items: center; gap: .4rem; max-width: 100%; margin-bottom: .3rem;
-    font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--card-mute);
-}
-.cat-card__cat::before { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
-.cat-card__cat span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cat-name { max-width: 100%; font-size: 1rem; font-weight: 700; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
-@media (min-width: 560px) { .cat-name { font-size: 1.1875rem; } }
-.cat-size { margin-top: .25rem; font-size: .875rem; color: var(--card-mute); }
-.cat-price {
-    margin-top: .625rem; display: inline-flex; align-items: baseline; gap: .1rem; max-width: 100%;
-    font-size: 1.625rem; font-weight: 800; font-stretch: 75%; line-height: 1; letter-spacing: .005em;
-    font-variant-numeric: tabular-nums; color: var(--card-price);
-}
-.cat-price small { font-size: .95rem; font-weight: 700; font-stretch: 100%; }
-@media (min-width: 560px) { .cat-price { font-size: 2rem; } }
-.cat-stock { margin-top: .6rem; display: inline-flex; align-items: center; gap: .4rem; font-size: .875rem; font-weight: 600; color: var(--card-mute); }
-.cat-stock::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: #16a34a; }
-.cat-stock.is-low, .cat-stock.is-out { color: var(--card-warn); }
-.cat-stock.is-low::before, .cat-stock.is-out::before { background: currentColor; }
-.cat-card:hover .cat-stock::before, .cat-card:focus-within .cat-stock::before { background: var(--white); }
-
-.cat-more {
-    margin-top: 1rem; display: inline-flex; align-items: center; justify-content: center; height: 2.25rem; padding: 0 1.1rem;
-    font-size: .875rem; font-weight: 700; color: var(--card-btn-ink); background: var(--card-btn);
-    border-radius: var(--radius-pill); transition: background-color var(--dur-base), color var(--dur-base);
-}
-@media (min-width: 560px) { .cat-more { height: 2.5rem; padding: 0 1.4rem; font-size: .9375rem; } }
-.cat-more::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }   /* toda la tarjeta es enlace */
-.cat-more:focus-visible { outline: none !important; }
-.cat-more:focus-visible::after { outline: 3px solid var(--color-brand-text); outline-offset: 3px; border-radius: var(--radius-lg); }
-
-.cat-acts { position: relative; z-index: 2; margin-top: .75rem; display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
-.cat-act {
-    display: inline-flex; align-items: center; gap: .4rem; height: 2.25rem; padding: 0 .9rem;
-    font: inherit; font-size: .8125rem; font-weight: 700; color: var(--card-ink); background: transparent;
-    border: 2px solid var(--card-line); border-radius: var(--radius-pill); cursor: pointer;
-    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-}
-.cat-act svg { width: .95rem; height: .95rem; }
-.cat-act:hover { color: var(--card-btn-ink); background: var(--card-btn); border-color: var(--card-btn); }
-.cat-act--del:hover { color: var(--white); background: var(--red-950); border-color: var(--red-950); }
-.cat-card:hover .cat-act--del:hover, .cat-card:focus-within .cat-act--del:hover { color: var(--red-900); background: var(--white); border-color: var(--white); }
-
-.cat-card.is-out .cat-img { filter: grayscale(1); opacity: .45; }
-.cat-card.is-out { --card-disc: var(--tone-c-strong); }
-.cat-card.is-out:hover, .cat-card.is-out:focus-within { --card-disc: rgba(255, 255, 255, .16); }
-.cat-stamp {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-8deg); padding: .1rem .6rem;
-    font-size: 1.25rem; font-weight: 800; font-stretch: 85%; letter-spacing: .02em;
-    color: var(--color-brand-text); border: 3px solid currentColor; border-radius: .375rem;
-    background: color-mix(in srgb, var(--card-bg) 78%, transparent);
-}
-.cat-card:hover .cat-stamp, .cat-card:focus-within .cat-stamp { color: var(--white); background: transparent; }
-
-/* 4e · Estado vacío y diálogo */
-.cat-empty { padding: 3.5rem 1.5rem 3.75rem; text-align: center; background: var(--tone-c-soft); border-radius: 4.5rem 1.25rem 1.25rem 1.25rem; }
-.cat-empty__disc { width: 5rem; height: 5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-c-strong); color: var(--color-muted); }
-.cat-empty__disc svg { display: block; width: 2.25rem; height: 2.25rem; }
-.cat-empty h3 { margin-top: 1.25rem; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
-.cat-empty p { margin: .5rem auto 0; max-width: 34ch; color: var(--color-muted); line-height: 1.5; }
-.cat-empty .cat-btn { margin-top: var(--space-5); }
-
-.cat-modal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: var(--space-4); background: rgba(15, 15, 15, .6); }
-.cat-modal.is-open { display: flex; }
-.cat-dialog { position: relative; width: 100%; max-width: 26rem; padding: 2rem 1.5rem 1.5rem; text-align: center; color: var(--color-text); background: var(--color-page); border-radius: 4rem 1.25rem 1.25rem 1.25rem; box-shadow: 0 2rem 4rem -1rem rgba(0, 0, 0, .5); }
-.dark .cat-dialog { background: #1a1a1a; }
-.cat-dialog__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-a-strong); color: var(--color-brand-text); }
-.cat-dialog__disc svg { width: 2rem; height: 2rem; }
-.cat-dialog h3 { margin-top: 1.1rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -.015em; }
-.cat-dialog p { margin-top: .6rem; line-height: 1.5; color: var(--color-muted); }
-.cat-dialog p strong { color: var(--color-text); overflow-wrap: anywhere; }
-.cat-dialog__acts { display: flex; gap: .625rem; margin-top: var(--space-5); }
-.cat-dialog__acts > * { flex: 1; padding: 0 .5rem; }
-
-/* 4f · Campos de formulario */
-.cat-field label { display: block; margin-bottom: .4rem; font-size: .875rem; font-weight: 700; }
-.cat-field label .cat-req { color: var(--color-brand-text); }
-.cat-field__box { position: relative; }
-.cat-field input:not([type="file"]), .cat-field select, .cat-field textarea {
-    display: block; width: 100%; height: 3rem; padding: 0 1.1rem;
-    font: inherit; font-size: 1rem; color: var(--color-text); background: var(--color-field);
-    border: 2px solid var(--color-border); border-radius: var(--radius-pill);
-    outline: 0; appearance: none; -webkit-appearance: none;
-    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
-}
-.cat-field textarea { height: auto; min-height: 8.5rem; padding: .9rem 1.2rem; border-radius: var(--radius-md); resize: vertical; line-height: 1.5; }
-.cat-field select { padding-right: 2.75rem; cursor: pointer; }
-.cat-field input::placeholder, .cat-field textarea::placeholder { color: var(--color-muted); opacity: .8; }
-.cat-field input:focus, .cat-field select:focus, .cat-field textarea:focus {
-    border-color: var(--color-brand-text); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-text) 18%, transparent); outline: 0 !important;
-}
-.cat-field.has-error input, .cat-field.has-error select, .cat-field.has-error textarea { border-color: var(--color-brand-text); }
-.cat-field--money input:not([type="file"]) { padding-left: 2.4rem; }
-.cat-field__sym { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--color-muted); pointer-events: none; }
-.cat-field__chev { position: absolute; right: 1.1rem; top: 50%; width: 1rem; height: 1rem; transform: translateY(-50%); color: var(--color-muted); pointer-events: none; }
-.cat-hint { display: flex; justify-content: space-between; gap: var(--space-3); margin-top: .4rem; padding-left: .25rem; font-size: .8125rem; color: var(--color-muted); }
-.cat-err { display: flex; align-items: flex-start; gap: .4rem; margin-top: .4rem; padding-left: .25rem; font-size: .875rem; font-weight: 600; color: var(--color-brand-text); }
-.cat-err::before {   /* el error no depende solo del color: lleva un signo */
-    content: "!"; flex: none; display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; margin-top: .1rem;
-    font-size: .7rem; font-weight: 900; color: var(--color-page); background: var(--color-brand-text); border-radius: 50%;
-}
-
-.cat-alert {
-    margin-bottom: var(--space-5); padding: 1.1rem 1.25rem 1.2rem; color: var(--color-text);
-    background: var(--tone-a-soft); border-left: .4rem solid var(--color-brand); border-radius: .5rem 1.25rem 1.25rem .5rem;
-}
-.cat-alert:focus { outline: 3px solid var(--color-brand-text); outline-offset: 3px; }
-.cat-alert h2 { font-size: 1.125rem; font-weight: 800; }
-.cat-alert ul { margin-top: .5rem; display: grid; gap: .25rem; }
-.cat-alert a { color: var(--color-brand-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-
-
-/* ===== 5. PANTALLAS =============================================== */
-
-/* 5a · Lista */
-.cat-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem var(--space-5); margin-bottom: 1.25rem; }
-.cat-head h2 {
-    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.1;
-    color: var(--color-brand-text);
-}
-.cat-head__side { display: flex; align-items: baseline; gap: var(--space-4); }
-.cat-count { font-size: .9375rem; color: var(--color-muted); }
-.cat-count strong { color: var(--color-text); font-weight: 700; }
-.cat-clear { display: inline-flex; align-items: center; gap: .4rem; font-size: .9375rem; font-weight: 600; color: var(--color-text); text-decoration: underline !important; text-underline-offset: 3px; }
-.cat-clear::after { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--color-brand); }
-
-/* Resumen (se llena con JS; sin JS queda oculto) */
-.cat-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: 1.25rem; }
-@media (min-width: 720px) { .cat-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-.cat-stat {
-    --stat-bg: var(--tone-c-soft);
-    padding: .85rem 1.25rem; background: var(--stat-bg); border-radius: 1.1rem;
-}
-.cat-stat--ok  { --stat-bg: var(--color-ok-bg); }
-.cat-stat--low { --stat-bg: var(--color-warn-bg); }
-.cat-stat--out { --stat-bg: var(--tone-a-soft); }
-.cat-stat__n { display: block; font-size: 1.75rem; font-weight: 800; font-stretch: 80%; line-height: 1; font-variant-numeric: tabular-nums; }
-.cat-stat__l { display: block; margin-top: .25rem; font-size: .8125rem; font-weight: 600; color: var(--color-muted); }
-
-/* Buscador + orden */
-.cat-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: 1rem; }
-.cat-find {
-    flex: 1 1 18rem; min-width: 0; max-width: 34rem; display: flex; align-items: center; gap: var(--space-2);
-    padding: .3rem .3rem .3rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill);
-}
-.cat-find:focus-within { border-color: var(--color-brand-text); }
-.cat-find > svg { flex: none; width: 1.05rem; height: 1.05rem; color: var(--color-muted); }
-.cat-find input { flex: 1 1 auto; width: 0; min-width: 0; height: 2.5rem; padding: 0; font: inherit; font-size: 1rem; color: var(--color-text); background: transparent; border: 0; outline: 0 !important; }
-.cat-find input::placeholder { color: var(--color-muted); }
-.cat-find button { flex: none; height: 2.5rem; padding: 0 1.25rem; font: inherit; font-weight: 700; color: var(--color-on-brand); background: var(--color-brand); border: 0; border-radius: var(--radius-pill); cursor: pointer; }
-.cat-find button:hover { background: var(--color-brand-deep); }
-.cat-sort { position: relative; display: inline-flex; align-items: center; gap: var(--space-2); max-width: 100%; min-width: 0; font-size: .875rem; font-weight: 700; color: var(--color-muted); }
-.cat-sort select {
-    flex: 1 1 auto; min-width: 0; max-width: 100%;
-    height: 2.75rem; padding: 0 2.5rem 0 1.1rem; font: inherit; font-size: .9375rem; font-weight: 600; color: var(--color-text);
-    background: var(--color-field); border: 2px solid var(--color-border); border-radius: var(--radius-pill); appearance: none; -webkit-appearance: none; cursor: pointer;
-}
-.cat-sort svg { position: absolute; right: 1rem; width: .9rem; height: .9rem; pointer-events: none; }
-
-.cat-end { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: 2rem; padding-top: 1rem; border-top: 2px dotted var(--color-border); font-size: .875rem; color: var(--color-muted); }
-.cat-end a { font-weight: 700; color: var(--color-brand-text); text-decoration: underline; text-underline-offset: 3px; }
-
-/* 5b · Detalle */
-.cat-det { display: grid; gap: var(--space-5); align-items: stretch; }
-@media (min-width: 860px) { .cat-det { grid-template-columns: 1.05fr 1fr; gap: 2.5rem; } }
-.cat-det__stage {
-    --card-disc: var(--tone-strong);
-    position: relative; min-height: 20rem; display: flex; align-items: center; justify-content: center; padding: 2rem 1.5rem;
-    background: var(--tone-soft); border-radius: 5rem 1.25rem 1.25rem 1.25rem; overflow: hidden;
-}
-@media (min-width: 860px) { .cat-det__stage img { max-height: 22rem; } }
-@media (min-width: 860px) { .cat-det__stage { min-height: 28rem; border-radius: 8rem 1.25rem 1.25rem 1.25rem; } }
-.cat-det__stage .cat-disc { width: 11rem; height: 11rem; }
-@media (min-width: 860px) { .cat-det__stage .cat-disc { width: 17rem; height: 17rem; } }
-.cat-det__stage img { position: relative; max-width: 82%; max-height: 14.5rem; object-fit: contain; border-radius: .5rem; transition: transform .35s; }
-.cat-det__stage:hover img { transform: scale(1.04) rotate(-1.5deg); }
-.cat-det__stage.is-out img { filter: grayscale(1); opacity: .45; }
-.cat-det__stage .cat-none { margin: 0; color: var(--color-muted); }
-.cat-det__stage .cat-none svg { width: 3rem; height: 3rem; }
-.cat-det__stage .cat-stamp { top: 50%; font-size: 1.75rem; background: color-mix(in srgb, var(--tone-soft) 78%, transparent); }
-
-.cat-det__body { display: flex; flex-direction: column; justify-content: center; gap: 1.15rem; min-width: 0; }
-.cat-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.cat-pill { display: inline-flex; align-items: center; gap: var(--space-2); padding: .35rem .9rem .35rem .7rem; font-size: .875rem; font-weight: 700; color: var(--color-text); background: var(--tone-soft); border-radius: var(--radius-pill); }
-.cat-pill i { width: .75rem; height: .75rem; border-radius: 50%; background: var(--tone-strong); box-shadow: inset 0 0 0 2px rgba(127, 29, 29, .18); }
-.cat-pill--ref { font-variant-numeric: tabular-nums; background: transparent; border: 2px solid var(--color-border); color: var(--color-muted); }
-
-.cat-det__price {
-    align-self: flex-start; display: inline-flex; align-items: baseline; gap: .15rem;
-    font-size: clamp(2.75rem, 2rem + 3.5vw, 4.25rem); font-weight: 800; font-stretch: 75%; line-height: 1;
-    font-variant-numeric: tabular-nums; color: var(--color-brand-text);
-}
-.cat-det__price small { font-size: 1.4rem; font-weight: 700; font-stretch: 100%; }
-.cat-det__unit { margin-top: -.5rem; font-size: .9375rem; color: var(--color-muted); }
-.cat-det__unit strong { color: var(--color-text); font-weight: 700; }
-
-.cat-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
-.cat-fact { padding: .9rem 1.1rem; background: var(--color-field); border: 2px solid var(--color-border); border-radius: 1.1rem; }
-.cat-fact dt { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--color-muted); }
-.cat-fact dd { margin: .3rem 0 0; font-size: 1.125rem; font-weight: 800; }
-.cat-fact dd.is-ok { color: var(--color-ok); }
-.cat-fact dd.is-low, .cat-fact dd.is-out { color: var(--color-warn); }
-.cat-meter { --n: 0; display: block; height: .5rem; margin-top: .6rem; overflow: hidden; background: var(--color-border); border-radius: var(--radius-pill); }
-.cat-meter::before { content: ""; display: block; width: min(100%, calc(var(--n) * 5%)); height: 100%; background: var(--color-ok); border-radius: inherit; }
-.cat-meter.is-low::before, .cat-meter.is-out::before { background: var(--color-warn); }
-
-.cat-spec h2 { font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
-.cat-spec dl { margin-top: .5rem; display: grid; gap: .45rem; }
-.cat-spec__row { display: grid; grid-template-columns: auto 1fr auto; column-gap: var(--space-3); align-items: baseline; }
-.cat-spec__row::before { content: ""; grid-column: 2; grid-row: 1; align-self: end; margin-bottom: .3em; border-bottom: 2px dotted var(--color-border); }
-.cat-spec__row dt { grid-column: 1; grid-row: 1; color: var(--color-muted); }
-.cat-spec__row dd { grid-column: 3; grid-row: 1; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
-
-.cat-det__acts { display: flex; flex-wrap: wrap; gap: .625rem; }
-
-.cat-story {
-    position: relative; overflow: hidden; margin-top: 1.5rem; padding: 2rem 1.5rem 2.25rem;
-    color: var(--color-on-maroon); background: var(--color-maroon); border-radius: 3.5rem 1.25rem 1.25rem 1.25rem;
-}
-.cat-story::after { content: ""; position: absolute; right: -3rem; bottom: -4rem; width: 12rem; height: 12rem; border-radius: 50%; background: var(--red-700); opacity: .35; pointer-events: none; }
-@media (min-width: 860px) { .cat-story { padding: 2.5rem 3rem 2.75rem; border-radius: 5rem 1.25rem 1.25rem 1.25rem; } }
-.cat-story h2 { position: relative; font-size: 1.5rem; font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; }
-.cat-story h2::after { content: ""; display: block; width: 2.75rem; height: .3rem; margin-top: .6rem; background: var(--red-400); border-radius: 1rem; }
-.cat-story p { position: relative; margin-top: 1rem; max-width: 62ch; line-height: 1.65; white-space: pre-line; overflow-wrap: anywhere; }
-
-/* 5c · Formulario crear / editar */
-.cat-formgrid { display: grid; gap: var(--space-6); align-items: start; }
-@media (min-width: 1000px) { .cat-formgrid { grid-template-columns: minmax(0, 1fr) 19rem; } }
-.cat-form { display: grid; gap: 1.75rem; min-width: 0; }
-
-.cat-sec { padding: 1.25rem 1.1rem 1.5rem; background: var(--color-page); border-radius: 1.5rem; }
-@media (min-width: 640px) { .cat-sec { padding: 1.75rem 1.75rem 2rem; border-radius: 2rem; } }
-.cat-sec__h { display: flex; align-items: center; gap: .875rem; margin-bottom: 1.25rem; }
-.cat-sec__n { flex: none; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 800; color: var(--color-on-brand); background: var(--color-brand); border-radius: 50%; }
-.cat-sec__h h2 { font-size: 1.375rem; font-weight: 800; letter-spacing: -.015em; line-height: 1.15; }
-.cat-sec__h p { margin-top: .15rem; font-size: .9375rem; color: var(--color-muted); }
-.cat-fields { display: grid; gap: 1.1rem 1.25rem; grid-template-columns: 1fr; }
-@media (min-width: 640px) { .cat-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.cat-fields .is-wide { grid-column: 1 / -1; }
-
-.cat-drop {
-    position: relative; display: grid; gap: 1.25rem; align-items: center; justify-items: center; padding: 1.5rem 1rem; text-align: center;
-    background: var(--color-field); border: 2px dashed var(--color-border); border-radius: 1.5rem; cursor: pointer;
-    transition: border-color var(--dur-fast), background-color var(--dur-fast);
-}
-.cat-drop:hover, .cat-drop.is-over { background: var(--tone-a-soft); border-color: var(--color-brand-text); }
-.cat-drop__prev { position: relative; width: 100%; max-width: 20rem; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; }
-.cat-drop__prev .cat-disc { --card-disc: var(--tone-a-strong); width: 56%; height: auto; aspect-ratio: 1; }
-.cat-drop__prev img { position: relative; max-width: 84%; max-height: 94%; object-fit: contain; border-radius: .5rem; }
-.cat-drop__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tone-a-strong); color: var(--color-brand-text); }
-.cat-drop__disc svg { width: 2rem; height: 2rem; }
-.cat-drop h3 { margin-top: 1rem; font-size: 1.125rem; font-weight: 800; }
-.cat-drop p { margin-top: .25rem; font-size: .9375rem; color: var(--color-muted); }
-.cat-drop__file { font-size: .875rem; font-weight: 600; color: var(--color-muted); word-break: break-all; }
-.cat-drop__msg { min-height: 1.25rem; font-size: .875rem; font-weight: 700; color: var(--color-brand-text); }
-.cat-drop__btns { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; }
-
-.cat-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .875rem var(--space-5); }
-.cat-bar p { font-size: .9375rem; color: var(--color-muted); }
-.cat-bar__acts { display: flex; flex-wrap: wrap; gap: .625rem; margin-left: auto; }
-@media (max-width: 520px) { .cat-bar__acts { width: 100%; flex-direction: column-reverse; } .cat-bar__acts .cat-btn { width: 100%; } }
-
-/* Vista previa en vivo */
-.cat-preview { position: sticky; top: 5.5rem; padding: 1.25rem 1.1rem 1.25rem; background: var(--color-page); border-radius: var(--radius-lg); }
-.cat-preview summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); cursor: pointer; list-style: none; font-size: .8125rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); }
-.cat-preview summary::-webkit-details-marker { display: none; }
-.cat-preview summary::after { content: ""; width: .6rem; height: .6rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform var(--dur-fast); }
-.cat-preview[open] summary::after { transform: rotate(-135deg); }
-.cat-preview__card { margin-top: 1.5rem; }
-.cat-preview__card .cat-card { cursor: default; }
-.cat-preview__card .cat-card:hover { transform: none; }
-/* La tarjeta de la vista previa siempre es ancha: usa las medidas de escritorio */
-.cat-preview__card .cat-stage { height: 13rem; }
-.cat-preview__card .cat-disc { width: 9.25rem; height: 9.25rem; }
-.cat-preview__card .cat-img { max-width: min(86%, 13rem); max-height: 12rem; }
-.cat-preview__note { display: block; margin-top: var(--space-4); font-size: .8125rem; color: var(--color-muted); text-align: center; }
-@media (max-width: 999px) { .cat-preview { position: static; order: -1; } }
-
-
-/* ===== 6. PREFERENCIAS DEL USUARIO ================================ */
-
-@media (prefers-reduced-motion: reduce) {
-    .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
-    .cat-card:hover, .cat-card:focus-within { transform: none; }
-    .cat-card:hover .cat-img, .cat-card:focus-within .cat-img, .cat-det__stage:hover img { transform: none; }
-}
-
-@media (forced-colors: active) {
-    .cat-btn, .cat-cat, .cat-act, .cat-more { border: 2px solid ButtonText; }
-    .cat-stat { forced-color-adjust: none; }
-}
-
-@media print {   /* la ficha del producto imprime limpia */
-    .cat-hero__bg, .cat-band, .cat-det__acts, .cat-acts, .cat-more { display: none !important; }
-    .cat, .cat-board, .cat-story { color: #000 !important; background: #fff !important; }
-    .cat-hero { color: #000; background: #fff; padding: 0 0 1rem; }
-    .cat-hero h1, .cat-crumbs a { color: #000; text-shadow: none; }
-    .cat-story { border: 1px solid #999; } .cat-story h2, .cat-story p { color: #000; }
-    .cat-card { break-inside: avoid; }
-}
+    .cat, .cat * { box-sizing: border-box; }
+
+    .cat {
+        /* Tinta, texto y fondos */
+        --page: #ffffff;
+        --board: #fbf6f5;
+        --ink: #1c1917;
+        --muted: #6b645e;
+        --borde-ui: #e3d7d3;
+        --red: #b91c1c;
+        --red-hero: #b91c1c;   /* brand-red de base.html (barra superior y pie) */
+        --red-deep: #7f1d1d;   /* brand-darkred de base.html */
+        --price: #b91c1c;
+        --link: #b91c1c;
+        --warn: #92400e;
+
+        /* Cuatro tonos suaves, todos de la familia del rojo y los grises cálidos */
+        --ta-soft: #ffe8e5;  --ta-strong: #ffc7c0;
+        --tb-soft: #fff0e6;  --tb-strong: #ffd3b8;
+        --tc-soft: #f4f1ef;  --tc-strong: #e3ddd9;
+        --td-soft: #fde7ec;  --td-strong: #f8b9c9;
+
+        --soft: var(--tc-soft);
+        --strong: var(--tc-strong);
+
+        font-family: "Archivo", Verdana, Tahoma, sans-serif;
+        color: var(--ink);
+    }
+    .dark .cat {
+        --page: #0f0f0f;
+        --board: #151515;
+        --ink: #f5f5f4;
+        --muted: #a8a29e;
+        --borde-ui: #4a4440;
+        --price: #f87171;
+        --link: #f87171;
+        --warn: #fbbf24;
+
+        --ta-soft: #2b1816;  --ta-strong: #45221f;
+        --tb-soft: #2b1d15;  --tb-strong: #47291a;
+        --tc-soft: #242221;  --tc-strong: #373331;
+        --td-soft: #2b1720;  --td-strong: #46212f;
+    }
+
+    /* El tono lo decide el id de la categoría, así cada categoría siempre tiene su color */
+    .cat [data-tono$="1"], .cat [data-tono$="5"], .cat [data-tono$="9"] { --soft: var(--ta-soft); --strong: var(--ta-strong); }
+    .cat [data-tono$="2"], .cat [data-tono$="6"]                         { --soft: var(--tb-soft); --strong: var(--tb-strong); }
+    .cat [data-tono$="3"], .cat [data-tono$="7"]                         { --soft: var(--tc-soft); --strong: var(--tc-strong); }
+    .cat [data-tono$="0"], .cat [data-tono$="4"], .cat [data-tono$="8"] { --soft: var(--td-soft); --strong: var(--td-strong); }
+
+    .cat-sr {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ---------- Banner (círculos planos y foto que se desvanece; el filtro cabalga sobre su borde inferior) ---------- */
+    .cat-hero {
+        position: relative;
+        color: #fff;
+        background: var(--red-hero);
+        padding: 2.25rem 1.25rem 4.75rem;
+    }
+    .cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .cat-hero__bg::before {
+        content: "";
+        position: absolute; inset: 0;
+        /* Cuatro círculos planos, cuatro tonos de la familia del rojo de base.html:
+           dos claros (blanco translúcido) y dos oscuros (granate y vino). El primero queda arriba. */
+        --claro-1: rgba(254, 205, 205, .17);
+        --claro-2: rgba(254, 205, 205, .1);
+        --vino:    rgba(69, 10, 10, .28);
+        --granate: rgba(127, 29, 29, .55);
+        background:
+            radial-gradient(circle 2.25rem at 84% 35%, var(--claro-1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at 96% -3%, var(--claro-2) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 93% 76%, var(--vino) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
+    }
+    .cat-hero__in { position: relative; z-index: 1; max-width: 96rem; margin: 0 auto; }
+    .cat-hero__txt { width: 100%; min-width: 0; max-width: 40rem; }
+    .cat-hero h1 {
+        margin: 0;
+        font-size: clamp(2.25rem, 1.2rem + 3.6vw, 3.5rem);
+        line-height: .95;
+        font-weight: 800; font-stretch: 110%;
+        letter-spacing: -.035em;
+        text-wrap: balance;
+    }
+    .cat-hero p { margin: 1rem 0 0; max-width: 34rem; font-size: 1.125rem; line-height: 1.45; color: #fff; }
+
+    /* Foto de fondo: se desvanece hacia el rojo (a la izquierda en escritorio, hacia arriba en móvil) */
+    .cat-hero__photo {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 8.5rem;
+        pointer-events: none;
+        background:
+            linear-gradient(0deg, rgba(127, 29, 29, .12), rgba(185, 28, 28, .45)),
+            var(--foto) 50% 40% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+                mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+    }
+    @media (min-width: 900px) {
+        .cat-hero { padding: 2.75rem 2.5rem 4.25rem; }
+        .cat-hero__in { min-height: 11.5rem; display: flex; align-items: center; }
+        .cat-hero__photo {
+            left: auto; top: 0; height: auto; width: min(62%, 64rem);
+            background:
+                linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%),
+                var(--foto) 50% 22% / cover no-repeat;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+        }
+        /* En escritorio los círculos se anclan al borde izquierdo del texto, no al de la ventana */
+        .cat-hero__bg::before {
+            --izq: max(2.5rem, calc(50% - 48rem));
+            background:
+                radial-gradient(circle 2.75rem at calc(var(--izq) + 26rem) 26%, var(--claro-1) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 9.5rem at calc(var(--izq) + 30rem) -20%, var(--claro-2) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 5rem at calc(var(--izq) + 20rem) 100%, var(--vino) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 12rem at calc(var(--izq) - 3rem) 120%, var(--granate) calc(100% - 1px), transparent 100%);
+        }
+    }
+
+    /* ---------- Filtro: una píldora que cabalga sobre el borde inferior del banner ----------
+       Texto + categoría en una sola pieza. En el teléfono la categoría queda debajo del texto. */
+    .cat-filtro { position: relative; z-index: 4; max-width: 96rem; margin: -2.5rem auto 0; padding: 0 .75rem; }
+    @media (min-width: 640px)  { .cat-filtro { padding: 0 1.5rem; } }
+    @media (min-width: 900px)  { .cat-filtro { margin-top: -1.875rem; } }
+    @media (min-width: 1024px) { .cat-filtro { padding: 0 2.5rem; } }
+
+    .cat-search {
+        --linea: #f0eeec;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "q" "cat";
+        align-items: center;
+        max-width: 54rem; margin: 0 auto;
+        padding: .5rem .5rem .5rem .625rem;
+        color: #1c1917;
+        background: #fff;
+        border-radius: 1.75rem;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 1px rgba(127, 29, 29, .08);
+        transition: box-shadow .2s;
+    }
+    .dark .cat-search {
+        --linea: #3a3532;
+        color: #f5f5f4; background: #211f1e;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 1px #3a3532;
+    }
+    .cat-search--solo { grid-template-areas: "q"; border-radius: 999px; }
+    .cat-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 3px var(--red); }
+    .dark .cat-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 3px #f87171; }
+    .cat-search__q { grid-area: q; display: flex; align-items: center; gap: .75rem; min-width: 0; }
+    .cat-search__lupa {
+        flex: none; width: 2.5rem; height: 2.5rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: var(--red); background: var(--ta-soft);
+    }
+    .dark .cat-search__lupa { color: #f87171; }
+    .cat-search__lupa svg { width: 1.1rem; height: 1.1rem; }
+    .cat-search input {
+        flex: 1 1 auto; min-width: 0;
+        height: 2.75rem; padding: 0;
+        font: inherit; font-size: 1.0625rem; font-weight: 500;
+        color: inherit; background: transparent;
+        border: 0; outline: 0;
+    }
+    .cat-search input::placeholder { color: var(--muted); font-weight: 400; }
+    .cat-search input::-webkit-search-cancel-button {
+        -webkit-appearance: none; appearance: none;
+        width: 2.25rem; height: 2.25rem; margin: 0; cursor: pointer;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2378716c' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l9 9M12.5 3.5l-9 9'/%3E%3C/svg%3E") center / .8rem no-repeat;
+    }
+
+    .cat-search--solo { max-width: 42rem; }
+
+    /* Botón de nuevo producto: píldora blanca con el «+» en un disco rojo */
+    .cat-new {
+        flex: none;
+        display: inline-flex; align-items: center; gap: .65rem;
+        height: 3rem; padding: 0 1.4rem 0 .5rem;
+        font-size: .9375rem; font-weight: 800; letter-spacing: .005em;
+        color: #7f1d1d; background: #fff;
+        border-radius: 999px; text-decoration: none;
+        box-shadow: 0 .75rem 1.25rem -.75rem rgba(69, 10, 10, .75);
+        transition: color .15s, background-color .15s, transform .15s, box-shadow .15s;
+    }
+    .cat-new__mas {
+        width: 2rem; height: 2rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: #fff; background: var(--red);
+        transition: transform .25s, color .15s, background-color .15s;
+    }
+    .cat-new__mas svg { width: 1rem; height: 1rem; }
+    .cat-new:hover { color: #fff; background: #450a0a; transform: translateY(-2px); box-shadow: 0 1rem 1.25rem -.75rem rgba(0, 0, 0, .7); }
+    .cat-new:hover .cat-new__mas { color: #450a0a; background: #fff; transform: rotate(90deg); }
+    .cat-new:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    .cat-hero__btns { display: flex; flex-wrap: wrap; gap: .5rem .625rem; margin-top: 1.5rem; }
+
+    /* Botón «Editar»: igual que «Nuevo producto», pero con dos estados que se notan:
+       · suelto:     píldora blanca, disco rojo con el lápiz.
+       · presionado: un relleno vino se expande desde el disco, el lápiz gira y se vuelve un ✓ que se dibuja, y la letra pasa a blanco.
+       Al presionarlo además sale un «latido» (anillo) desde el disco. El ancho no cambia. */
+    .cat-tog { position: relative; overflow: hidden; isolation: isolate; border: 0; font-family: inherit; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .cat-tog::before {                                                  /* el relleno vino que se expande desde el disco */
+        content: ""; position: absolute; inset: 0; z-index: -1;
+        background: #450a0a; border-radius: inherit;
+        clip-path: circle(0 at 1.45rem 50%);
+        transition: clip-path .5s cubic-bezier(.65, 0, .35, 1);
+    }
+    .cat-tog__t { transition: color .3s ease .08s; }
+    .cat-tog:hover { color: #7f1d1d; background: #ffe8e5; }            /* al pasar el ratón: solo un tinte suave, para no confundirlo con «presionado» */
+    .cat-tog .cat-new__mas { position: relative; flex: none; transition: color .3s ease, background-color .3s ease; }
+    .cat-tog:hover .cat-new__mas { transform: none; color: #fff; background: var(--red); }
+    .cat-tog svg { position: absolute; inset: 0; margin: auto; display: block; }
+    .cat-tog .i-lapiz { transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), opacity .2s ease; }
+    .cat-tog .i-check { opacity: 0; transform: scale(.3) rotate(-90deg); transition: transform .45s cubic-bezier(.34, 1.56, .64, 1) .12s, opacity .2s ease .12s; }
+    .cat-tog .i-check path { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .35s ease .22s; }
+    .cat.edicion .cat-tog::before { clip-path: circle(140% at 1.45rem 50%); }
+    .cat.edicion .cat-tog, .cat.edicion .cat-tog:hover { color: #fff; }
+    .cat.edicion .cat-tog .cat-new__mas, .cat.edicion .cat-tog:hover .cat-new__mas { color: #450a0a; background: #fff; }
+    .cat.edicion .cat-tog .i-lapiz { opacity: 0; transform: scale(.3) rotate(90deg); }
+    .cat.edicion .cat-tog .i-check { opacity: 1; transform: none; }
+    .cat.edicion .cat-tog .i-check path { stroke-dashoffset: 0; }
+    .cat-tog.latido .cat-new__mas::after {                              /* el latido: un anillo que sale del disco al presionar */
+        content: ""; position: absolute; inset: 0; border-radius: 50%;
+        border: 2px solid #fff; pointer-events: none;
+        animation: cat-latido .65s ease-out;
+    }
+    @keyframes cat-latido { from { transform: scale(1); opacity: .95; } to { transform: scale(2.6); opacity: 0; } }
+    .cat:not(.js) .cat-tog { display: none; }                         /* sin JavaScript no hay nada que alternar: los botones de la fila siempre se ven */
+    @media (max-width: 639px) {
+        .cat-hero__btns .cat-new { height: 2.75rem; gap: .5rem; padding: 0 1rem 0 .4rem; font-size: .875rem; }
+        .cat-hero__btns .cat-new__mas { width: 1.9rem; height: 1.9rem; }
+    }
+
+    /* ---------- Contenedor ---------- */
+    .cat-wrap {
+        max-width: 96rem;
+        margin: 0 auto;
+        padding: 1.25rem .75rem 2.5rem;
+    }
+    @media (min-width: 640px)  { .cat-wrap { padding: 1.5rem 1.5rem 3rem; } }
+    @media (min-width: 1024px) { .cat-wrap { padding: 1.75rem 2.5rem 3.5rem; } }
+
+    .cat-board {
+        scroll-margin-top: 5rem;
+        padding: 1.25rem .875rem 1.5rem;
+        background: var(--board);
+        border-radius: 1.75rem;
+    }
+    @media (min-width: 640px) { .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: 2.5rem; } }
+
+    .cat-head {
+        display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+        gap: .5rem 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .cat-head h2 {
+        margin: 0;
+        font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem);
+        font-weight: 800;
+        font-stretch: 105%;
+        letter-spacing: -.02em;
+        line-height: 1.1;
+        color: var(--link);
+    }
+    .cat-head__side { display: flex; align-items: baseline; gap: 1rem; }
+    .cat-clear {
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-size: .9375rem; font-weight: 600;
+        color: var(--ink);
+        text-decoration: underline; text-underline-offset: 3px;
+    }
+    .cat-clear::after {
+        content: ""; width: .5rem; height: .5rem; border-radius: 50%;
+        background: var(--red);
+    }
+
+    .cat-lista[hidden], .cat-fila[hidden], .cat-clear[hidden], .cat-empty[hidden] { display: none; }
+    .cat-head__side { flex-wrap: wrap; gap: .25rem 1rem; }
+    .cat-clear { white-space: nowrap; }
+    .cat-fila mark { padding: 0 .08em; color: inherit; background: #ffd9d3; border-radius: .2rem; }       /* lo que se va escribiendo, resaltado en el nombre */
+    .dark .cat-fila mark { background: #6b2a25; }
+
+    .cat-clear:focus-visible, .cat-btn:focus-visible {
+        outline: 2px solid var(--red); outline-offset: 2px;
+    }
+
+    /* ---------- Lista de productos: una fila por producto, mobile first ----------
+       Cada fila: foto · nombre con lo que queda (existencias) · a la derecha, el campo de venta con «Guardar» o (en modo Editar) los iconos de editar y eliminar. */
+    .cat-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+
+    .cat-fila {
+        --f-linea: #efe4e0;
+        --f-borde: #d6c6c1;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            "foto info acc"
+            "foto num  acc";
+        align-items: center;
+        column-gap: .625rem; row-gap: .1rem;
+        padding: .625rem .5rem;
+        background: var(--page);
+        border-radius: 1.1rem;
+        box-shadow: inset 0 0 0 1px var(--f-linea);
+        transition: background-color .15s, box-shadow .15s;
+    }
+    .dark .cat-fila { --f-linea: #2a2623; --f-borde: #4a4440; }
+    .cat-fila:hover, .cat-fila:focus-within { background: var(--soft); box-shadow: inset 0 0 0 1px var(--strong); }
+    .cat-fila--lectura { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "foto info" "foto num"; }
+
+    .cat-fila__foto {
+        grid-area: foto;
+        width: 2.75rem; height: 2.75rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; overflow: hidden;
+        font-size: 1.1rem; font-weight: 800; color: var(--price);
+        background: var(--strong);
+        transition: background-color .15s;
+    }
+    .cat-fila__foto img { display: block; width: 82%; height: 82%; object-fit: contain; }
+    .cat-fila.is-out .cat-fila__foto img { filter: grayscale(1); opacity: .45; }
+
+    .cat-fila__info { grid-area: info; min-width: 0; align-self: end; }
+    .cat-fila__name {
+        margin: 0;
+        font-size: .9375rem; font-weight: 700; line-height: 1.2;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+        overflow: hidden; overflow-wrap: anywhere;
+    }
+    .cat-fila__num { grid-area: num; min-width: 0; align-self: start; }
+    .cat-fila__stock {
+        margin: 0;
+        display: inline-flex; align-items: center; gap: .35rem;
+        font-size: .75rem; font-weight: 600; color: var(--muted);
+    }
+    .cat-fila__stock::before { content: ""; flex: none; width: .4rem; height: .4rem; border-radius: 50%; background: #16a34a; }
+    .cat-fila__stock.is-low { color: var(--warn); }
+    .cat-fila__stock.is-low::before, .cat-fila__stock.is-out::before { background: currentColor; }
+    .cat-fila__stock.is-out { color: var(--price); }
+
+    @media (min-width: 560px) { .cat-fila { padding: .75rem .75rem .75rem .625rem; column-gap: .875rem; } .cat-fila__foto { width: 3.25rem; height: 3.25rem; } }
+
+    @media (min-width: 768px) {
+        .cat-lista { gap: .625rem; }
+        .cat-fila { column-gap: 1.25rem; padding: .75rem 1rem .75rem .75rem; }
+        .cat-fila__foto { width: 3.5rem; height: 3.5rem; }
+        .cat-fila__name { font-size: 1.0625rem; -webkit-line-clamp: 2; }
+        .cat-fila__stock { font-size: .8125rem; }
+    }
+
+    /* Derecha de cada fila. SIN JavaScript: el campo de venta arriba y los iconos de editar y eliminar debajo, todo a la vista.
+       CON JavaScript: el campo de venta (número + «Guardar») y los iconos ocupan el MISMO lugar y se intercambian.
+       Normalmente se ve el campo de venta; al presionar «Editar» el campo se achica y desaparece, y en su lugar entran
+       los iconos con un rebote, uno tras otro (y fila tras fila). Al soltar «Editar» pasa al revés.
+       Lo que está oculto usa visibility: ni se ve ni se puede enfocar con Tab. */
+    .cat-fila__acc { grid-area: acc; display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; }
+    .cat-fila__ed { display: flex; gap: .25rem; flex: none; }
+    .cat-fila__ed > * { flex: none; }
+
+    .cat.js .cat-fila__acc { display: grid; justify-items: end; align-items: center; gap: 0; }
+    .cat.js .cat-fila__acc > * { grid-area: 1 / 1; }
+
+    /* el campo de venta: visible por defecto */
+    .cat.js .cat-venta {
+        transform-origin: 100% 50%;
+        transition: opacity .25s ease .12s, transform .5s cubic-bezier(.34, 1.56, .64, 1) .12s, visibility 0s;
+    }
+    /* …y en modo edición se achica hacia la derecha y se esfuma */
+    .cat.js.edicion .cat-venta {
+        opacity: 0; transform: translateX(.75rem) scale(.55); visibility: hidden; pointer-events: none;
+        transition: opacity .18s ease, transform .22s ease, visibility 0s linear .22s;
+    }
+
+    /* los iconos de editar y eliminar: ocultos por defecto (con JavaScript) */
+    .cat.js .cat-fila__ed { visibility: hidden; transition: visibility 0s linear .2s; }
+    .cat.js .cat-fila__ed .cat-act {
+        opacity: 0; transform: scale(.35) rotate(-45deg);
+        transition: opacity .15s ease, transform .2s ease, background-color .15s, color .15s, border-color .15s;
+    }
+    /* …y a la vista en modo edición */
+    .cat.js.edicion .cat-fila__ed { visibility: visible; transition: visibility 0s; }
+    .cat.js.edicion .cat-fila__ed .cat-act {
+        --d: calc(.1s + min(var(--i, 0), 6) * .04s);                    /* cada fila entra un poquito después que la anterior */
+        opacity: 1; transform: none;
+        transition: opacity .25s ease var(--d), transform .55s cubic-bezier(.34, 1.56, .64, 1) var(--d), background-color .15s, color .15s, border-color .15s;
+    }
+    .cat.js.edicion .cat-fila__ed .cat-act--del { --d: calc(.18s + min(var(--i, 0), 6) * .04s); }
+
+    .cat-act {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 2.5rem; height: 2.5rem; padding: 0;
+        font: inherit;
+        color: var(--ink); background: transparent;
+        border: 2px solid var(--f-borde); border-radius: 999px;
+        cursor: pointer; text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color .15s, color .15s, border-color .15s;
+    }
+    .cat-act svg { flex: none; width: 1.05rem; height: 1.05rem; }
+    .cat-act__t {                                                       /* el texto queda solo para lectores de pantalla */
+        position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+    }
+    .cat-act:hover { color: #fff; background: var(--red); border-color: var(--red); }
+    .cat-act--del:hover { background: #450a0a; border-color: #450a0a; }
+    .cat-act:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+    /* Campo «cuántos vendí» (solo admite números) + botón «Guardar». También se guarda con Enter. */
+    .cat-venta { display: flex; align-items: center; gap: .25rem; margin: 0; }
+    .cat-venta__n {
+        width: 3.4rem; height: 2.5rem; padding: 0 .3rem;
+        font: inherit; font-size: .9375rem; font-weight: 700; text-align: center;
+        color: var(--ink); background: var(--page);
+        border: 2px solid var(--f-borde); border-radius: 999px; outline: 0;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .cat-venta__n::placeholder { color: var(--muted); font-weight: 600; }
+    .cat-venta__n:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(185, 28, 28, .16); }
+    .cat-venta__n.is-mal { border-color: var(--red); animation: cat-mal .32s ease; }       /* número que no se puede vender: el campo se sacude */
+    @keyframes cat-mal { 20%, 60% { transform: translateX(-.25rem); } 40%, 80% { transform: translateX(.25rem); } }
+    .cat-guardar {
+        position: relative;
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 2.5rem; padding: 0 .8rem;
+        font: inherit; font-size: .875rem; font-weight: 800; line-height: 1;
+        color: #fff; background: var(--red);
+        border: 2px solid var(--red); border-radius: 999px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: background-color .15s, border-color .15s, transform .15s;
+    }
+    .cat-guardar:hover { background: #450a0a; border-color: #450a0a; }
+    .cat-guardar:active { transform: scale(.96); }
+    .cat-guardar:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cat-venta__n:disabled, .cat-guardar:disabled { opacity: .4; cursor: not-allowed; }
+    .cat-guardar:disabled:hover { background: var(--red); border-color: var(--red); }
+    .cat-guardar:disabled:active { transform: none; }
+    @media (max-width: 400px) {                                         /* teléfonos angostos: controles más compactos para que el nombre respire */
+        .cat-venta { gap: .2rem; }
+        .cat-venta__n { width: 3rem; font-size: .875rem; }
+        .cat-guardar { padding: 0 .65rem; font-size: .8125rem; }
+    }
+    @media (min-width: 768px) {
+        .cat-fila__acc { flex-direction: row; align-items: center; gap: 1rem; }
+        .cat-venta__n { width: 4.5rem; }
+        .cat-guardar { padding: 0 1rem; }
+    }
+
+    /* Aviso al registrar una venta (se cierra solo; también al tocarlo) */
+    .cat-toast {
+        position: fixed; z-index: 70; left: 50%; bottom: 1rem; transform: translateX(-50%);
+        width: min(30rem, calc(100% - 1.5rem));
+        display: flex; align-items: center; gap: .75rem;
+        padding: .8rem 1.1rem;
+        color: #fff; background: #1c1917; cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, .18); border-radius: 1.1rem;
+        box-shadow: 0 1rem 2rem -.75rem rgba(0, 0, 0, .65);
+        animation: cat-toast-in .2s ease-out;
+    }
+    .cat-toast[hidden] { display: none; }
+    .cat-toast.is-error { background: #7f1d1d; }
+    .cat-toast__t { flex: 1; min-width: 0; font-size: .9375rem; font-weight: 600; line-height: 1.35; }
+    @keyframes cat-toast-in { from { opacity: 0; transform: translate(-50%, .6rem); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+
+    /* ---------- Sin resultados ---------- */
+    .cat-empty {
+        padding: 3.5rem 1.5rem 3.75rem;
+        text-align: center;
+        background: var(--tc-soft);
+        border-radius: 4.5rem 1.25rem 1.25rem 1.25rem;
+    }
+    .cat-empty__disc {
+        width: 5rem; height: 5rem; margin: 0 auto;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        background: var(--tc-strong);
+        color: var(--muted);
+    }
+    .cat-empty__disc svg { display: block; width: 2.25rem; height: 2.25rem; }
+    .cat-empty h3 { margin: 1.25rem 0 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
+    .cat-empty p { margin: .5rem auto 0; max-width: 32ch; color: var(--muted); line-height: 1.5; }
+    .cat-btn {
+        display: inline-flex; align-items: center;
+        margin-top: 1.5rem;
+        height: 2.75rem; padding: 0 1.5rem;
+        font-weight: 700; font-size: .9375rem;
+        color: #fff; background: var(--red);
+        border-radius: 999px;
+        text-decoration: none;
+        transition: background-color .15s;
+    }
+    .cat-btn:hover { background: #7f1d1d; }
+
+
+    /* ---------- Mensajes, botones del banner y cierre de la lista ---------- */
+
+    .cat-btn svg { flex: none; width: 1.05rem; height: 1.05rem; }
+    .cat-btn--ghost { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 2px var(--tc-strong); }
+    .cat-btn--ghost:hover { background: var(--tc-soft); }
+    .cat-btn--danger { background: #991b1b; }
+    .cat-btn--danger:hover { background: #450a0a; }
+
+    .cat-msgs { display: grid; gap: .625rem; margin-bottom: 1.25rem; }
+    .cat-msg {
+        display: flex; align-items: flex-start; gap: .75rem; padding: .85rem 1.1rem;
+        font-size: .9375rem; font-weight: 600; line-height: 1.4;
+        color: var(--ink); background: var(--tc-soft);
+        border-radius: 1.1rem 1.1rem 1.1rem .3rem;
+    }
+    .cat-msg::before { content: ""; flex: none; width: .7rem; height: .7rem; margin-top: .3rem; border-radius: 50%; background: var(--muted); }
+    .cat-msg.is-success { background: #e4f4e8; }
+    .cat-msg.is-success::before { background: #16a34a; }
+    .cat-msg.is-warning { background: #fdf0d2; }
+    .cat-msg.is-warning::before { background: #d97706; }
+    .cat-msg.is-error { background: var(--ta-soft); }
+    .cat-msg.is-error::before { background: var(--red); }
+    .dark .cat-msg.is-success { background: #14281b; }
+    .dark .cat-msg.is-warning { background: #2e2410; }
+    .dark .cat-msg.is-error::before { background: #f87171; }
+
+    .cat-modal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 15, 15, .6); }
+    .cat-modal.is-open { display: flex; }
+    .cat-dialog {
+        position: relative; width: 100%; max-width: 26rem; padding: 2rem 1.5rem 1.5rem; text-align: center;
+        color: var(--ink); background: var(--page);
+        border-radius: 4rem 1.25rem 1.25rem 1.25rem; box-shadow: 0 2rem 4rem -1rem rgba(0, 0, 0, .5);
+    }
+    .dark .cat-dialog { background: #1a1a1a; }
+    .cat-dialog__disc { width: 4.5rem; height: 4.5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--ta-strong); color: var(--link); }
+    .cat-dialog__disc svg { width: 2rem; height: 2rem; }
+    .cat-dialog h3 { margin: 1.1rem 0 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.015em; }
+    .cat-dialog p { margin: .6rem 0 0; line-height: 1.5; color: var(--muted); }
+    .cat-dialog p strong { color: var(--ink); overflow-wrap: anywhere; }
+    .cat-dialog__acts { display: flex; gap: .625rem; margin-top: 1.5rem; }
+    .cat-dialog__acts .cat-btn { flex: 1; justify-content: center; margin-top: 0; padding: 0 .5rem; border: 0; font-family: inherit; cursor: pointer; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
+    }
 </style>
 
 <div class="cat">
+    {% if user.is_superuser %}
+        <script>
+            /* Los botones de editar y eliminar empiezan ocultos. Si ya los activó en esta pestaña, se dejan a la vista. */
+            (function (raiz) {
+                raiz.classList.add('js');
+                try { if (sessionStorage.getItem('edicion') === '1') raiz.classList.add('edicion'); } catch (e) {}
+            })(document.currentScript.parentNode);
+        </script>
+    {% endif %}
 
     <header class="cat-hero" id="inicio">
-        <div class="cat-hero__bg" aria-hidden="true"></div>
-
-        <div class="cat-hero__in">
-            <div>
-                <span class="cat-eyebrow">{% if user.is_superuser %}Gestión de inventario{% else %}Catálogo{% endif %}</span>
-                <h1>Productos</h1>
-                <p>
-                    {% if user.is_superuser %}
-                        Crea, edita y controla lo que hay en la tienda.
-                    {% else %}
-                        Lo que hay en la tienda, con su precio y cuánto queda.
-                    {% endif %}
-                </p>
-            </div>
-
-            {% if user.is_superuser %}
-                <div class="cat-hero__acts">
-                    <a class="cat-btn cat-btn--light" href="{% url 'crear_producto' %}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
-                        Nuevo producto
-                    </a>
-                </div>
-            {% endif %}
+        <div class="cat-hero__bg" aria-hidden="true">
+            <div class="cat-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
         </div>
 
+        <div class="cat-hero__in">
+            <div class="cat-hero__txt">
+                <h1>Administrador de productos y ventas</h1>
+
+                {% if user.is_superuser %}
+                    <div class="cat-hero__btns">
+                        <a class="cat-new" href="{% url 'crear_producto' %}">
+                            <span class="cat-new__mas" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                            </span>
+                            Nuevo producto
+                        </a>
+
+                        <button type="button" class="cat-new cat-tog" id="alternar" aria-pressed="false">
+                            <span class="cat-new__mas" aria-hidden="true">
+                                <svg class="i-lapiz" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>
+                                <svg class="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+                            </span>
+                            <span class="cat-tog__t">Editar</span>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </header>
+
+    {# Filtro en tiempo real: la lista se va filtrando mientras escribes. Sin JavaScript funciona igual: escribe y pulsa Enter. #}
+    {% if productos or busqueda or categoria_seleccionada %}
+        <div class="cat-filtro">
+            <form class="cat-search cat-search--solo" id="buscador" role="search" method="get" action="{% url 'lista_productos' %}" data-categoria="{{ categoria_seleccionada }}"{% if busqueda %} data-parcial{% endif %}>
+                <div class="cat-search__q">
+                    <span class="cat-search__lupa" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                        </svg>
+                    </span>
+                    <label class="cat-sr" for="buscar">Filtrar productos por nombre</label>
+                    <input
+                        type="search"
+                        id="buscar"
+                        name="buscar"
+                        value="{{ busqueda }}"
+                        placeholder="Filtrar productos por nombre"
+                        aria-controls="filas"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        enterkeyhint="search"
+                    >
+                </div>
+
+                {% if categoria_seleccionada %}<input type="hidden" name="categoria" value="{{ categoria_seleccionada }}">{% endif %}
+                <button type="submit" class="cat-sr">Buscar</button>
+            </form>
+        </div>
+    {% endif %}
 
 
     <div class="cat-wrap">
-        <section class="cat-board" aria-labelledby="lista-titulo">
+        <section class="cat-board" id="lista" aria-labelledby="lista-titulo">
 
             {% if messages %}
                 <div class="cat-msgs" role="status">
@@ -665,203 +645,123 @@
                 <h2 id="lista-titulo">Catálogo general</h2>
 
                 <div class="cat-head__side">
-                    <p class="cat-count" role="status">
-                        {% if busqueda %}Resultados para «{{ busqueda }}»: {% endif %}<strong>{{ productos|length }}</strong> producto{{ productos|length|pluralize }}
-                    </p>
-
-                    {% if busqueda or categoria_seleccionada %}
-                        <a class="cat-clear" href="{% url 'lista_productos' %}">Quitar filtros</a>
-                    {% endif %}
+                    <a class="cat-clear" id="quitar" href="{% url 'lista_productos' %}"{% if not busqueda and not categoria_seleccionada %} hidden{% endif %}>Quitar filtros</a>
                 </div>
             </div>
 
-            {# Resumen: lo llena el script de abajo. Sin JavaScript simplemente no aparece. #}
-            {% if productos %}
-                <ul class="cat-stats" id="resumen" aria-label="Resumen de esta lista" hidden>
-                    <li class="cat-stat"><span class="cat-stat__n" data-stat="total">0</span><span class="cat-stat__l">en esta lista</span></li>
-                    <li class="cat-stat cat-stat--ok"><span class="cat-stat__n" data-stat="ok">0</span><span class="cat-stat__l">disponibles</span></li>
-                    <li class="cat-stat cat-stat--low"><span class="cat-stat__n" data-stat="low">0</span><span class="cat-stat__l">con pocas unidades</span></li>
-                    <li class="cat-stat cat-stat--out"><span class="cat-stat__n" data-stat="out">0</span><span class="cat-stat__l">agotados</span></li>
-                </ul>
-            {% endif %}
 
-            <div class="cat-tools">
-                <form class="cat-find" role="search" method="get" action="{% url 'lista_productos' %}">
-                    {% if categoria_seleccionada %}
-                        <input type="hidden" name="categoria" value="{{ categoria_seleccionada }}">
-                    {% endif %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line>
-                    </svg>
-                    <label class="cat-sr" for="buscar">Buscar producto por nombre</label>
-                    <input type="search" id="buscar" name="buscar" value="{{ busqueda }}" placeholder="Buscar por nombre" autocomplete="off">
-                    <button type="submit">Buscar</button>
-                </form>
+            <ul class="cat-lista" id="filas"{% if not productos %} hidden{% endif %}>
 
-                {% if productos|length > 1 %}
-                    <label class="cat-sort" for="orden">
-                        <span>Ordenar</span>
-                        <select id="orden">
-                            <option value="">Como llegaron</option>
-                            <option value="nombre">Nombre (A–Z)</option>
-                            <option value="precio-asc">Precio: de menor a mayor</option>
-                            <option value="precio-desc">Precio: de mayor a menor</option>
-                            <option value="stock-desc">Más existencias</option>
-                            <option value="stock-asc">Menos existencias</option>
-                        </select>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
-                    </label>
-                {% endif %}
-            </div>
-
-            {% if categorias %}
-                <nav class="cat-cats" aria-label="Filtrar por categoría">
-                    <a
-                        class="cat-cat is-all{% if not categoria_seleccionada %} is-on{% endif %}"
-                        href="{% url 'lista_productos' %}{% if busqueda %}?buscar={{ busqueda|urlencode }}{% endif %}"
-                        {% if not categoria_seleccionada %}aria-current="true"{% endif %}
-                    >Todas</a>
-
-                    {% for categoria in categorias %}
-                        <a
-                            class="cat-cat{% if categoria_seleccionada == categoria.id|stringformat:'s' %} is-on{% endif %}"
-                            data-tono="{{ categoria.id }}"
-                            href="{% url 'lista_productos' %}?categoria={{ categoria.id }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}"
-                            {% if categoria_seleccionada == categoria.id|stringformat:'s' %}aria-current="true"{% endif %}
-                        ><i aria-hidden="true"></i>{{ categoria.nombre }}</a>
-                    {% endfor %}
-                </nav>
-            {% endif %}
-
-
-            {% if productos %}
-
-                <ul class="cat-grid">
                     {% for producto in productos %}
-                        <li data-nombre="{{ producto.nombre|lower }}" data-precio="{{ producto.precio_unitario|stringformat:'.2f' }}" data-stock="{{ producto.existencias }}">
-                            <article class="cat-card{% if producto.existencias <= 0 %} is-out{% endif %}" data-tono="{{ producto.categoria_id|default:0 }}">
+                        <li
+                            class="cat-fila{% if producto.existencias <= 0 %} is-out{% endif %}{% if not user.is_superuser %} cat-fila--lectura{% endif %}"
+                            data-tono="{{ producto.categoria_id|default:0 }}"
+                            data-stock="{{ producto.existencias }}"
+                            data-id="{{ producto.id }}"
+                            style="--i: {{ forloop.counter0 }}"
+                        >
 
-                                <div class="cat-stage">
-                                    <span class="cat-disc" aria-hidden="true"></span>
+                            <span class="cat-fila__foto" aria-hidden="true">{% if producto.imagen %}<img src="{{ producto.imagen.url }}" alt="" loading="lazy" decoding="async">{% else %}{{ producto.nombre|slice:":1"|upper }}{% endif %}</span>
 
-                                    {% if producto.imagen %}
-                                        <img class="cat-img" src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" loading="lazy" decoding="async">
-                                    {% else %}
-                                        <div class="cat-none">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                <rect x="3" y="4" width="18" height="16" rx="2"></rect>
-                                                <circle cx="9" cy="10" r="1.75"></circle>
-                                                <path d="M21 16l-5-5-8 9"></path>
-                                            </svg>
-                                            <span>Sin foto</span>
-                                        </div>
-                                    {% endif %}
+                            <div class="cat-fila__info">
+                                <h3 class="cat-fila__name">{{ producto.nombre }}</h3>
+                            </div>
 
-                                    {% if producto.existencias <= 0 %}
-                                        <span class="cat-stamp" aria-hidden="true">Agotado</span>
-                                    {% endif %}
-                                </div>
-
-                                {% if producto.categoria %}
-                                    <p class="cat-card__cat"><span>{{ producto.categoria.nombre }}</span></p>
-                                {% endif %}
-
-                                <h3 class="cat-name">{{ producto.nombre }}</h3>
-
-                                <p class="cat-size">
-                                    {% with unidad=producto.unidad_medida|lower %}
-                                        {{ producto.cantidad }} {% if producto.cantidad == 1 and unidad != 'kg' %}{{ unidad|slice:':-1' }}{% else %}{{ unidad }}{% endif %}
-                                    {% endwith %}
-                                </p>
-
-                                <p class="cat-price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
-
+                            <div class="cat-fila__num">
                                 {% if producto.existencias > 5 %}
-                                    <p class="cat-stock">{{ producto.existencias }} disponibles</p>
+                                    <p class="cat-fila__stock">{{ producto.existencias }} disponibles</p>
                                 {% elif producto.existencias > 0 %}
-                                    <p class="cat-stock is-low">Quedan {{ producto.existencias }}</p>
+                                    <p class="cat-fila__stock is-low">Quedan {{ producto.existencias }}</p>
                                 {% else %}
-                                    <p class="cat-stock is-out">Agotado</p>
+                                    <p class="cat-fila__stock is-out">Agotado</p>
                                 {% endif %}
+                            </div>
 
-                                <a class="cat-more" href="{% url 'detalle_producto' producto.id %}">
-                                    Ver detalle<span class="cat-sr"> de {{ producto.nombre }}</span>
-                                </a>
+                            {% if user.is_superuser %}
+                                {# «as url_vender»: si la URL aún no existe no da error; simplemente no se muestra el campo de venta #}
+                                {% url 'vender_producto' producto.id as url_vender %}
+                                <div class="cat-fila__acc">
+                                    {% if url_vender %}
+                                    <form class="cat-venta" method="post" action="{{ url_vender }}" novalidate>
+                                        {% csrf_token %}
+                                        {# Solo números: type="text" + inputmode numérico (teclado de números en el celular); el script borra todo lo que no sea dígito #}
+                                        <input
+                                            class="cat-venta__n"
+                                            type="text"
+                                            name="cantidad"
+                                            inputmode="numeric"
+                                            pattern="[0-9]*"
+                                            maxlength="{{ producto.existencias|stringformat:'d'|length }}"
+                                            enterkeyhint="done"
+                                            placeholder="Cant."
+                                            autocomplete="off"
+                                            aria-label="Unidades vendidas de {{ producto.nombre }}"
+                                            {% if producto.existencias <= 0 %}disabled{% endif %}
+                                        >
+                                        <button type="submit" class="cat-guardar" {% if producto.existencias <= 0 %}disabled{% endif %}>
+                                            Guardar<span class="cat-act__t"> venta de {{ producto.nombre }}</span>
+                                        </button>
+                                    </form>
+                                    {% endif %}
 
-                                {% if user.is_superuser %}
-                                    <div class="cat-acts">
-                                        <a class="cat-act" href="{% url 'editar_producto' producto.id %}">
+                                    <div class="cat-fila__ed">
+                                        <a class="cat-act" href="{% url 'editar_producto' producto.id %}" title="Editar">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>
-                                            Editar<span class="cat-sr"> {{ producto.nombre }}</span>
+                                            <span class="cat-act__t">Editar {{ producto.nombre }}</span>
                                         </a>
-                                        <button type="button" class="cat-act cat-act--del" onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')">
+                                        <button type="button" class="cat-act cat-act--del" title="Eliminar" onclick="abrirModalEliminar('{{ producto.id }}', '{{ producto.nombre|escapejs }}')">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path></svg>
-                                            Eliminar<span class="cat-sr"> {{ producto.nombre }}</span>
+                                            <span class="cat-act__t">Eliminar {{ producto.nombre }}</span>
                                         </button>
                                     </div>
-                                {% endif %}
+                                </div>
+                            {% endif %}
 
-                            </article>
                         </li>
                     {% endfor %}
-                </ul>
 
-                <div class="cat-end">
-                    <span>Fin de la lista · {{ productos|length }} producto{{ productos|length|pluralize }}</span>
-                    <a href="#inicio">Volver arriba ↑</a>
+            </ul>
+
+            <div class="cat-empty" id="sin-filtro"{% if productos or not busqueda and not categoria_seleccionada %} hidden{% endif %}>
+                <div class="cat-empty__disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path d="M16.5 16.5L21 21"></path>
+                    </svg>
                 </div>
+                <h3>No encontramos productos con ese filtro</h3>
+                <p id="sin-filtro-p">Revisa cómo escribiste el nombre o prueba con otra palabra.</p>
+                <a class="cat-btn" id="ver-todos" href="{% url 'lista_productos' %}">Ver todos los productos</a>
+            </div>
 
-            {% else %}
-
-                <div class="cat-empty">
-                    <div class="cat-empty__disc">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path>
-                        </svg>
-                    </div>
-
-                    {% if busqueda or categoria_seleccionada %}
-                        <h3>No encontramos productos con ese filtro</h3>
-                        <p>Revisa cómo escribiste el nombre o prueba con otra categoría.</p>
-                        <a class="cat-btn" href="{% url 'lista_productos' %}">Ver todos los productos</a>
-                    {% else %}
-                        {% if user.is_superuser %}
-                            <h3>Aún no hay productos</h3>
-                            <p>Crea el primero y aparecerá aquí para todo el equipo.</p>
-                            <a class="cat-btn" href="{% url 'crear_producto' %}">Crear producto</a>
-                        {% else %}
-                            <h3>Aún no hay productos disponibles</h3>
-                            <p>Vuelve a consultar más tarde.</p>
-                        {% endif %}
-                    {% endif %}
+            <div class="cat-empty" id="sin-productos"{% if productos or busqueda or categoria_seleccionada %} hidden{% endif %}>
+                <div class="cat-empty__disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path>
+                        <path d="M3 8l9 5 9-5"></path>
+                        <path d="M12 13v8"></path>
+                    </svg>
                 </div>
-
-            {% endif %}
+                {% if user.is_superuser %}
+                    <h3>Aún no hay productos</h3>
+                    <p>Crea el primero .</p>
+                    <a class="cat-btn" href="{% url 'crear_producto' %}">Crear producto</a>
+                {% else %}
+                    <h3>Aún no hay productos disponibles</h3>
+                    <p>Vuelve a consultar más tarde.</p>
+                {% endif %}
+            </div>
 
         </section>
     </div>
 
 
-    <section class="cat-band" aria-label="Siguiente paso">
-        <div class="cat-band__in">
-            {% if user.is_superuser %}
-                <div>
-                    <h2>¿Falta algo en la tienda?</h2>
-                    <p>Crea el producto y todo el equipo lo verá al instante.</p>
-                </div>
-                <a class="cat-btn cat-btn--light" href="{% url 'crear_producto' %}">Crear producto</a>
-            {% else %}
-                <div>
-                    <h2>¿No ves lo que buscas?</h2>
-                    <p>Prueba con otra categoría o busca por el nombre del producto.</p>
-                </div>
-                <a class="cat-btn cat-btn--light" href="#inicio">Volver arriba</a>
-            {% endif %}
-        </div>
-    </section>
-
-
     {% if user.is_superuser %}
+        <div class="cat-toast" id="aviso" hidden>
+            <span class="cat-toast__t" id="aviso-txt"></span>
+        </div>
+        <p class="cat-sr" id="aviso-sr" role="status" aria-live="polite"></p>
+
         <div id="modalEliminar" class="cat-modal" role="dialog" aria-modal="true" aria-labelledby="modalEliminarTitulo" onclick="if (event.target === this) cerrarModalEliminar()">
             <div class="cat-dialog">
                 <div class="cat-dialog__disc">
@@ -883,45 +783,162 @@
 
 </div>
 
-
 <script>
-    (function () {
-        /* ---------- Resumen y orden (mejora progresiva: sin JS la lista funciona igual) ---------- */
-        var grid = document.querySelector('.cat-grid');
-        if (grid) {
-            var items = Array.prototype.slice.call(grid.children);
-            items.forEach(function (li, i) { li.dataset.i = i; });
+/* Filtro en tiempo real. La lista misma se va filtrando mientras escribes (sin pedir nada al servidor por tecla).
+   Si la página llegó ya filtrada por texto, se pide UNA vez la lista completa para poder filtrar todos los productos. */
+(function () {
+    var form = document.getElementById('buscador');
+    var ul = document.getElementById('filas');
+    if (!form || !ul) return;
+    var input = document.getElementById('buscar');
+    var quitar = document.getElementById('quitar');
+    var sinFiltro = document.getElementById('sin-filtro');
+    var sinFiltroP = document.getElementById('sin-filtro-p');
+    var verTodos = document.getElementById('ver-todos');
+    var categoria = form.getAttribute('data-categoria') || '';
+    var completa = !form.hasAttribute('data-parcial');       /* false = la página trae solo los productos de una búsqueda */
+    var AYUDA = 'Revisa cómo escribiste el nombre o prueba con otra palabra.';
 
-            var resumen = { total: items.length, ok: 0, low: 0, out: 0 };
-            items.forEach(function (li) {
-                var s = parseInt(li.dataset.stock, 10);
-                if (s <= 0) { resumen.out++; } else if (s <= 5) { resumen.low++; } else { resumen.ok++; }
-            });
-            var caja = document.getElementById('resumen');
-            if (caja) {
-                Object.keys(resumen).forEach(function (k) {
-                    var n = caja.querySelector('[data-stat="' + k + '"]');
-                    if (n) { n.textContent = resumen[k]; }
-                });
-                caja.hidden = false;
-            }
+    function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function palabras(s) { return norm(s).split(/[^a-z0-9]+/).filter(Boolean); }
 
-            var orden = document.getElementById('orden');
-            if (orden) {
-                var comparadores = {
-                    '': function (a, b) { return a.dataset.i - b.dataset.i; },
-                    'nombre': function (a, b) { return a.dataset.nombre.localeCompare(b.dataset.nombre, 'es'); },
-                    'precio-asc': function (a, b) { return a.dataset.precio - b.dataset.precio; },
-                    'precio-desc': function (a, b) { return b.dataset.precio - a.dataset.precio; },
-                    'stock-desc': function (a, b) { return b.dataset.stock - a.dataset.stock; },
-                    'stock-asc': function (a, b) { return a.dataset.stock - b.dataset.stock; }
-                };
-                orden.addEventListener('change', function () {
-                    items.slice().sort(comparadores[orden.value] || comparadores['']).forEach(function (li) { grid.appendChild(li); });
-                });
+    /* Distancia de edición (para perdonar una letra mal escrita) */
+    function lev(a, b) {
+        var m = a.length, n = b.length, i, j, prev = [], cur = [];
+        for (j = 0; j <= n; j++) prev[j] = j;
+        for (i = 1; i <= m; i++) {
+            cur = [i];
+            for (j = 1; j <= n; j++) {
+                cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
             }
+            prev = cur;
         }
-    })();
+        return prev[n];
+    }
+
+    /* ¿La fila se parece a lo escrito? null = no. Se mira el nombre (por palabra, por trozo y con una letra de error) */
+    function puntuar(p, q) {
+        var suma = 0;
+        for (var k = 0; k < q.tokens.length; k++) {
+            var t = q.tokens[k], mejor = 99, i, w, d;
+            for (i = 0; i < p.w.length; i++) {
+                w = p.w[i];
+                if (w === t) mejor = Math.min(mejor, 0);
+                else if (w.indexOf(t) === 0) mejor = Math.min(mejor, 1);
+                else if (w.indexOf(t) > 0) mejor = Math.min(mejor, 3);
+                else if (t.length >= 5) {                          /* con menos letras «coca» y «cola» se confundirían */
+                    d = lev(t, w.slice(0, t.length));
+                    if (d <= (t.length >= 7 ? 2 : 1)) mejor = Math.min(mejor, 4 + d);
+                }
+            }
+            if (mejor === 99 && p.c.indexOf(t) >= 0) mejor = 3;      /* «cocacola» encuentra «Coca-Cola» */
+            if (mejor === 99) return null;
+            suma += mejor;
+        }
+        return suma;
+    }
+
+    /* Resalta lo que escribió la persona dentro del nombre */
+    function resaltar(el, nombre, tokens) {
+        var n = norm(nombre), marcas = [];
+        if (n.length === nombre.length) {
+            tokens.forEach(function (t) { var i = n.indexOf(t); if (i >= 0) marcas.push([i, i + t.length]); });
+        }
+        marcas.sort(function (a, b) { return a[0] - b[0]; });
+        var fusion = [];
+        marcas.forEach(function (m) {
+            var u = fusion[fusion.length - 1];
+            if (u && m[0] <= u[1]) u[1] = Math.max(u[1], m[1]); else fusion.push(m.slice());
+        });
+        var pos = 0;
+        fusion.forEach(function (m) {
+            if (m[0] > pos) el.appendChild(document.createTextNode(nombre.slice(pos, m[0])));
+            var mk = document.createElement('mark');
+            mk.textContent = nombre.slice(m[0], m[1]);
+            el.appendChild(mk);
+            pos = m[1];
+        });
+        if (pos < nombre.length) el.appendChild(document.createTextNode(nombre.slice(pos)));
+    }
+
+    /* Las filas de la lista, con lo necesario para compararlas */
+    var filas = [];
+    function leer() {
+        filas = Array.prototype.map.call(ul.children, function (li) {
+            var elNombre = li.querySelector('.cat-fila__name');
+            var nombre = elNombre.textContent.trim();
+            return {
+                li: li, el: elNombre, nombre: nombre, marcado: false,
+                w: palabras(nombre),
+                c: norm(nombre).replace(/[^a-z0-9]/g, '')
+            };
+        });
+    }
+    leer();
+
+    function pintarNombre(f, tokens) {
+        if (!tokens.length) { if (f.marcado) { f.el.textContent = f.nombre; f.marcado = false; } return; }
+        f.el.textContent = '';
+        resaltar(f.el, f.nombre, tokens);
+        f.marcado = true;
+    }
+
+    function aplicar() {
+        var texto = input.value.trim();
+        var tokens = palabras(texto);
+        var q = { tokens: tokens, junto: norm(texto).replace(/[^a-z0-9]/g, '') };
+        var n = 0;
+        filas.forEach(function (f) {
+            var ok = !tokens.length || puntuar(f, q) !== null;
+            f.li.hidden = !ok;
+            if (ok) n++;
+            pintarNombre(f, ok ? tokens : []);
+        });
+
+        ul.hidden = n === 0;
+        sinFiltro.hidden = !(n === 0 && filas.length > 0);
+        sinFiltroP.textContent = texto ? 'No hay nada parecido a «' + texto + '». ' + AYUDA : AYUDA;
+        quitar.hidden = !(texto || categoria);
+    }
+
+    /* Si la página llegó filtrada, trae (una vez) la lista completa y la pone en lugar de las filas filtradas */
+    var cargando = null;
+    function cargar() {
+        if (completa) return Promise.resolve();
+        if (!cargando) {
+            var url = form.getAttribute('action') + (categoria ? '?categoria=' + encodeURIComponent(categoria) : '');
+            cargando = fetch(url, { credentials: 'same-origin' })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(function (t) {
+                    var nuevas = new DOMParser().parseFromString(t, 'text/html').querySelectorAll('#filas > li');
+                    if (!nuevas.length) return;
+                    ul.textContent = '';
+                    Array.prototype.forEach.call(nuevas, function (li) { ul.appendChild(document.importNode(li, true)); });
+                    leer();
+                    completa = true;
+                })
+                .catch(function () { /* sin conexión: se filtra lo que ya hay en pantalla */ });
+        }
+        return cargando;
+    }
+
+    input.addEventListener('focus', function () { cargar().then(aplicar); });      /* al traer la lista completa se vuelve a filtrar con lo que ya está escrito */
+    input.addEventListener('input', function () { cargar().then(aplicar); });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();                                   /* ya está filtrado: Enter solo cierra el teclado en el teléfono */
+        if (window.matchMedia('(pointer: coarse)').matches) input.blur();
+    });
+    if (verTodos && !categoria) {
+        verTodos.addEventListener('click', function (e) {
+            e.preventDefault();
+            input.value = '';
+            cargar().then(aplicar);
+            input.focus();
+        });
+    }
+    /* Al volver con «atrás» el navegador puede devolver el texto escrito pero no la lista filtrada */
+    window.addEventListener('pageshow', function () { if (input.value !== input.defaultValue) cargar().then(aplicar); });
+}());
 </script>
 
 {% if user.is_superuser %}
@@ -948,6 +965,128 @@
                 if (e.key === 'Escape' && modal.classList.contains('is-open')) {
                     window.cerrarModalEliminar();
                 }
+            });
+        })();
+
+        /* Botón «Editar»: en cada fila intercambia (con animación) el campo de venta por los botones de editar y eliminar. Se recuerda mientras la pestaña siga abierta (así, al volver de editar, siguen a la vista). */
+        (function () {
+            var raiz = document.querySelector('.cat');
+            var boton = document.getElementById('alternar');
+            if (!raiz || !boton) return;
+
+            function pintar() { boton.setAttribute('aria-pressed', raiz.classList.contains('edicion') ? 'true' : 'false'); }
+            pintar();
+
+            boton.addEventListener('click', function () {
+                var activa = raiz.classList.toggle('edicion');
+                try { sessionStorage.setItem('edicion', activa ? '1' : '0'); } catch (e) {}
+                pintar();
+                boton.classList.remove('latido');                          /* el anillo solo sale al activar (y se puede repetir en cada clic) */
+                if (activa) { void boton.offsetWidth; boton.classList.add('latido'); }
+            });
+        })();
+
+        /* Registrar una venta: escribes cuántas (solo números) y pulsas «Guardar» o Enter. Se guarda en la base de datos y el stock se actualiza aquí mismo. */
+        (function () {
+            var ul = document.getElementById('filas');
+            var aviso = document.getElementById('aviso');
+            if (!ul || !aviso) return;
+            var txt = document.getElementById('aviso-txt');
+            var sr = document.getElementById('aviso-sr');
+            var tiempo = null;
+
+            function ocultar() { clearTimeout(tiempo); aviso.hidden = true; }
+            function mostrar(mensaje, tipo) {
+                clearTimeout(tiempo);
+                txt.textContent = mensaje;
+                sr.textContent = '';
+                sr.textContent = mensaje;
+                aviso.classList.toggle('is-error', tipo === 'error');
+                aviso.hidden = false;
+                tiempo = setTimeout(ocultar, tipo === 'error' ? 8000 : 6000);
+            }
+            aviso.addEventListener('click', ocultar);
+
+            function token() {
+                var t = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return t ? t.value : '';
+            }
+            function enviar(url, cuerpo) {
+                return fetch(url, {
+                    method: 'POST', credentials: 'same-origin', body: cuerpo,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': token() }
+                }).then(function (r) {
+                    if ((r.headers.get('content-type') || '').indexOf('application/json') < 0) throw new Error('sin sesión');
+                    return r.json();
+                });
+            }
+
+            /* Pone en la fila las existencias nuevas (mismas reglas que la plantilla) */
+            function actualizarFila(li, n) {
+                li.setAttribute('data-stock', n);
+                li.classList.toggle('is-out', n <= 0);
+                var st = li.querySelector('.cat-fila__stock');
+                st.className = 'cat-fila__stock' + (n <= 0 ? ' is-out' : n <= 5 ? ' is-low' : '');
+                st.textContent = n <= 0 ? 'Agotado' : n <= 5 ? 'Quedan ' + n : n + ' disponibles';
+                var campo = li.querySelector('.cat-venta__n'), boton = li.querySelector('.cat-guardar');
+                if (campo) { campo.maxLength = String(Math.max(n, 0)).length; campo.disabled = n <= 0; }
+                if (boton) boton.disabled = n <= 0;
+            }
+
+            /* Solo números en el campo de venta: lo que no sea un dígito (letras, signos, espacios, «e», comas…) no entra,
+               ni escribiéndolo ni pegándolo ni arrastrándolo. Tampoco entran ceros a la izquierda. */
+            function limpiar(campo) {
+                var v = campo.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
+                if (v !== campo.value) campo.value = v;
+            }
+            ul.addEventListener('beforeinput', function (e) {
+                var campo = e.target;
+                if (!campo.classList || !campo.classList.contains('cat-venta__n')) return;
+                if (typeof e.data === 'string' && /[^0-9]/.test(e.data)) e.preventDefault();
+            });
+            ul.addEventListener('input', function (e) {
+                var campo = e.target;
+                if (!campo.classList || !campo.classList.contains('cat-venta__n')) return;
+                campo.classList.remove('is-mal');
+                limpiar(campo);
+            });
+
+            /* Un solo oyente en la lista: así también funciona con las filas que trae el filtro en vivo */
+            ul.addEventListener('submit', function (e) {
+                var form = e.target.closest ? e.target.closest('form.cat-venta') : null;
+                if (!form) return;
+                e.preventDefault();
+                var li = form.closest('li'), campo = form.querySelector('.cat-venta__n'), boton = form.querySelector('.cat-guardar');
+                if (boton.disabled) return;
+
+                /* Revisión antes de enviar: un número de 1 en adelante y que alcance con lo que queda */
+                limpiar(campo);
+                var n = parseInt(campo.value, 10) || 0;
+                var quedan = parseInt(li.getAttribute('data-stock'), 10) || 0;
+                var nombre = li.querySelector('.cat-fila__name').textContent.trim();
+                if (n < 1 || n > quedan) {
+                    mostrar(n < 1 ? 'Escribe cuántas unidades vendiste (solo números, desde 1).'
+                                  : 'No alcanza: de ' + nombre + ' solo quedan ' + quedan + '.', 'error');
+                    campo.classList.remove('is-mal'); void campo.offsetWidth; campo.classList.add('is-mal');
+                    campo.focus(); campo.select();
+                    return;
+                }
+
+                boton.disabled = true;
+                enviar(form.action, new FormData(form))
+                    .then(function (d) {
+                        if (typeof d.existencias === 'number') actualizarFila(li, d.existencias);
+                        if (d.ok) {
+                            campo.value = '';
+                            if (window.matchMedia('(pointer: coarse)').matches) campo.blur();
+                            mostrar(d.mensaje, 'ok');
+                        } else {
+                            mostrar(d.mensaje, 'error');
+                            campo.select();
+                        }
+                    })
+                    .catch(function () { mostrar('No se pudo registrar la venta. Revisa la conexión o vuelve a iniciar sesión.', 'error'); })
+                    .then(function () { boton.disabled = (parseInt(li.getAttribute('data-stock'), 10) || 0) <= 0; });
             });
         })();
     </script>

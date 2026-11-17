@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from cloudinary.models import CloudinaryField
-
+from productos.models import Producto
 
 class Proveedor(models.Model):
     nombre_empresa = models.CharField(max_length=200, verbose_name="Nombre de la empresa / Razón Social", default='')
@@ -68,3 +68,47 @@ class ImagenCarrusel(models.Model):
             ultimo = ImagenCarrusel.objects.order_by('-orden').first()
             self.orden = (ultimo.orden + 1) if ultimo else 1
         super().save(*args, **kwargs)
+
+class ConsumoPersonal(models.Model):
+
+    class Personas(models.TextChoices):
+        HOGAR = 'Hogar', 'Hogar'
+        CARLOS = 'Carlos', 'Carlos'
+        MARINA = 'Marina', 'Marina'
+        FERNANDO = 'Fernando', 'Fernando'
+        OSCAR = 'Oscar', 'Oscar'
+        SARA = 'Sara','Sara' 
+
+    fecha = models.DateField(default=timezone.localdate, verbose_name='Fecha del consumo')
+
+    persona = models.CharField(
+        max_length=50, choices=Personas.choices, default=Personas.HOGAR, verbose_name='Persona'
+    )
+
+    total = models.IntegerField( default=0, verbose_name='Total')
+
+    activo=models.BooleanField(default=True, verbose_name='Activo (Soft Delete)')
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Consumo personal'
+        verbose_name_plural = 'Consumos personales'
+        ordering = ['-fecha', '-id']
+
+    def __str__(self):
+        return f'Consumo #{self.id} - {self.persona} - {self.fecha} - ${self.total}' 
+
+class DetalleConsumo(models.Model):
+
+    consumo = models.ForeignKey(ConsumoPersonal, related_name='detalles', on_delete=models.CASCADE)
+
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+
+    cantidad = models.PositiveIntegerField(verbose_name='Cantidad')
+
+    precio_unitario = models.IntegerField(verbose_name='Precio al momento del registro')
+    subtotal = models.IntegerField(verbose_name='Subtotal')
+
+    def __str__(self):
+        return f'{self.producto.nombre} * {self.cantidad}'
+

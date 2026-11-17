@@ -1,0 +1,148 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Historial de Notificaciones - Tienda Nueva{% endblock %}
+{% block content %}
+
+<div class="min-h-screen w-full bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
+    <div class="w-full max-w-4xl mx-auto space-y-6">
+
+        <!-- ENCABEZADO -->
+        <div class="relative overflow-hidden bg-brand-red rounded-3xl shadow-xl p-6 sm:p-8">
+            <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10"></div>
+            <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-2 text-red-100 mb-2">
+                        <a href="{% url 'informacion_tienda' %}" class="hover:text-white transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
+                            <i class="fa-solid fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Centro de Notificaciones</h1>
+                    <p class="text-red-100 text-sm mt-1">Historial completo de tus alertas y movimientos.</p>
+                </div>
+                <div class="w-14 h-14 shrink-0 rounded-2xl bg-white/10 flex items-center justify-center text-white">
+                    <i class="fa-regular fa-bell text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="flex flex-wrap gap-2">
+            <button onclick="filtrarNotificaciones('todas')" class="px-4 py-2 rounded-xl text-sm font-bold bg-brand-red text-white shadow-md transition-all filter-btn" data-filter="todas">
+                Todas
+            </button>
+            <button onclick="filtrarNotificaciones('consumo')" class="px-4 py-2 rounded-xl text-sm font-bold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-red-50 dark:hover:bg-zinc-700 transition-all filter-btn" data-filter="consumo">
+                <i class="fa-solid fa-cart-shopping mr-1"></i> Consumos
+            </button>
+            <button onclick="filtrarNotificaciones('retiro')" class="px-4 py-2 rounded-xl text-sm font-bold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-red-50 dark:hover:bg-zinc-700 transition-all filter-btn" data-filter="retiro">
+                <i class="fa-solid fa-box-open mr-1"></i> Retiros
+            </button>
+            <button onclick="filtrarNotificaciones('otros')" class="px-4 py-2 rounded-xl text-sm font-bold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-red-50 dark:hover:bg-zinc-700 transition-all filter-btn" data-filter="otros">
+                <i class="fa-solid fa-ellipsis mr-1"></i> Otros
+            </button>
+        </div>
+
+        <!-- LISTA DE NOTIFICACIONES -->
+        <div id="lista-notificaciones" class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden min-h-[400px]">
+            <!-- Se llena con JS -->
+            <div class="p-10 text-center text-gray-400 dark:text-gray-500 hidden" id="no-notifs">
+                <i class="fa-regular fa-bell-slash text-4xl mb-3 opacity-30"></i>
+                <p class="text-sm font-bold">No hay notificaciones en esta categoría.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let historialNotifs = [];
+    try {
+        historialNotifs = JSON.parse(localStorage.getItem('tienda_notifs') || '[]');
+    } catch (e) {}
+
+    if (historialNotifs.length === 0) {
+        historialNotifs = [
+            { text: "Consumo registrado para Oscar con un total de $3,900.", tags: "success", type: "consumo", timestamp: Date.now() - 1000 * 60 * 10 },
+            { text: "Nuevo producto agregado al inventario: Arroz Diana.", tags: "success", type: "otros", timestamp: Date.now() - 1000 * 60 * 60 },
+            { text: "Stock bajo en Chocoramo (quedan 4).", tags: "warning", type: "retiro", timestamp: Date.now() - 1000 * 60 * 60 * 24 },
+            { text: "El consumo #102 ha sido eliminado y el stock devuelto.", tags: "error", type: "consumo", timestamp: Date.now() - 1000 * 60 * 60 * 48 },
+        ];
+    }
+
+    const listaContainer = document.getElementById('lista-notificaciones');
+    const noNotifs = document.getElementById('no-notifs');
+
+    function renderList(filter = 'todas') {
+        listaContainer.innerHTML = '';
+        noNotifs.classList.add('hidden');
+
+        let filtradas = historialNotifs;
+        if (filter !== 'todas') {
+            filtradas = historialNotifs.filter(n => n.type === filter);
+        }
+
+        if (filtradas.length === 0) {
+            listaContainer.appendChild(noNotifs);
+            noNotifs.classList.remove('hidden');
+            return;
+        }
+
+        filtradas.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        filtradas.forEach(notif => {
+            let icon = 'fa-circle-exclamation';
+            let iconColor = 'text-red-600 dark:text-red-400';
+            let bgColor = 'bg-red-50 dark:bg-red-950/30';
+            let borderColor = 'border-red-500';
+
+            if (notif.tags === 'success') {
+                icon = 'fa-circle-check';
+                iconColor = 'text-green-600 dark:text-green-400';
+                bgColor = 'bg-green-50 dark:bg-green-950/30';
+                borderColor = 'border-green-500';
+            } else if (notif.tags === 'warning') {
+                icon = 'fa-triangle-exclamation';
+                iconColor = 'text-yellow-600 dark:text-yellow-400';
+                bgColor = 'bg-yellow-50 dark:bg-yellow-950/30';
+                borderColor = 'border-yellow-500';
+            }
+
+            const fecha = new Date(notif.timestamp || Date.now());
+            const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+
+            listaContainer.innerHTML += `
+                <div class="relative p-5 border-b border-zinc-100 dark:border-zinc-800 flex gap-4 hover:bg-red-50/50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${borderColor}"></div>
+                    
+                    <div class="shrink-0 w-10 h-10 rounded-full ${bgColor} flex items-center justify-center shadow-sm mt-1">
+                        <i class="fa-solid ${icon} ${iconColor} text-lg"></i>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0 pr-2">
+                        <p class="text-[15px] font-medium leading-relaxed text-zinc-800 dark:text-zinc-200">${notif.text}</p>
+                        <p class="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 mt-1.5 flex items-center gap-1.5">
+                            <i class="fa-regular fa-calendar"></i> ${fechaStr} 
+                            <span class="w-1 h-1 rounded-full bg-zinc-300"></span>
+                            <i class="fa-regular fa-clock"></i> ${horaStr}
+                        </p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function filtrarNotificaciones(filtro) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter === filtro) {
+                btn.className = "px-4 py-2 rounded-xl text-sm font-bold bg-brand-red text-white shadow-md transition-all filter-btn";
+            } else {
+                btn.className = "px-4 py-2 rounded-xl text-sm font-bold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-red-50 dark:hover:bg-zinc-700 transition-all filter-btn";
+            }
+        });
+
+        renderList(filtro);
+    }
+
+    renderList('todas');
+</script>
+
+{% endblock %}
