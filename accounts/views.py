@@ -24,7 +24,6 @@ from gestor_inventario.models import Perfil
 def home(request):
     return redirect('lista_productos')
 
-
 def es_superadmin(user):
     return user.is_authenticated and user.is_superuser
 

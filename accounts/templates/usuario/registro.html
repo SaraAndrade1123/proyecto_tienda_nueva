@@ -44,6 +44,28 @@
             filter: invert(0.8);
             cursor: pointer;
         }
+        .dark input { color-scheme: dark; }
+
+        /* ===== AUTOFILL: evita el fondo/texto blanco del navegador ===== */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-text-fill-color: #0f172a !important;
+            caret-color: #0f172a;
+            -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+            box-shadow: 0 0 0 1000px #ffffff inset !important;
+            transition: background-color 9999s ease-in-out 0s;
+        }
+        .dark input:-webkit-autofill,
+        .dark input:-webkit-autofill:hover,
+        .dark input:-webkit-autofill:focus,
+        .dark input:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff;
+            -webkit-box-shadow: 0 0 0 1000px #1a1a1a inset !important;
+            box-shadow: 0 0 0 1000px #1a1a1a inset !important;
+        }
     </style>
 
     <!-- Script de inicialización rápida del tema -->
@@ -66,86 +88,93 @@
 </head>
 <body class="h-full bg-brand-darkbg text-slate-900 dark:text-slate-100 selection:bg-brand-red selection:text-white overflow-x-hidden">
 
-    <!-- IMAGEN DE FONDO A PANTALLA COMPLETA CON ALTA VISIBILIDAD EN MODO OSCURO -->
+    <!-- IMAGEN DE FONDO A PANTALLA COMPLETA -->
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
         <div class="w-full h-full bg-cover bg-center opacity-95 dark:opacity-80 transition-opacity duration-500"
             style="background-image: url('{% get_media_prefix %}fondo_tienda.jpeg');">
         </div>
-        <!-- Velo sutil y equilibrado que no apaga la imagen -->
         <div class="absolute inset-0 bg-slate-950/25 dark:bg-brand-darkbg/75 transition-colors duration-500"></div>
     </div>
 
-    <div class="relative min-h-screen w-full flex flex-col lg:flex-row items-center justify-between z-10">
+    <!-- En móvil: una sola pantalla (100dvh) sin scroll. En desktop: layout normal -->
+    <div class="relative h-[100dvh] lg:h-auto lg:min-h-screen w-full flex flex-col lg:flex-row lg:items-stretch overflow-hidden lg:overflow-visible z-10">
         
         <!-- BOTÓN DE CAMBIO DE TEMA -->
-        <div class="absolute top-4 right-4 z-50">
+        <div class="absolute top-2.5 right-3 lg:top-4 lg:right-4 z-50">
             <button
                 id="themeToggleBtn"
                 onclick="toggleTheme()"
                 type="button"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border border-slate-300 dark:border-slate-800 bg-white/90 dark:bg-brand-darknav text-brand-red dark:text-red-400 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-md shadow-lg transition-all"
+                class="inline-flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 rounded-full text-xs lg:text-sm font-extrabold border border-slate-300 dark:border-slate-800 bg-white/90 dark:bg-brand-darknav text-brand-red dark:text-red-400 hover:bg-white dark:hover:bg-slate-800 backdrop-blur-md shadow-lg transition-all"
             >
                 <i id="themeIcon" class="fa-solid fa-moon"></i>
-                <span id="themeText">Modo Oscuro</span>
+                <span id="themeText" class="hidden sm:inline">Modo Oscuro</span>
             </button>
         </div>
 
-        <!-- COLUMNA IZQUIERDA: LOGO Y MENSAJE PRINCIPAL -->
-        <div class="w-full lg:w-1/2 p-8 sm:p-12 lg:p-16 flex flex-col justify-between min-h-[280px] lg:min-h-screen">
-            
+        <!-- COLUMNA IZQUIERDA (en móvil: logo + texto ordenado) -->
+        <div class="relative w-full lg:w-1/2 shrink-0 lg:sticky lg:top-0 lg:h-screen px-5 pt-3 pb-4 lg:p-14 flex flex-col justify-between gap-3 lg:gap-6">
+
+            <!-- Sombreado degradado -->
+            <div class="absolute inset-0 -z-10 bg-gradient-to-b lg:bg-gradient-to-r from-black/80 via-black/60 to-transparent lg:from-black/75 lg:via-black/55 lg:to-transparent pointer-events-none"></div>
+
             <!-- LOGO -->
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-brand-red overflow-hidden flex items-center justify-center shadow-lg shadow-brand-red/40">
-                    <img src="{% get_media_prefix %}icono.png" alt="Logo" class="w-full h-full object-cover">
+            <div class="flex items-center gap-2.5 lg:gap-3">
+                <div class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-brand-red overflow-hidden flex items-center justify-center shadow-lg shadow-brand-red/40">
+                    <img src="{% get_media_prefix %}logo.png" alt="Logo" class="w-full h-full object-cover">
                 </div>
-                <span class="text-2xl font-extrabold text-white tracking-tight drop-shadow-md">MiTienda<span class="text-brand-red">.</span></span>
+                <span class="text-xl lg:text-3xl font-extrabold text-white tracking-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.85)]">MiTienda<span class="text-brand-red">.</span></span>
             </div>
 
-            <!-- TEXTO DE BIENVENIDA -->
-            <div class="my-auto py-10 max-w-lg">
-                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-xs font-bold text-red-400 uppercase tracking-widest mb-4 backdrop-blur-md">
-                    <span class="w-2 h-2 rounded-full bg-brand-red animate-pulse"></span>
+            <!-- TEXTO DE BIENVENIDA (ordenado en bloques) -->
+            <div class="lg:max-w-lg">
+                <span class="inline-flex items-center gap-2 px-3 py-1 lg:px-3.5 lg:py-1.5 rounded-full bg-black/60 border border-white/20 text-[11px] lg:text-sm font-extrabold text-red-400 uppercase tracking-widest mb-3 lg:mb-4 backdrop-blur-md">
+                    <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-brand-red animate-pulse"></span>
                     Únete Hoy
                 </span>
-                <h2 class="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-5 tracking-tight drop-shadow-lg">
-                    Descubre todo lo que tenemos para <span class="text-brand-red">ti</span>
+
+                <h2 class="text-[2rem] sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] lg:leading-tight mb-3 lg:mb-5 tracking-tight [text-shadow:0_3px_16px_rgba(0,0,0,0.9)]">
+                    Descubre todo<br class="lg:hidden">
+                    lo que tenemos<br class="lg:hidden">
+                    para&nbsp;<span class="text-brand-red whitespace-nowrap">ti</span>
                 </h2>
-                <p class="text-sm sm:text-base font-medium text-slate-100 leading-relaxed mb-8 drop-shadow-md">
+
+                <p class="text-[15px] sm:text-lg font-semibold text-slate-100 leading-snug lg:leading-relaxed max-w-[19rem] sm:max-w-md mb-0 lg:mb-8 [text-shadow:0_2px_10px_rgba(0,0,0,0.9)]">
                     Crea tu cuenta en segundos para acceder a funciones exclusivas y ver los productos de la tienda.
                 </p>
 
-                <a href="{% url 'informacion_tienda' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-xs font-bold text-white shadow-md transition-all">
-                    <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                <a href="{% url 'informacion_tienda' %}" class="hidden lg:inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/30 text-sm font-extrabold text-white shadow-md transition-all">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
                     Volver a la tienda
                 </a>
             </div>
 
-            <div class="text-xs font-semibold text-slate-200 drop-shadow-sm">
+            <div class="hidden lg:block text-sm font-bold text-slate-100 [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
                 &copy; {% now "Y" %} MiTienda Inc.
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: FORMULARIO EN TARJETA FLOTANTE -->
-        <div class="w-full lg:w-1/2 p-6 sm:p-12 lg:p-16 flex items-center justify-center">
+        <!-- COLUMNA DERECHA: FORMULARIO -->
+        <div class="w-full lg:w-1/2 flex-1 min-h-0 px-3 py-1 lg:px-12 lg:py-8 flex items-center justify-center">
             
-            <div class="w-full max-w-md p-8 rounded-3xl bg-white/95 dark:bg-brand-darkcard/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 transition-colors duration-500">
+            <div class="w-full max-w-xl max-h-full overflow-y-auto p-4 lg:p-8 rounded-2xl lg:rounded-3xl bg-white/95 dark:bg-brand-darkcard/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl space-y-3 lg:space-y-5 transition-colors duration-500">
                 
                 <!-- ENCABEZADO -->
                 <div>
-                    <h1 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight transition-colors duration-300">
-                        Crear una <span class="text-brand-red">cuenta.</span>
+                    <h1 class="text-xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight transition-colors duration-300">
+                        Crear una <span class="text-brand-red">cuenta</span>
                     </h1>
-                    <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1 transition-colors duration-300">
+                    <p class="hidden lg:block text-base font-semibold text-slate-600 dark:text-slate-300 mt-2 transition-colors duration-300">
                         Ingresa tus datos a continuación para registrarte
                     </p>
                 </div>
 
                 {% if errors %}
-                <div class="p-3.5 rounded-2xl bg-red-500/10 border border-brand-red/40 text-red-700 dark:text-red-300 text-xs flex items-start gap-2.5">
-                    <i class="fa-solid fa-circle-exclamation text-brand-red dark:text-red-400 text-sm mt-0.5"></i>
+                <div class="p-3 lg:p-4 rounded-xl lg:rounded-2xl bg-red-500/10 border border-brand-red/40 text-red-700 dark:text-red-300 text-xs lg:text-sm flex items-start gap-2.5">
+                    <i class="fa-solid fa-circle-exclamation text-brand-red dark:text-red-400 text-sm lg:text-base mt-0.5"></i>
                     <div>
-                        <p class="font-bold mb-0.5">Corrige los siguientes errores:</p>
-                        <ul class="list-disc list-inside space-y-0.5 text-red-800 dark:text-red-200">
+                        <p class="font-extrabold mb-1">Corrige los siguientes errores:</p>
+                        <ul class="list-disc list-inside space-y-0.5 lg:space-y-1 text-red-800 dark:text-red-200 font-medium">
                             {% for error in errors %}
                                 <li>{{ error }}</li>
                             {% endfor %}
@@ -154,13 +183,13 @@
                 </div>
                 {% endif %}
 
-                <form method="POST" action="{% url 'registro' %}" class="space-y-4">
+                <form method="POST" action="{% url 'registro' %}" class="space-y-2.5 lg:space-y-5">
                     {% csrf_token %}
 
                     <!-- FILA: NOMBRE Y APELLIDO -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div class="grid grid-cols-2 gap-2.5 lg:gap-4">
                         <div>
-                            <label for="first_name" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
+                            <label for="first_name" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
                                 Nombre
                             </label>
                             <div class="relative flex items-center">
@@ -170,15 +199,16 @@
                                     name="first_name"
                                     value="{{ datos.first_name|default:'' }}"
                                     placeholder="Juan"
+                                    autocomplete="given-name"
                                     required
-                                    class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                                 >
-                                <i class="fa-solid fa-id-card absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                                <i class="hidden lg:block fa-solid fa-id-card absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                             </div>
                         </div>
 
                         <div>
-                            <label for="last_name" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
+                            <label for="last_name" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
                                 Apellido
                             </label>
                             <div class="relative flex items-center">
@@ -188,56 +218,38 @@
                                     name="last_name"
                                     value="{{ datos.last_name|default:'' }}"
                                     placeholder="Pérez"
+                                    autocomplete="family-name"
                                     required
-                                    class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                                 >
-                                <i class="fa-solid fa-id-card absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                                <i class="hidden lg:block fa-solid fa-id-card absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- DOCUMENTO -->
-                    <div>
-                        <label for="document"
-                            class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1">
-                            Número de documento
-                        </label>
-                    
-                        <div class="relative flex items-center">
-                            <input
-                                type="text"
-                                id="document"
-                                name="document"
-                                value="{{ datos.document|default:'' }}"
-                                placeholder="Número de documento"
-                                required
-                                class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm"
-                            >
-                        
-                            <i class="fa-solid fa-id-card absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
-                        </div>
-                    </div>
-
-                    <!-- FILA: FECHA DE NACIMIENTO Y TELÉFONO -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- FILA: DOCUMENTO Y TELÉFONO -->
+                    <div class="grid grid-cols-2 gap-2.5 lg:gap-4">
                         <div>
-                            <label for="fecha_nacimiento" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
-                                Fecha de Nacimiento
+                            <label for="document" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
+                                Documento
                             </label>
                             <div class="relative flex items-center">
                                 <input
-                                    type="date"
-                                    id="fecha_nacimiento"
-                                    name="fecha_nacimiento"
-                                    value="{{ datos.fecha_nacimiento|default:'' }}"
-                                    class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                    type="text"
+                                    id="document"
+                                    name="document"
+                                    value="{{ datos.document|default:'' }}"
+                                    placeholder="Nº documento"
+                                    autocomplete="off"
+                                    required
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                                 >
-                                <i class="fa-solid fa-calendar-days absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                                <i class="hidden lg:block fa-solid fa-id-card absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                             </div>
                         </div>
 
                         <div>
-                            <label for="phone" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
+                            <label for="phone" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
                                 Teléfono
                             </label>
                             <div class="relative flex items-center">
@@ -247,36 +259,56 @@
                                     name="phone"
                                     value="{{ datos.phone|default:'' }}"
                                     placeholder="3001234567"
+                                    autocomplete="tel"
                                     required
-                                    class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                                 >
-                                <i class="fa-solid fa-phone absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                                <i class="hidden lg:block fa-solid fa-phone absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- USUARIO -->
-                    <div>
-                        <label for="username" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
-                            Nombre de Usuario
-                        </label>
-                        <div class="relative flex items-center">
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                value="{{ datos.username|default:'' }}"
-                                placeholder="juanperez"
-                                required
-                                class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
-                            >
-                            <i class="fa-solid fa-user absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                    <!-- FILA: FECHA DE NACIMIENTO Y USUARIO -->
+                    <div class="grid grid-cols-2 gap-2.5 lg:gap-4">
+                        <div>
+                            <label for="fecha_nacimiento" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
+                                Nacimiento
+                            </label>
+                            <div class="relative flex items-center">
+                                <input
+                                    type="date"
+                                    id="fecha_nacimiento"
+                                    name="fecha_nacimiento"
+                                    value="{{ datos.fecha_nacimiento|default:'' }}"
+                                    autocomplete="bday"
+                                    class="w-full h-10 lg:h-12 px-2 lg:px-4 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                >
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="username" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
+                                Usuario
+                            </label>
+                            <div class="relative flex items-center">
+                                <input
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    value="{{ datos.username|default:'' }}"
+                                    placeholder="juanperez"
+                                    autocomplete="username"
+                                    required
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                >
+                                <i class="hidden lg:block fa-solid fa-user absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
 
                     <!-- CORREO ELECTRÓNICO -->
                     <div>
-                        <label for="email" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
+                        <label for="email" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
                             Correo electrónico
                         </label>
                         <div class="relative flex items-center">
@@ -286,17 +318,18 @@
                                 name="email"
                                 value="{{ datos.email|default:'' }}"
                                 placeholder="correo@ejemplo.com"
+                                autocomplete="email"
                                 required
-                                class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                             >
-                            <i class="fa-solid fa-envelope absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                            <i class="hidden lg:block fa-solid fa-envelope absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                         </div>
                     </div>
 
                     <!-- CONTRASEÑA Y CONFIRMACIÓN -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div class="grid grid-cols-2 gap-2.5 lg:gap-4">
                         <div>
-                            <label for="password1" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
+                            <label for="password1" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
                                 Contraseña
                             </label>
                             <div class="relative flex items-center">
@@ -305,15 +338,16 @@
                                     id="password1"
                                     name="password1"
                                     placeholder="••••••••"
+                                    autocomplete="new-password"
                                     required
-                                    class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                                 >
-                                <i class="fa-solid fa-lock absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                                <i class="hidden lg:block fa-solid fa-lock absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                             </div>
                         </div>
 
                         <div>
-                            <label for="password2" class="block text-[10px] font-extrabold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 pl-1 transition-colors duration-300">
+                            <label for="password2" class="block text-[10px] lg:text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1 lg:mb-2 pl-1">
                                 Confirmar
                             </label>
                             <div class="relative flex items-center">
@@ -322,35 +356,47 @@
                                     id="password2"
                                     name="password2"
                                     placeholder="••••••••"
+                                    autocomplete="new-password"
                                     required
-                                    class="w-full h-11 px-4 pr-10 rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
+                                    class="w-full h-10 lg:h-12 px-3 lg:px-4 lg:pr-11 rounded-xl lg:rounded-2xl bg-white dark:bg-brand-darknav border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-sm lg:text-base font-semibold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 shadow-sm transition-colors duration-300"
                                 >
-                                <i class="fa-solid fa-shield-halved absolute right-3.5 text-slate-400 dark:text-slate-500 text-xs pointer-events-none"></i>
+                                <i class="hidden lg:block fa-solid fa-shield-halved absolute right-4 text-slate-400 dark:text-slate-500 text-sm pointer-events-none"></i>
                             </div>
                         </div>
                     </div>
 
                     <!-- ENLACE Y BOTÓN PRINCIPAL -->
-                    <div class="pt-1 space-y-3">
-                        <div class="text-right">
-                            <span class="text-xs text-slate-600 dark:text-slate-400 transition-colors duration-300">¿Ya tienes cuenta?</span>
-                            <a href="{% url 'login' %}" class="text-xs font-bold text-brand-red dark:text-red-400 hover:underline ml-1">
+                    <div class="pt-1 lg:pt-2 space-y-2.5 lg:space-y-4">
+                        <button
+                            type="submit"
+                            class="w-full py-3 lg:py-3.5 bg-brand-red hover:bg-brand-hoverred text-white font-extrabold text-sm lg:text-base uppercase tracking-wider rounded-xl lg:rounded-2xl shadow-lg shadow-brand-red/30 active:scale-[0.99] flex items-center justify-center gap-2.5 transition-all cursor-pointer"
+                        >
+                            <span>Crear Cuenta</span>
+                            <i class="fa-solid fa-arrow-right text-sm"></i>
+                        </button>
+
+                        <div class="text-center">
+                            <span class="text-xs lg:text-sm font-semibold text-slate-600 dark:text-slate-300">¿Ya tienes cuenta?</span>
+                            <a href="{% url 'login' %}" class="text-xs lg:text-sm font-black text-brand-red dark:text-red-400 hover:underline ml-1">
                                 Iniciar Sesión
                             </a>
                         </div>
-
-                        <button
-                            type="submit"
-                            class="w-full h-12 bg-brand-red hover:bg-brand-hoverred text-white font-bold text-sm rounded-2xl shadow-lg shadow-brand-red/30 active:scale-[0.99] flex items-center justify-center gap-2 transition-all"
-                        >
-                            <span>Crear Cuenta</span>
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </button>
                     </div>
 
                 </form>
 
             </div>
+        </div>
+
+        <!-- PIE SOLO MÓVIL: Volver a la tienda + copyright -->
+        <div class="lg:hidden shrink-0 flex items-center justify-between gap-3 px-4 py-2.5">
+            <a href="{% url 'informacion_tienda' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/30 text-xs font-extrabold text-white shadow-md">
+                <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                Volver a la tienda
+            </a>
+            <span class="text-[11px] font-bold text-slate-100 [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
+                &copy; {% now "Y" %} MiTienda Inc.
+            </span>
         </div>
 
     </div>
