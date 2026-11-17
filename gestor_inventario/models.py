@@ -20,18 +20,26 @@ class Proveedor(models.Model):
         return self.nombre_empresa
 
 class VisitaProveedor(models.Model):
+    PEDIDO = 'pedido'
+    ENTREGA = 'entrega'
+    TIPOS = [
+        (PEDIDO, 'Pedido'),
+        (ENTREGA, 'Entrega'),
+    ]
+
     proveedor = models.ForeignKey(
         Proveedor,
         on_delete=models.CASCADE,
         related_name='visitas',
     )
     fecha = models.DateField()
+    tipo = models.CharField(max_length=10, choices=TIPOS, default=ENTREGA)
 
     class Meta:
         ordering = ['fecha']
 
     def __str__(self):
-        return f"{self.proveedor.nombre_empresa} - {self.fecha}"
+        return f"{self.proveedor.nombre_empresa} - {self.fecha} ({self.get_tipo_display()})"
 
 class Perfil(models.Model):
     '''
