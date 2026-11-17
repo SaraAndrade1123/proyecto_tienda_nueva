@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load pesos %}
 {% load static i18n %}
 
 {% block title %}{% if producto %}{{ producto.nombre }}{% else %}Producto no disponible{% endif %} - Tienda Nueva{% endblock %}
@@ -754,7 +755,7 @@
                         </div>
 
                         <div class="cat-det__pricebox">
-                            <p class="cat-det__price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|floatformat:"-2g" }}{% endlanguage %}</p>
+                            <p class="cat-det__price"><small>$</small>{% language 'es-co' %}{{ producto.precio_unitario|pesos }}{% endlanguage %}</p>
 
                             {% if precio_base %}
                                 <p class="cat-det__unit">Equivale a <strong>${% language 'es-co' %}{{ precio_base|floatformat:"0g" }}{% endlanguage %}</strong> por {{ base_txt }}.</p>

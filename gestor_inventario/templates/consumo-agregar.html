@@ -1,0 +1,471 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Nuevo Consumo - Tienda Nueva{% endblock %}
+{% block content %}
+
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+
+<style>
+    /* =========================================
+       ESTILOS DEL CALENDARIO (FLATPICKR)
+       ========================================= */
+    
+    .flatpickr-calendar {
+        max-width: calc(100vw - 2rem) !important;
+        border-radius: 1.5rem !important; /* Bordes redondos */
+        padding-bottom: 64px !important; /* Espacio para el footer */
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+        overflow: hidden !important; /* Crucial para que no se salgan las esquinas */
+    }
+
+    /* Ocultar la flecha del globo para que quede como tarjeta flotante */
+    .flatpickr-calendar.arrowTop:before, .flatpickr-calendar.arrowTop:after,
+    .flatpickr-calendar.arrowBottom:before, .flatpickr-calendar.arrowBottom:after {
+        display: none !important;
+    }
+
+    /* Redondear la cabecera interna (mes y año) */
+    .flatpickr-months {
+        border-top-left-radius: 1.5rem !important;
+        border-top-right-radius: 1.5rem !important;
+        overflow: hidden;
+    }
+
+    /* --- MODO CLARO --- */
+    .flatpickr-calendar {
+        background: #ffffff !important;
+        border: 1px solid #e4e4e7 !important; /* zinc-200 */
+    }
+    .flatpickr-day { color: #3f3f46 !important; /* zinc-700 */ }
+    .flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-weekdays, span.flatpickr-weekday {
+        background: #ffffff !important;
+        color: #71717a !important; /* zinc-500 */
+    }
+    .flatpickr-day:hover { background: #f4f4f5 !important; /* zinc-100 */ }
+    
+    /* Día de hoy (Borde sutil) */
+    .flatpickr-day.today {
+        border-color: #a1a1aa !important; /* zinc-400 */
+        color: #3f3f46 !important;
+    }
+    
+    /* Día seleccionado (Rojo) */
+    .flatpickr-day.selected, .flatpickr-day.selected:focus, .flatpickr-day.selected:hover {
+        background: #dc2626 !important; /* red-600 */
+        border-color: #dc2626 !important;
+        color: #ffffff !important;
+    }
+
+    /* Fechas futuras deshabilitadas (MODO CLARO) */
+    .flatpickr-day.flatpickr-disabled {
+        color: #d4d4d8 !important; /* zinc-300 - Muy tenue */
+        background: transparent !important;
+        cursor: not-allowed;
+    }
+    .flatpickr-day.flatpickr-disabled:hover {
+        background: transparent !important;
+        color: #d4d4d8 !important;
+    }
+
+    /* --- MODO OSCURO --- */
+    .dark .flatpickr-calendar {
+        background: #18181b !important; /* zinc-900 */
+        border: 1px solid #27272a !important; /* zinc-800 */
+    }
+    .dark .flatpickr-day { color: #f4f4f5 !important; /* zinc-100 */ }
+    .dark .flatpickr-months .flatpickr-month, .dark .flatpickr-current-month .flatpickr-monthDropdown-months, .dark .flatpickr-weekdays, .dark span.flatpickr-weekday {
+        background: #18181b !important;
+        color: #a1a1aa !important; /* zinc-400 */
+    }
+    .dark .flatpickr-day:hover { background: #3f3f46 !important; /* zinc-700 */ }
+    .dark .flatpickr-day.prevMonthDay, .dark .flatpickr-day.nextMonthDay { color: #52525b !important; /* zinc-600 */ }
+    
+    /* Día de hoy en modo oscuro */
+    .dark .flatpickr-day.today {
+        border-color: #52525b !important; /* zinc-600 */
+        color: #f4f4f5 !important;
+    }
+
+    /* Fechas futuras deshabilitadas (MODO OSCURO) */
+    .dark .flatpickr-day.flatpickr-disabled {
+        color: #3f3f46 !important; /* zinc-700 - Muy tenue */
+        background: transparent !important;
+    }
+    .dark .flatpickr-day.flatpickr-disabled:hover {
+        background: transparent !important;
+        color: #3f3f46 !important;
+    }
+
+    /* =========================================
+       FOOTER DEL CALENDARIO (FECHA + BOTÓN)
+       ========================================= */
+    .flatpickr-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 12px 16px;
+        background: #ffffff;
+        border-top: 1px solid #e4e4e7;
+        border-radius: 0 0 1.5rem 1.5rem; /* Coincide con el borde inferior */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dark .flatpickr-footer {
+        background: #18181b;
+        border-top: 1px solid #27272a;
+    }
+
+    /* Texto de vista previa */
+    .flatpickr-preview {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #71717a; /* zinc-500 */
+        text-transform: capitalize;
+    }
+    .dark .flatpickr-preview { color: #a1a1aa; /* zinc-400 */ }
+
+    /* Botón de Aceptar */
+    .flatpickr-ok-btn {
+        padding: 0.4rem 1.5rem;
+        background: #dc2626;
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 0.875rem;
+        border-radius: 0.75rem;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+    .flatpickr-ok-btn:hover { background: #b91c1c; }
+</style>
+
+<div class="min-h-screen w-full bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
+    <div class="w-full max-w-4xl mx-auto space-y-6">
+
+        <!-- ENCABEZADO -->
+        <div class="relative overflow-hidden bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8">
+            <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10"></div>
+            <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-2 text-red-100 mb-2">
+                        <a href="{% url 'ver_consumo' %}" class="hover:text-white transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
+                            <i class="fa-solid fa-arrow-left"></i> Volver a consumos
+                        </a>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Nuevo consumo</h1>
+                    <p class="text-red-100 text-sm mt-1">Registra los productos retirados de la tienda.</p>
+                </div>
+                <div class="w-14 h-14 shrink-0 rounded-2xl bg-white/10 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-cart-plus text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <form id="formConsumo" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- SECCIÓN 1: PERSONA Y FECHA -->
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm p-6">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center text-red-600 dark:text-red-400 font-black">1</div>
+                    <h2 class="text-lg font-black">Datos del consumo</h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-wider text-zinc-500 mb-2">Persona</label>
+                        <div class="relative">
+                            <select id="persona_id" required class="w-full h-12 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm font-medium outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 appearance-none cursor-pointer">
+                                <option value="">Selecciona una persona...</option>
+                                {% for valor, texto in personas_choices %}
+                                    <option value="{{ valor }}">{{ texto }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none text-xs"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-wider text-zinc-500 mb-2">Fecha</label>
+                        <div class="relative" id="date-input-container">
+                            <i class="fa-solid fa-calendar-days absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"></i>
+                            <input type="text" id="fecha" required readonly placeholder="Selecciona una fecha..." class="w-full h-12 pl-11 pr-10 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm outline-none focus:border-red-500 cursor-pointer">
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: PRODUCTOS -->
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm p-6">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center text-red-600 dark:text-red-400 font-black">2</div>
+                    <h2 class="text-lg font-black">Productos retirados</h2>
+                </div>
+
+                <!-- Buscador -->
+                <div class="mb-6 relative">
+                    <label class="block text-xs font-black uppercase tracking-wider text-zinc-500 mb-2">Buscar producto</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+                        <input type="text" id="buscadorProducto" autocomplete="off" placeholder="Escribe el nombre del producto..." class="w-full h-12 pl-11 pr-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10">
+                    </div>
+                    <!-- Dropdown de resultados -->
+                    <div id="resultadosProducto" class="hidden absolute z-20 mt-2 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl max-h-72 overflow-y-auto"></div>
+                </div>
+
+                <div class="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] uppercase tracking-wider">
+                                <th class="p-4 font-black">Producto</th>
+                                <th class="p-4 font-black text-center w-32">Cant.</th>
+                                <th class="p-4 font-black text-right w-24">Precio</th>
+                                <th class="p-4 font-black text-right w-24">Subtotal</th>
+                                <th class="w-12"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaItems" class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                            <tr id="filaVacia">
+                                <td colspan="5" class="text-center py-10 text-zinc-400">
+                                    <i class="fa-solid fa-cart-shopping text-3xl mb-2 opacity-50"></i>
+                                    <p class="text-sm">Aún no has agregado productos.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="p-5 border-t-2 border-dashed border-zinc-200 dark:border-zinc-700 flex justify-between items-center bg-white dark:bg-zinc-900">
+                        <span class="text-sm font-bold text-zinc-500 uppercase tracking-wider">Total</span>
+                        <span id="totalGeneral" class="text-2xl font-black text-red-600 dark:text-red-400">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="flex flex-col-reverse sm:flex-row gap-3">
+                <a href="{% url 'ver_consumo' %}" class="flex-1 h-12 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded-2xl font-bold text-sm transition-all">
+                    Cancelar
+                </a>
+                <button type="submit" id="btnGuardar" class="flex-1 h-12 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-red-600/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-check"></i> <span>Guardar consumo</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    const items = [];
+    const buscador = document.getElementById('buscadorProducto');
+    const resultados = document.getElementById('resultadosProducto');
+    const listaItems = document.getElementById('listaItems');
+    const totalGeneral = document.getElementById('totalGeneral');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const fechaInput = document.getElementById('fecha');
+    const dateContainer = document.getElementById('date-input-container');
+
+    // --- INICIALIZACIÓN DEL CALENDARIO (FLATPICKR) ---
+    const fp = flatpickr("#fecha", {
+        locale: "es",
+        dateFormat: "Y-m-d",
+        maxDate: "today", // Deshabilita fechas futuras
+        defaultDate: "today",
+        disableMobile: true,
+        clickOpens: false, // Desactivamos la apertura por defecto para controlarla nosotros
+        closeOnSelect: false, // Evita que se cierre al hacer clic en un día
+        onChange: function(selectedDates, dateStr, instance) {
+            const preview = document.getElementById('date-preview');
+            if (preview && selectedDates.length > 0) {
+                preview.textContent = instance.formatDate(selectedDates[0], "d M, Y");
+            }
+        },
+        onReady: function(selectedDates, dateStr, instance) {
+            // 1. Crear el contenedor del footer
+            const footer = document.createElement("div");
+            footer.className = "flatpickr-footer";
+
+            // 2. Crear el texto de vista previa (Izquierda)
+            const preview = document.createElement("span");
+            preview.className = "flatpickr-preview";
+            preview.id = "date-preview";
+            if (selectedDates.length > 0) {
+                preview.textContent = instance.formatDate(selectedDates[0], "d M, Y");
+            }
+
+            // 3. Crear el botón de Aceptar (Derecha)
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "flatpickr-ok-btn";
+            btn.textContent = "Aceptar";
+            btn.onclick = function() {
+                instance.close(); // Cierra el calendario al confirmar
+            };
+
+            // 4. Armar el footer
+            footer.appendChild(preview);
+            footer.appendChild(btn);
+            instance.calendarContainer.appendChild(footer);
+        }
+    });
+
+    // Hacer que el contenedor completo del input abra/cierre el calendario
+    dateContainer.addEventListener('click', function() {
+        fp.toggle();
+    });
+
+    // Toasts Elegantes
+    function mostrarAlerta(mensaje, tipo = 'error') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold transition-all duration-300 transform -translate-y-20 opacity-0 ${
+            tipo === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+        }`;
+        toast.innerHTML = `<i class="fa-solid ${tipo === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'} text-lg"></i><span>${mensaje}</span>`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.remove('-translate-y-20', 'opacity-0'), 10);
+        setTimeout(() => {
+            toast.classList.add('-translate-y-20', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    // Buscador dinámico
+    let timeout;
+    buscador.addEventListener('input', () => {
+        clearTimeout(timeout);
+        const q = buscador.value.trim();
+        if (q.length < 1) { resultados.classList.add('hidden'); return; }
+
+        timeout = setTimeout(async () => {
+            try {
+                const res = await fetch(`{% url 'api_buscar_productos' %}?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                if (!data.productos || data.productos.length === 0) {
+                    resultados.innerHTML = `<div class="p-4 text-sm text-zinc-500">Sin resultados</div>`;
+                } else {
+                    resultados.innerHTML = data.productos.map(p => `
+                        <button type="button" onclick='agregarItem(${JSON.stringify(p)})' class="w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors flex items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+                            <span class="text-sm font-bold truncate">${p.nombre}</span>
+                            <span class="text-xs font-black text-red-600 dark:text-red-400">$${Number(p.precio).toLocaleString()}</span>
+                        </button>
+                    `).join('');
+                }
+                resultados.classList.remove('hidden');
+            } catch (err) { console.error(err); }
+        }, 250);
+    });
+
+    document.addEventListener('click', e => {
+        if (!buscador.contains(e.target) && !resultados.contains(e.target)) resultados.classList.add('hidden');
+    });
+
+    // Funciones de la tabla
+    window.agregarItem = (prod) => {
+        const existe = items.find(i => i.producto_id === prod.id);
+        if (existe) existe.cantidad += 1;
+        else items.push({ producto_id: prod.id, nombre: prod.nombre, precio: Number(prod.precio), cantidad: 1 });
+        buscador.value = '';
+        resultados.classList.add('hidden');
+        renderItems();
+    };
+
+    window.cambiarCantidad = (idx, delta) => {
+        items[idx].cantidad = Math.max(1, items[idx].cantidad + delta);
+        renderItems();
+    };
+
+    window.setCantidad = (idx, val) => {
+        const n = parseInt(val, 10);
+        items[idx].cantidad = (isNaN(n) || n < 1) ? 1 : n;
+        renderItems();
+    };
+
+    window.eliminarItem = (idx) => {
+        items.splice(idx, 1);
+        renderItems();
+    };
+
+    function renderItems() {
+        if (items.length === 0) {
+            listaItems.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-10 text-zinc-400">
+                        <i class="fa-solid fa-cart-shopping text-3xl mb-2 opacity-50"></i>
+                        <p class="text-sm">Aún no has agregado productos.</p>
+                    </td>
+                </tr>`;
+            totalGeneral.textContent = '$0';
+            return;
+        }
+
+        let total = 0;
+        listaItems.innerHTML = items.map((item, idx) => {
+            const subtotal = item.precio * item.cantidad;
+            total += subtotal;
+            return `
+                <tr class="hover:bg-white dark:hover:bg-zinc-800/50 transition-colors">
+                    <td class="p-4 font-bold text-sm">${item.nombre}</td>
+                    <td class="p-4 text-center">
+                        <div class="inline-flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden shadow-sm">
+                            <button type="button" onclick="cambiarCantidad(${idx}, -1)" class="w-8 h-8 flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                            <input type="number" min="1" value="${item.cantidad}" onchange="setCantidad(${idx}, this.value)" class="w-10 h-8 text-center bg-transparent text-sm font-bold outline-none appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none m-0">
+                            <button type="button" onclick="cambiarCantidad(${idx}, 1)" class="w-8 h-8 flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                        </div>
+                    </td>
+                    <td class="p-4 text-right text-xs text-zinc-500">$${item.precio.toLocaleString()}</td>
+                    <td class="p-4 text-right font-black text-sm">$${subtotal.toLocaleString()}</td>
+                    <td class="p-4 text-right">
+                        <button type="button" onclick="eliminarItem(${idx})" class="w-8 h-8 inline-flex items-center justify-center text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-lg transition-colors">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        totalGeneral.textContent = '$' + total.toLocaleString();
+    }
+
+    // Guardar
+    document.getElementById('formConsumo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const persona_id = document.getElementById('persona_id').value;
+        const fecha = fechaInput.value;
+
+        if (!persona_id) { mostrarAlerta('Debes seleccionar una persona.'); return; }
+        if (!fecha) { mostrarAlerta('Debes seleccionar una fecha.'); return; }
+        if (items.length === 0) { mostrarAlerta('Debes agregar al menos un producto.'); return; }
+
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+        try {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const res = await fetch("{% url 'agregar_consumo' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({
+                    persona_id: persona_id,
+                    fecha: fecha,
+                    items: items.map(i => ({ producto_id: i.producto_id, cantidad: i.cantidad })),
+                }),
+            });
+            const data = await res.json();
+            if (data.ok) {
+                window.location.href = data.redirect || "{% url 'ver_consumo' %}";
+            } else {
+                mostrarAlerta(data.error || 'Error al guardar');
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = '<i class="fa-solid fa-check"></i> <span>Guardar consumo</span>';
+            }
+        } catch (err) {
+            mostrarAlerta('Error de conexión.');
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="fa-solid fa-check"></i> <span>Guardar consumo</span>';
+        }
+    });
+})();
+</script>
+{% endblock %}

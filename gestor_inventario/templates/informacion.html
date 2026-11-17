@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
 {% block title %}Información - Tienda Nueva{% endblock %}
 
@@ -44,70 +45,76 @@
 </section>
 
 <div class="max-w-3xl mx-auto px-4">
+    <!-- PANEL DE ADMINISTRACIÓN -->
     {% if user.is_authenticated and user.is_staff %}
-    <section id="adminPanel" class="mb-12 p-6 rounded-2xl border border-gray-200 dark:border-[#1e1e1e] bg-gray-50 dark:bg-[#1e1e1e] transition-colors duration-500 ease-in-out scroll-mt-24">
-        <div class="flex items-center justify-between mb-4">
+    <section id="adminPanel" class="mb-12 p-5 sm:p-6 rounded-3xl border border-gray-200 dark:border-[#1e1e1e] bg-white dark:bg-[#1a1a1a] shadow-sm transition-colors duration-500 ease-in-out scroll-mt-24">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 transition-colors duration-500 ease-in-out">
-                    <i class="fa-solid fa-shield-halved text-brand-red"></i> Panel de Administración
+                    <i class="fa-solid fa-shield-halved text-brand-red"></i> Imágenes del Carrusel
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-500 ease-in-out">Gestiona las imágenes del carrusel principal.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-500 ease-in-out">Sube fotos para la portada de la tienda.</p>
             </div>
-            <button id="btnMostrarFormularioCarrusel" type="button" class="px-4 py-2 rounded-lg bg-brand-red text-white font-semibold hover:bg-red-700 transition shadow-sm text-sm">
-                <i class="fa-solid fa-plus"></i> Agregar
+            <button id="btnMostrarFormularioCarrusel" type="button" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-brand-red text-white font-bold hover:bg-red-700 transition shadow-md active:scale-95 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus"></i> Agregar Imagen
             </button>
         </div>
 
-        <div id="formularioCarrusel" class="hidden mb-6 p-4 rounded-xl border border-gray-300 dark:border-[#1e1e1e] bg-white dark:bg-[#0f0f0f] transition-colors duration-500 ease-in-out">
-            <form method="post" enctype="multipart/form-data" class="flex flex-col sm:flex-row items-center gap-4">
+        <div id="formularioCarrusel" class="hidden mb-8 p-5 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#0f0f0f] transition-all duration-500 ease-in-out">
+            <form method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
                 {% csrf_token %}
                 <input type="hidden" name="accion" value="agregar">
-                <input type="file" name="imagenes" accept="image/*" multiple required class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-800 hover:file:bg-gray-300 dark:file:bg-[#1e1e1e] dark:file:text-white transition">
-                <button type="submit" class="px-4 py-2 bg-brand-red text-white font-semibold rounded-lg hover:bg-red-700 transition">Subir</button>
-                <button type="button" id="btnCancelarFormularioCarrusel" class="px-4 py-2 bg-gray-200 dark:bg-[#1e1e1e] text-gray-800 dark:text-gray-200 font-semibold rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                
+                <label for="imagenes" class="flex flex-col items-center justify-center w-full h-40 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1a1a1a] rounded-xl transition-colors">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <div class="w-12 h-12 mb-3 rounded-full bg-brand-red/10 text-brand-red flex items-center justify-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                        </div>
+                        <p class="mb-1 text-sm font-bold text-gray-700 dark:text-gray-300">Toca para buscar una foto</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG o JPG (Máx. 5MB)</p>
+                    </div>
+                    <input id="imagenes" name="imagenes" type="file" accept="image/png, image/jpeg" multiple required class="hidden">
+                </label>
+                <p id="nombreArchivo" class="text-sm font-semibold text-center text-brand-red dark:text-red-400 hidden"></p>
+
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 py-3 bg-brand-red text-white font-bold rounded-xl hover:bg-red-700 transition shadow-md active:scale-95">Subir Imágenes</button>
+                    <button type="button" id="btnCancelarFormularioCarrusel" class="flex-1 py-3 bg-gray-200 dark:bg-[#2a2a2a] text-gray-800 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-[#333] transition active:scale-95">Cancelar</button>
+                </div>
             </form>
         </div>
 
         {% if imagenes %}
-        <div class="relative mt-4">
-            <button id="btnScrollLeft" type="button" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-brand-red text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-700 transition opacity-80 hover:opacity-100">
+        <div class="relative mt-2">
+            <button id="btnScrollLeft" type="button" class="absolute -left-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-md text-brand-red dark:text-red-400 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
 
-            <div id="adminGallery" class="flex overflow-x-auto gap-4 py-2 px-10 scroll-smooth snap-x snap-mandatory" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <div id="adminGallery" class="flex overflow-x-auto gap-3 py-2 px-10 scroll-smooth snap-x snap-mandatory no-scrollbar">
                 {% for imagen in imagenes %}
-                <div class="snap-start shrink-0 relative group rounded-lg overflow-hidden border border-gray-300 dark:border-[#1e1e1e] w-32 h-24">
+                <div class="snap-center shrink-0 relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-32 h-24 sm:w-40 sm:h-28 bg-gray-100 dark:bg-gray-800">
                     <img src="{{ imagen.imagen.url }}" class="w-full h-full object-cover" alt="Imagen del carrusel">
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-                        <div class="flex gap-1">
-                            <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="izquierda"><button type="submit" class="w-6 h-6 rounded bg-white text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center" {% if forloop.first %}disabled{% endif %}><i class="fa-solid fa-arrow-left text-[10px]"></i></button></form>
-                            <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="derecha"><button type="submit" class="w-6 h-6 rounded bg-white text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center" {% if forloop.last %}disabled{% endif %}><i class="fa-solid fa-arrow-right text-[10px]"></i></button></form>
+                    <div class="absolute inset-0 bg-black/60 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                        <div class="flex gap-2">
+                            <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="izquierda"><button type="submit" class="w-8 h-8 rounded-lg bg-white/90 text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center transition" {% if forloop.first %}disabled{% endif %}><i class="fa-solid fa-arrow-left text-xs"></i></button></form>
+                            <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="derecha"><button type="submit" class="w-8 h-8 rounded-lg bg-white/90 text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center transition" {% if forloop.last %}disabled{% endif %}><i class="fa-solid fa-arrow-right text-xs"></i></button></form>
                         </div>
-                        <form method="post" class="inline" onsubmit="return confirm('¿Eliminar esta imagen?');">{% csrf_token %}<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><button type="submit" class="px-1.5 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold hover:bg-red-700"><i class="fa-solid fa-trash mr-0.5"></i></button></form>
+                        <form method="post" class="inline" onsubmit="return confirm('¿Eliminar esta imagen?');">{% csrf_token %}<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><button type="submit" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Eliminar</button></form>
                     </div>
                 </div>
                 {% endfor %}
             </div>
 
-            <button id="btnScrollRight" type="button" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-brand-red text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-red-700 transition opacity-80 hover:opacity-100">
+            <button id="btnScrollRight" type="button" class="absolute -right-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-md text-brand-red dark:text-red-400 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
         </div>
-        <style>
-            #adminGallery::-webkit-scrollbar { display: none; }
-        </style>
+        {% else %}
+        <div class="text-center py-8 bg-gray-50 dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800">
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No hay imágenes en el carrusel todavía.</p>
+        </div>
         {% endif %}
     </section>
-    {% endif %}
-
-    {% if messages %}
-        <div class="mb-6">
-            {% for message in messages %}
-                <div class="p-4 rounded-lg transition-colors duration-500 ease-in-out {% if message.tags == 'success' %}bg-gray-200 text-black border border-gray-300 dark:bg-[#1e1e1e] dark:text-white dark:border-[#2a2a2a]{% else %}bg-red-100 text-brand-red border border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
     {% endif %}
 
     <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-8 md:mt-16 mb-8 md:mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
@@ -199,6 +206,7 @@
 </div>
 
 <script>
+    // 1. Animación de entrada del Hero
     (function animarEntrada() {
         const hero = document.querySelector('section.relative.w-full');
         if (!hero) return;
@@ -212,6 +220,7 @@
         });
     })();
 
+    // 2. Scroll al panel de admin si hay mensajes
     (function mantenerScrollAdmin() {
         const tieneMensajes = document.querySelector('.mb-6 .p-4.rounded-lg');
         if (tieneMensajes) {
@@ -224,6 +233,7 @@
         }
     })();
 
+    // 3. Scroll Horizontal de la Galería de Imágenes
     (function configurarScrollAdmin() {
         const gallery = document.getElementById('adminGallery');
         const btnLeft = document.getElementById('btnScrollLeft');
@@ -239,6 +249,7 @@
         }
     })();
 
+    // 4. Estilos dinámicos para el contenedor del libro
     (function aplicarEstilosLibro() {
         const content = document.getElementById('bookPageContent');
         if (!content) return;
@@ -254,8 +265,9 @@
             #bookPageContent::-webkit-scrollbar { width: 6px; }
             #bookPageContent::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
             #bookPageContent::-webkit-scrollbar-thumb { background: #b91c1c; border-radius: 8px; }
-            .dark #bookPageContent::-webkit-scrollbar-track { background: #f3f4f6; }
-            .dark #bookPageContent { scrollbar-color: #b91c1c #f3f4f6
+            .dark #bookPageContent::-webkit-scrollbar-track { background: #2a2a2a; }
+            .dark #bookPageContent { scrollbar-color: #b91c1c #2a2a2a; }
+        `;
         document.head.appendChild(sheet);
 
         const ajustarResponsive = () => {
@@ -269,6 +281,7 @@
         window.addEventListener('resize', ajustarResponsive);
     })();
 
+    // 5. Sombras dinámicas para el libro (modo claro/oscuro)
     (function aplicarSombrasInset() {
         const bookContainer = document.getElementById('bookContainer');
         const bookHeader = document.getElementById('bookHeader');
@@ -305,6 +318,7 @@
         });
     }
 
+    // 6. Carrusel Automático del Hero
     (function iniciarHeroCarrusel() {
         const imagenes = document.querySelectorAll('.carrusel-hero-img');
         if (imagenes.length <= 1) return;
@@ -321,14 +335,15 @@
         }, INTERVALO_MS);
     })();
 
+    // 7. Datos del Libro de Productos (LISTA COMPLETA)
     const bookPages = [
         { title: "Abarrotes", items: ["Aceites", "Granos", "Azúcar", "Sal", "Panela", "Mantequilla", "Galletas", "Enlatados", "Papel higiénico", "Toallas de cocina", "Servilletas", "Café instantáneo y molido", "Condimentos", "Kelloggs", "Dulcería", "Harina para arepas", "Harina de trigo", "Avena en hojuelas", "Chocolate", "Milo", "Mermeladas", "Aderezos", "Miel de abejas", "Vinagre", "Cremas de leche", "Papel aluminio", "Papel vinipel", "Veladoras", "Pañales desechables", "Refrescos en polvo", "Conservas", "Fósforos", "Mecheras", "Pastillas raid", "Raid aerosoles"] },
         { title: "Aseo Personal", items: ["Jabones", "Crema dental", "Shampoo", "Cepillos", "Desodorante", "Gel para el cabello", "Bloqueador solar", "Listerine", "Toallas higiénicas", "Afeitadoras", "Seda dental", "Pañitos húmedos", "Pañuelos faciales", "Copitos"] },
         { title: "Aseo General", items: ["Jabones en polvo", "Jabones en barra", "Jabón líquido", "Límpido", "Aromatizantes para baño", "Aromatizantes para piso", "Varsol", "Ácido muriático", "Guantes", "Esponjas", "Escobas", "Traperos", "Recogedores", "Cepillos de lavar ropa", "Bolsas para la basura", "Pastas de cloro", "Productos de plaza", "Productos de panadería", "Concentrado para animales"] },
-        { title: "Bebidas", items: ["Gaseosas", "Whisky", "Crema de Whisky", "Vinos", "Aguardiante", "Ron", "Tequila", "Sabajón", "Piña colada", "Cervezas", "Cócteles", "Bebidas energizantes", "Sueros", "Jugos", "Yogur", "Kumis"] },
+        { title: "Bebidas", items: ["Gaseosas", "Whisky", "Crema de Whisky", "Vinos", "Aguardiente", "Ron", "Tequila", "Sabajón", "Piña colada", "Cervezas", "Cócteles", "Bebidas energizantes", "Sueros", "Jugos", "Yogur", "Kumis"] },
         { title: "Medicamentos", items: ["Para la gripe", "Dolores en general", "Malestar estomacal", "Reflujo gástrico", "Para la tos", "Diarrea", "Cólicos menstruales", "Curas", "Crema yodora", "Piedra alumbre", "Aceite de almendra", "Vaselina", "Talcos", "Preservativos", "Suero en sobres"] },
-        { title: "Cacharrería y Papelería", items: ["Metros de modistería", "Cortauñas", "Ganchos para el cabello", "Nodriza", "Guantes de látex", "Lluvia de sobres", "Bombillos", "Cinta dorada", "Canicas", "Caucho olla exprés", "Cartas españolas", "Dominó", "Ajedrez", "Parqués", "Fichas para parqués", "Tapa bocas", "Memorias USB", "Agujas", "Hilos", "Cinta de enmascarar", "Cinta aislante", "Cinta teflón", "Tarritos para muestra médica", "Algodón", "Gasa", "Micropore", "Esparadrapo", "Jeringas", "Pilas", "Medias para colegio", "Medias para fútbol", "Talonario de rifas", "Recibo de caja", "Factureros", "Silicona barra", "Silicona líquida", "Palo pincho", "Gancho legajador", "Cordones", "Bolas de icopor", "Vasos de icopor", "Vasos plásticos", "Platos de icopor", "Bandejas de icopor", "Cubiertos plásticos", "Bandejas para lasaña", "Alcancías", "Lupas", "Velas de parafina", "Velas de cebo", "Vela volcán", "Platillas para zapatos", "Toallas para cocina", "Bolsas de regalo", "Limas", "Cauchitos para el cabello", "Bombas", "Peinetas", "Palo para helado", "Esmaltes", "Removedor", "Tiras para brasieres"] },
-        { title: "Papelería (continuación)", items: ["Papel calcante", "Cuadernos", "Lapiceros", "Borradores", "Taja lápiz", "Marcadores", "Crayones", "Forros para cuadernos", "Clips", "Correctores", "Pegantes en barra", "Pegantes líquidos", "Reglas", "Grapadoras", "Bisturí", "Cartón paja", "Fomi", "Block carta", "Carpeta de presentación", "Resma oficio", "Resma carta", "Cartulinas", "Papel crepé", "Papel seda", "Témperas", "Sobre de manila", "Sobre de carta"] }
+        { title: "Cacharrería y Papelería", items: ["Metros de modistería", "Cortaúñas", "Ganchos para el cabello", "Nodriza", "Guantes de látex", "Lluvia de sobres", "Bombillos", "Cinta dorada", "Canicas", "Caucho olla exprés", "Cartas españolas", "Dominó", "Ajedrez", "Parqués", "Fichas para parqués", "Tapa bocas", "Memorias USB", "Agujas", "Hilos", "Cinta de enmascarar", "Cinta aislante", "Cinta teflón", "Tarritos para muestra médica", "Algodón", "Gasa", "Micropore", "Esparadrapo", "Jeringas", "Pilas", "Medias para colegio", "Medias para fútbol", "Talonario de rifas", "Recibo de caja", "Factureros", "Silicona barra", "Silicona líquida", "Palo pincho", "Gancho legajador", "Cordones", "Bolas de icopor", "Vasos de icopor", "Vasos plásticos", "Platos de icopor", "Bandejas de icopor", "Cubiertos plásticos", "Bandejas para lasaña", "Alcancías", "Lupas", "Velas de parafina", "Velas de cebo", "Vela volcán", "Platillas para zapatos", "Toallas para cocina", "Bolsas de regalo", "Limas", "Cauchitos para el cabello", "Bombas", "Peinetas", "Palo para helado", "Esmaltes", "Removedor", "Tiras para brasieres"] },
+        { title: "Papelería", items: ["Papel calcante", "Cuadernos", "Lapiceros", "Borradores", "Taja lápiz", "Marcadores", "Crayones", "Forros para cuadernos", "Clips", "Correctores", "Pegantes en barra", "Pegantes líquidos", "Reglas", "Grapadoras", "Bisturí", "Cartón paja", "Fomi", "Block carta", "Carpeta de presentación", "Resma oficio", "Resma carta", "Cartulinas", "Papel crepé", "Papel seda", "Témperas", "Sobre de manila", "Sobre de carta"] }
     ];
 
     let currentPage = 0;
@@ -409,9 +424,12 @@
     btnLast.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage = totalPages - 1; renderPage(true); } });
     renderPage(false);
 
+    // 8. Formulario de subida de imágenes
     const btnMostrarForm = document.getElementById('btnMostrarFormularioCarrusel');
     const formulario = document.getElementById('formularioCarrusel');
     const btnCancelarForm = document.getElementById('btnCancelarFormularioCarrusel');
+    const inputImg = document.getElementById('imagenes');
+    const nombreArchivo = document.getElementById('nombreArchivo');
 
     if (btnMostrarForm && formulario) {
         btnMostrarForm.addEventListener('click', () => {
@@ -422,6 +440,21 @@
                 formulario.classList.add('hidden');
             });
         }
+    }
+
+    if (inputImg) {
+        inputImg.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                if (this.files.length === 1) {
+                    nombreArchivo.textContent = 'Seleccionado: ' + this.files[0].name;
+                } else {
+                    nombreArchivo.textContent = `Seleccionadas ${this.files.length} imágenes`;
+                }
+                nombreArchivo.classList.remove('hidden');
+            } else {
+                nombreArchivo.classList.add('hidden');
+            }
+        });
     }
 </script>
 
