@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'accounts',
     'gestor_inventario',
     'productos',
+    'reportes',
 ]
 
 MIDDLEWARE = [
