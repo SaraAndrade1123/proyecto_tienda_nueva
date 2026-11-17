@@ -278,7 +278,7 @@
         line-height: 1.1;
         color: var(--link);
     }
-    .cat-head__side { display: flex; align-items: baseline; gap: 1rem; }
+    .cat-head__side { display: flex; align-items: center; gap: 1rem; }
     .cat-clear {
         display: inline-flex; align-items: center; gap: .4rem;
         font-size: .9375rem; font-weight: 600;
@@ -550,6 +550,37 @@
     .cat-dialog__acts { display: flex; gap: .625rem; margin-top: 1.5rem; }
     .cat-dialog__acts .cat-btn { flex: 1; justify-content: center; margin-top: 0; padding: 0 .5rem; border: 0; font-family: inherit; cursor: pointer; }
 
+
+    /* ---------- Cuántos mostrar (10 · 20 · 50) y paginación ---------- */
+    .cat-por { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; color: var(--muted); }
+    .cat-por[hidden] { display: none; }
+    .cat-por__g { display: inline-flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: var(--page); box-shadow: inset 0 0 0 1px var(--tc-strong); }
+    .cat-por a {
+        display: grid; place-items: center; min-width: 2.25rem; height: 2rem; padding: 0 .6rem; border-radius: 999px;
+        font-size: .875rem; font-weight: 800; color: var(--ink); text-decoration: none; transition: background-color .15s, color .15s;
+    }
+    .cat-por a:hover { background: var(--ta-soft); }
+    .cat-por a[aria-current="true"] { color: #fff; background: #b91c1c; }
+    .cat-por a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+    .cat-pag { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; margin-top: 1.5rem; }
+    .cat-pag[hidden] { display: none; }
+    .cat-pag__info { margin: 0; font-size: .875rem; color: var(--muted); }
+    .cat-pag__info b { color: var(--ink); }
+    .cat-pag__nums { display: flex; flex-wrap: wrap; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+    .cat-pag__nums a, .cat-pag__nums span {
+        display: grid; place-items: center; min-width: 2.5rem; height: 2.5rem; padding: 0 .5rem; border-radius: 999px;
+        font-size: .9375rem; font-weight: 800; color: var(--ink); text-decoration: none;
+    }
+    .cat-pag__nums a { background: var(--page); box-shadow: inset 0 0 0 1px var(--tc-strong); transition: background-color .15s, color .15s; }
+    .cat-pag__nums a:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cat-pag__nums a:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+    .cat-pag__nums [aria-current="page"] { color: #fff; background: #b91c1c; }
+    .cat-pag__nums .gap { min-width: 1.25rem; color: var(--muted); }
+    .cat-pag__nums .off { opacity: .35; background: var(--page); box-shadow: inset 0 0 0 1px var(--tc-strong); }
+    .cat-pag__nums svg { width: 1rem; height: 1rem; }
+    @media (max-width: 559px) { .cat-pag { justify-content: center; } .cat-pag__info { width: 100%; text-align: center; } }
+
     @media (prefers-reduced-motion: reduce) {
         .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
     }
@@ -600,7 +631,7 @@
     {# Filtro en tiempo real: la lista se va filtrando mientras escribes. Sin JavaScript funciona igual: escribe y pulsa Enter. #}
     {% if productos or busqueda or categoria_seleccionada %}
         <div class="cat-filtro">
-            <form class="cat-search cat-search--solo" id="buscador" role="search" method="get" action="{% url 'lista_productos' %}" data-categoria="{{ categoria_seleccionada }}"{% if busqueda %} data-parcial{% endif %}>
+            <form class="cat-search cat-search--solo" id="buscador" role="search" method="get" action="{% url 'lista_productos' %}" data-categoria="{{ categoria_seleccionada }}"{% if busqueda or pagina.paginator.num_pages > 1 %} data-parcial{% endif %} data-por="{{ por }}">
                 <div class="cat-search__q">
                     <span class="cat-search__lupa" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -645,7 +676,17 @@
                 <h2 id="lista-titulo">Catálogo general</h2>
 
                 <div class="cat-head__side">
-                    <a class="cat-clear" id="quitar" href="{% url 'lista_productos' %}"{% if not busqueda and not categoria_seleccionada %} hidden{% endif %}>Quitar filtros</a>
+                    <a class="cat-clear" id="quitar" href="{% url 'lista_productos' %}?por={{ por }}"{% if not busqueda and not categoria_seleccionada %} hidden{% endif %}>Quitar filtros</a>
+                    {% if pagina %}
+                        <div class="cat-por" id="por">
+                            <span>Mostrar</span>
+                            <div class="cat-por__g">
+                                {% for n in opciones_por %}
+                                    <a href="?por={{ n }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}"{% if n == por %} aria-current="true"{% endif %} aria-label="Mostrar {{ n }} por página">{{ n }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -721,6 +762,39 @@
                     {% endfor %}
 
             </ul>
+
+            {% if pagina and pagina.paginator.num_pages > 1 %}
+                <nav class="cat-pag" id="paginas" aria-label="Páginas de productos">
+                    <p class="cat-pag__info">Del <b>{{ pagina.start_index }}</b> al <b>{{ pagina.end_index }}</b> de <b>{{ pagina.paginator.count }}</b> productos</p>
+                    <ul class="cat-pag__nums">
+                        <li>
+                            {% if pagina.has_previous %}
+                                <a href="?por={{ por }}&amp;pagina={{ pagina.previous_page_number }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}" aria-label="Página anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+                            {% else %}
+                                <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></span>
+                            {% endif %}
+                        </li>
+                        {% for n in rango_paginas %}
+                            <li>
+                                {% if n == pagina.number %}
+                                    <span aria-current="page">{{ n }}</span>
+                                {% elif n == pagina.paginator.ELLIPSIS %}
+                                    <span class="gap">…</span>
+                                {% else %}
+                                    <a href="?por={{ por }}&amp;pagina={{ n }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}">{{ n }}</a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        <li>
+                            {% if pagina.has_next %}
+                                <a href="?por={{ por }}&amp;pagina={{ pagina.next_page_number }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}" aria-label="Página siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
+                            {% else %}
+                                <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
 
             <div class="cat-empty" id="sin-filtro"{% if productos or not busqueda and not categoria_seleccionada %} hidden{% endif %}>
                 <div class="cat-empty__disc">
@@ -861,7 +935,13 @@
         if (pos < nombre.length) el.appendChild(document.createTextNode(nombre.slice(pos)));
     }
 
-    /* Las filas de la lista, con lo necesario para compararlas */
+    /* Las filas de la lista, con lo necesario para compararlas.
+       Con páginas: sin texto se ven las filas de ESTA página; al escribir se busca en TODOS los productos
+       (se piden UNA vez con ?todos=1) y se esconden la paginación y el «Mostrar». */
+    var paginas = document.getElementById('paginas');
+    var porSel = document.getElementById('por');
+    var originales = Array.prototype.slice.call(ul.children);
+    var todas = null;
     var filas = [];
     function leer() {
         filas = Array.prototype.map.call(ul.children, function (li) {
@@ -873,6 +953,12 @@
                 c: norm(nombre).replace(/[^a-z0-9]/g, '')
             };
         });
+    }
+    function poner(lista) {
+        if (ul.firstElementChild === lista[0] && ul.children.length === lista.length) return;
+        ul.textContent = '';
+        lista.forEach(function (li) { li.hidden = false; ul.appendChild(li); });
+        leer();
     }
     leer();
 
@@ -886,6 +972,9 @@
     function aplicar() {
         var texto = input.value.trim();
         var tokens = palabras(texto);
+        poner(tokens.length && todas ? todas : originales);
+        if (paginas) paginas.hidden = tokens.length > 0;
+        if (porSel) porSel.hidden = tokens.length > 0;
         var q = { tokens: tokens, junto: norm(texto).replace(/[^a-z0-9]/g, '') };
         var n = 0;
         filas.forEach(function (f) {
@@ -901,21 +990,17 @@
         quitar.hidden = !(texto || categoria);
     }
 
-    /* Si la página llegó filtrada, trae (una vez) la lista completa y la pone en lugar de las filas filtradas */
+    /* Si hay más de una página (o la página llegó filtrada), trae UNA vez todos los productos para buscar en todos */
     var cargando = null;
     function cargar() {
-        if (completa) return Promise.resolve();
+        if (completa || todas) return Promise.resolve();
         if (!cargando) {
-            var url = form.getAttribute('action') + (categoria ? '?categoria=' + encodeURIComponent(categoria) : '');
+            var url = form.getAttribute('action') + '?todos=1' + (categoria ? '&categoria=' + encodeURIComponent(categoria) : '');
             cargando = fetch(url, { credentials: 'same-origin' })
                 .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
                 .then(function (t) {
                     var nuevas = new DOMParser().parseFromString(t, 'text/html').querySelectorAll('#filas > li');
-                    if (!nuevas.length) return;
-                    ul.textContent = '';
-                    Array.prototype.forEach.call(nuevas, function (li) { ul.appendChild(document.importNode(li, true)); });
-                    leer();
-                    completa = true;
+                    todas = Array.prototype.map.call(nuevas, function (li) { return document.importNode(li, true); });
                 })
                 .catch(function () { /* sin conexión: se filtra lo que ya hay en pantalla */ });
         }
@@ -932,7 +1017,7 @@
         verTodos.addEventListener('click', function (e) {
             e.preventDefault();
             input.value = '';
-            cargar().then(aplicar);
+            aplicar();
             input.focus();
         });
     }

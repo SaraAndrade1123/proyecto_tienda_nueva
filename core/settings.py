@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'accounts',
     'gestor_inventario',
     'productos',
+    'salidas',
 ]
 
 MIDDLEWARE = [
@@ -190,3 +191,6 @@ AUTH_USER_MODEL = "accounts.User"
 SESSION_COOKIE_AGE = 86400
 SESSION_SAVE_EVERY_REQUEST = True # renueva la expiración con cada request
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegador
+
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'

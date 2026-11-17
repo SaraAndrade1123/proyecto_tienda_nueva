@@ -1,157 +1,219 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
-{% block title %}Editar categoría - Tienda Nueva{% endblock %}
+{# Esta misma plantilla sirve para crear y para editar: si llega «categoria» es edición. #}
+{% block title %}{% if categoria %}Editar categoría{% else %}Nueva categoría{% endif %} - Tienda Nueva{% endblock %}
 
 {% block content %}
 
-<div class="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
 
-<div class="w-full max-w-2xl mx-auto">
+<style>
+    .cat, .cat * { box-sizing: border-box; }
+    .cat {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #e7ddda;
+        --red: #b91c1c; --link: #b91c1c; --ta-soft: #ffe8e5;
+        --tag-rojo: #b91c1c; --tag-rojo-2: #991b1b;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .cat {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #3a3532;
+        --link: #f87171; --ta-soft: #2b1816;
+    }
+    .cat-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-    <!-- Encabezado -->
-    <div class="bg-red-600 rounded-3xl shadow-xl shadow-red-900/20 p-6 sm:p-8 mb-6">
+    /* ---------- Banner ---------- */
+    .cat-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.25rem 1.25rem 4.5rem; }
+    .cat-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 84% 30%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at 98% -15%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 92% 92%, rgba(69, 10, 10, .28) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 10rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 900px) { .cat-hero { padding: 1.75rem 2.5rem 5rem; } }
+    .cat-hero__in { position: relative; max-width: 60rem; margin: 0 auto; }
+    .cat-volver {
+        display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 1.1rem 0 .4rem;
+        font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none;
+        background: rgba(69, 10, 10, .3); border: 2px solid rgba(255, 255, 255, .3); border-radius: 999px;
+        transition: background-color .15s, border-color .15s;
+    }
+    .cat-volver span { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #b91c1c; background: #fff; transition: transform .2s; }
+    .cat-volver svg { width: .9rem; height: .9rem; }
+    .cat-volver:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+    .cat-volver:hover span { transform: translateX(-.15rem); }
+    .cat-volver:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .cat-hero h1 { margin: 1.25rem 0 0; font-size: clamp(2.2rem, 1.4rem + 3vw, 3.5rem); font-weight: 800; font-stretch: 110%; line-height: .95; letter-spacing: -.035em; }
+    .cat-hero p { margin: .7rem 0 0; max-width: 40ch; font-size: 1rem; line-height: 1.45; opacity: .95; }
+    .cat-hero p strong { font-weight: 800; }
 
-        <div class="flex items-center gap-4">
+    /* ---------- Contenido (el tablero sube sobre el banner) ---------- */
+    .cat-wrap { position: relative; max-width: 60rem; margin: -2.75rem auto 0; padding: 0 .75rem 3rem; }
+    @media (min-width: 640px) { .cat-wrap { padding: 0 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .cat-wrap { padding: 0 2.5rem 4rem; } }
+    .cat-board { padding: 1rem; background: var(--board); border-radius: 1.75rem; }
+    @media (min-width: 640px) { .cat-board { padding: 1.5rem; border-radius: 2.25rem; } }
+    .cat-grid { display: grid; gap: 1rem; }
+    @media (min-width: 820px) { .cat-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; } }
 
-            <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-                <i class="fa-solid fa-pen-to-square text-white text-2xl"></i>
-            </div>
+    .cat-card { padding: 1.25rem; background: var(--card); border-radius: 1.4rem; }
+    @media (min-width: 640px) { .cat-card { padding: 1.5rem; } }
+    .cat-card h2 { margin: 0; font-size: 1.25rem; font-weight: 800; font-stretch: 105%; color: var(--link); }
+    .cat-card__sub { margin: .3rem 0 0; font-size: .875rem; color: var(--muted); }
 
-            <div>
-                <p class="text-red-100 text-sm font-medium mb-1">
-                    Gestión de categorías
-                </p>
+    /* Campo */
+    .cat-campo { display: grid; gap: .45rem; margin-top: 1.25rem; }
+    .cat-campo label { font-size: .8125rem; font-weight: 800; letter-spacing: .02em; }
+    .cat-campo label span { color: var(--red); }
+    .cat-campo input {
+        width: 100%; height: 3.25rem; padding: 0 1.1rem; font: inherit; font-size: 1.0625rem; font-weight: 600; color: var(--ink);
+        background: var(--page); border: 2px solid var(--line); border-radius: 1rem; outline: 0;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .cat-campo input::placeholder { color: var(--muted); font-weight: 400; }
+    .cat-campo input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(185, 28, 28, .15); }
+    .cat-campo.con-error input { border-color: var(--red); }
+    .cat-ayuda { display: flex; justify-content: space-between; gap: 1rem; margin: 0; font-size: .8125rem; color: var(--muted); }
+    .cat-error { display: flex; gap: .5rem; align-items: flex-start; margin: 0; font-size: .875rem; font-weight: 700; color: var(--red); }
+    .cat-error::before { content: ""; flex: none; width: .55rem; height: .55rem; margin-top: .35rem; border-radius: 50%; background: currentColor; }
+    .dark .cat-error { color: #f87171; }
 
-                <h1 class="text-2xl sm:text-3xl font-bold text-white">
-                    Editar categoría
-                </h1>
+    /* Botones */
+    .cat-acc { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; margin-top: 1.5rem; }
+    .cat-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 2.85rem; padding: 0 1.4rem;
+        font: inherit; font-size: .9375rem; font-weight: 800; color: #fff; background: #b91c1c; border: 0; border-radius: 999px;
+        text-decoration: none; cursor: pointer; transition: background-color .15s, transform .15s;
+    }
+    .cat-btn svg { width: 1rem; height: 1rem; }
+    .cat-btn:hover { background: #7f1d1d; }
+    .cat-btn:active { transform: scale(.97); }
+    .cat-btn--linea { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 2px var(--line); }
+    .cat-btn--linea:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cat-btn:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    @media (max-width: 479px) { .cat-acc { flex-direction: column-reverse; } .cat-acc .cat-btn { width: 100%; } }
 
-            </div>
+    /* ---------- Vista previa: la misma etiqueta de la lista ---------- */
+    .cat-prev__t { margin: 0 0 .9rem; font-size: .75rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .cat-tag {
+        position: relative; display: block; min-height: 4.75rem; padding: .75rem 2.6rem .75rem 1.1rem;
+        color: #fff; background: linear-gradient(135deg, var(--tag-rojo) 0%, var(--tag-rojo-2) 100%);
+        border-radius: 1rem 0 0 1rem;
+        clip-path: polygon(0 0, calc(100% - 1.5rem) 0, 100% 50%, calc(100% - 1.5rem) 100%, 0 100%);
+    }
+    .cat-tag::after {
+        content: ""; position: absolute; right: 1.5rem; top: 50%; width: .7rem; height: .7rem; margin-top: -.35rem;
+        border-radius: 50%; background: var(--card); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45);
+    }
+    .cat-tag__eti { display: block; font-size: .625rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; opacity: .7; }
+    .cat-tag__nom { display: block; margin-top: .15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.0625rem; font-weight: 800; font-stretch: 105%; letter-spacing: .02em; text-transform: uppercase; }
+    .cat-tag__nom.vacio { opacity: .55; }
+    .cat-tag__n { display: block; margin-top: .15rem; font-size: .75rem; font-weight: 600; opacity: .8; }
 
+    .cat-tips { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: .75rem; }
+    .cat-tips li { display: flex; gap: .75rem; align-items: flex-start; font-size: .875rem; line-height: 1.4; color: var(--muted); }
+    .cat-tips li b { display: block; color: var(--ink); font-size: .9375rem; }
+    .cat-tips__ico { flex: none; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: .75rem; color: var(--link); background: var(--ta-soft); }
+    .cat-tips__ico svg { width: 1rem; height: 1rem; }
+
+    @media (prefers-reduced-motion: reduce) { .cat *, .cat *::before { transition: none !important; } }
+</style>
+
+<div class="cat">
+    <header class="cat-hero">
+        <div class="cat-hero__in">
+            <a class="cat-volver" href="{% url 'lista_categorias' %}">
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg></span>
+                Categorías
+            </a>
+            {% if categoria %}
+                <h1>Editar categoría</h1>
+                <p>Cámbiale el nombre a <strong>{{ categoria.nombre }}</strong>. Los productos que tiene siguen en ella.</p>
+            {% else %}
+                <h1>Nueva categoría</h1>
+                <p>Crea una categoría para ordenar los productos. En el catálogo cada una tiene su color.</p>
+            {% endif %}
         </div>
+    </header>
 
-    </div>
+    <div class="cat-wrap">
+        <section class="cat-board">
+            <div class="cat-grid">
 
+                <form class="cat-card" method="POST" novalidate>
+                    {% csrf_token %}
+                    <h2>{% if categoria %}Datos de la categoría{% else %}¿Cómo se llama?{% endif %}</h2>
+                    <p class="cat-card__sub">Un nombre corto y claro, que no se repita.</p>
 
-    <!-- Formulario -->
-    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden">
-
-        <div class="p-6 sm:p-8">
-
-            <div class="mb-7">
-                <h2 class="text-lg font-bold text-zinc-900 dark:text-white">
-                    Información de la categoría
-                </h2>
-
-                <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                    Modifica el nombre de la categoría y guarda los cambios.
-                </p>
-            </div>
-
-
-            <form method="POST" class="space-y-6">
-
-                {% csrf_token %}
-
-
-                <!-- Nombre -->
-                <div>
-
-                    <label for="id_nombre"
-                           class="block text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
-                        Nombre de la categoría
-                    </label>
-
-                    <div class="relative">
-
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <i class="fa-solid fa-tag text-zinc-400"></i>
-                        </div>
-
-                        <input
-                            type="text"
-                            id="id_nombre"
-                            name="nombre"
-                            value="{{ formulario.nombre.value|default:categoria.nombre }}"
-                            placeholder="Ej: Lácteos"
-                            autocomplete="off"
-                            required
-                            class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
-                        >
-
+                    <div class="cat-campo{% if formulario.nombre.errors %} con-error{% endif %}">
+                        <label for="{{ formulario.nombre.id_for_label }}">Nombre de la categoría <span aria-hidden="true">*</span></label>
+                        <input type="text" name="{{ formulario.nombre.html_name }}" id="{{ formulario.nombre.id_for_label }}"
+                               value="{{ formulario.nombre.value|default:'' }}" placeholder="Ej: Lácteos" maxlength="100"
+                               autocomplete="off" required {% if formulario.nombre.errors %}aria-invalid="true" aria-describedby="error-nombre"{% endif %}
+                               {% if not categoria %}autofocus{% endif %}>
+                        {% for e in formulario.nombre.errors %}<p class="cat-error" id="error-nombre">{{ e }}</p>{% endfor %}
+                        {% for e in formulario.non_field_errors %}<p class="cat-error">{{ e }}</p>{% endfor %}
+                        <p class="cat-ayuda"><span>Ej: Lácteos, Aseo, Bebidas…</span><span id="contador">0/100</span></p>
                     </div>
 
-
-                    {% if formulario.nombre.errors %}
-
-                        <div class="mt-2 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
-
-                            <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
-
-                            <div>
-                                {{ formulario.nombre.errors }}
-                            </div>
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- Categoría actual -->
-                <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 p-4">
-
-                    <div class="flex items-center gap-3">
-
-                        <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center">
-                            <i class="fa-solid fa-circle-info text-red-600 dark:text-red-400"></i>
-                        </div>
-
-                        <div>
-                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                Categoría actual
-                            </p>
-
-                            <p class="font-semibold text-zinc-900 dark:text-white">
-                                {{ categoria.nombre }}
-                            </p>
-                        </div>
-
+                    <div class="cat-acc">
+                        <a class="cat-btn cat-btn--linea" href="{% url 'lista_categorias' %}">Cancelar</a>
+                        <button class="cat-btn" type="submit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+                            {% if categoria %}Guardar cambios{% else %}Crear categoría{% endif %}
+                        </button>
                     </div>
+                </form>
 
-                </div>
+                <aside class="cat-card" aria-label="Vista previa">
+                    <p class="cat-prev__t">Así se verá en la lista</p>
+                    <div class="cat-tag" aria-hidden="true">
+                        <span class="cat-tag__eti">Categoría</span>
+                        <span class="cat-tag__nom" id="vistaPreviaNombre">{% if formulario.nombre.value %}{{ formulario.nombre.value }}{% else %}Nueva categoría{% endif %}</span>
+                        <span class="cat-tag__n">{% if categoria %}{{ categoria.productos.count }} producto{{ categoria.productos.count|pluralize }}{% else %}0 productos{% endif %}</span>
+                    </div>
+                    <ul class="cat-tips">
+                        <li>
+                            <span class="cat-tips__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></span>
+                            <span><b>Nombre único</b>No se pueden repetir, aunque cambien mayúsculas.</span>
+                        </li>
+                        <li>
+                            <span class="cat-tips__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
+                            <span><b>Mejor orden</b>En el catálogo se puede filtrar por categoría.</span>
+                        </li>
+                    </ul>
+                </aside>
 
-
-                <!-- Botones -->
-                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-
-                    <a
-                        href="{% url 'lista_categorias' %}"
-                        class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold transition"
-                    >
-                        <i class="fa-solid fa-arrow-left"></i>
-                        Cancelar
-                    </a>
-
-
-                    <button
-                        type="submit"
-                        class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition shadow-lg shadow-red-900/20"
-                    >
-                        <i class="fa-solid fa-floppy-disk"></i>
-                        Guardar cambios
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
+            </div>
+        </section>
     </div>
+</div>
 
-</div>
-</div>
+<script>
+/* Vista previa y contador: se actualizan mientras escribes */
+(function () {
+    var campo = document.getElementById('{{ formulario.nombre.id_for_label }}');
+    var prev = document.getElementById('vistaPreviaNombre');
+    var cont = document.getElementById('contador');
+    if (!campo || !prev) return;
+    function pintar() {
+        var v = campo.value.trim();
+        prev.textContent = v || 'Nueva categoría';
+        prev.classList.toggle('vacio', !v);
+        if (cont) cont.textContent = campo.value.length + '/' + (campo.maxLength > 0 ? campo.maxLength : 100);
+    }
+    campo.addEventListener('input', pintar);
+    pintar();
+    var form = campo.form;
+    form.addEventListener('submit', function () {
+        var b = form.querySelector('[type="submit"]');
+        setTimeout(function () { b.disabled = true; }, 0);   /* evita el doble clic sin cancelar el envío */
+    });
+}());
+</script>
 
 {% endblock %}
