@@ -9,10 +9,12 @@ from django.shortcuts import (
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import DatabaseError, transaction
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
 from django.db.models import ProtectedError
 from django.http import JsonResponse
+from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
 
 from .models import Producto, Categoria, Transaccion
@@ -49,45 +51,53 @@ def solo_superusuario(vista):
 # PRODUCTOS
 # ============================================================
 
+POR_PAGINA = (10, 20, 50)   # opciones de «Mostrar» en la lista y el catálogo
+
+
+def _paginar(request, productos, busqueda, categoria):
+    """Parte la lista en páginas de 10, 20 o 50 (lo que llegue en ?por=; cualquier otra cosa = 10).
+    Con ?todos=1 devuelve todo sin partir: así lo pide el buscador en vivo para buscar en todos los productos."""
+    por = request.GET.get('por', '')
+    por = int(por) if por in ('10', '20', '50') else POR_PAGINA[0]
+    filtros = urlencode({k: v for k, v in (('buscar', busqueda), ('categoria', categoria)) if v})
+    datos = {'por': por, 'opciones_por': POR_PAGINA, 'filtros_qs': filtros}
+    if request.GET.get('todos') == '1':
+        datos.update(productos=productos, pagina=None, rango_paginas=[])
+    else:
+        pagina = Paginator(productos, por).get_page(request.GET.get('pagina'))
+        datos.update(
+            productos=pagina.object_list,
+            pagina=pagina,
+            rango_paginas=pagina.paginator.get_elided_page_range(pagina.number, on_each_side=1, on_ends=1),
+        )
+    return datos
+
+
 @login_required
 def lista_productos(request):
 
-    busqueda = request.GET.get(
-        'buscar',
-        ''
-    ).strip()
+    busqueda = request.GET.get('buscar', '').strip()
 
-    categoria_seleccionada = request.GET.get(
-        'categoria',
-        ''
-    ).strip()
+    categoria_seleccionada = request.GET.get('categoria', '').strip()
+    if not categoria_seleccionada.isdigit():          # un valor raro (?categoria=abc) ya no da error 500
+        categoria_seleccionada = ''
 
-    productos = Producto.objects.select_related(
-        'categoria'
-    ).all()
+    productos = Producto.objects.select_related('categoria').all()
 
     if busqueda:
-
-        productos = productos.filter(
-            Q(nombre__icontains=busqueda)
-        )
+        productos = productos.filter(Q(nombre__icontains=busqueda))
 
     if categoria_seleccionada:
-
-        productos = productos.filter(
-            categoria_id=categoria_seleccionada
-        )
-
-    categorias = Categoria.objects.all()
+        productos = productos.filter(categoria_id=categoria_seleccionada)
 
     return render(
         request,
         'productos/lista_productos.html',
         {
-            'productos': productos,
             'busqueda': busqueda,
             'categoria_seleccionada': categoria_seleccionada,
-            'categorias': categorias,
+            'categorias': Categoria.objects.all(),
+            **_paginar(request, productos, busqueda, categoria_seleccionada),
         }
     )
 
@@ -277,25 +287,24 @@ def detalle_producto(request, id):
 @solo_superusuario
 def lista_categorias(request):
 
-    busqueda = request.GET.get(
-        'buscar',
-        ''
-    ).strip()
+    busqueda = request.GET.get('buscar', '').strip()
 
-    categorias = Categoria.objects.all()
+    # Cada categoría con cuántos productos tiene (se muestra en la etiqueta)
+    categorias = Categoria.objects.annotate(num_productos=Count('productos')).order_by('nombre')
 
     if busqueda:
+        categorias = categorias.filter(nombre__icontains=busqueda)
 
-        categorias = categorias.filter(
-            nombre__icontains=busqueda
-        )
+    datos = _paginar(request, categorias, busqueda, '')
+    datos['categorias'] = datos.pop('productos')
 
     return render(
         request,
         'categorias/lista_categorias.html',
         {
-            'categorias': categorias,
             'busqueda': busqueda,
+            'total_categorias': Categoria.objects.count(),
+            **datos,
         }
     )
 
@@ -409,6 +418,8 @@ def catalogo_productos(request):
 
     busqueda = request.GET.get('buscar', '').strip()
     categoria_seleccionada = request.GET.get('categoria', '').strip()
+    if not categoria_seleccionada.isdigit():          # un valor raro (?categoria=abc) ya no da error 500
+        categoria_seleccionada = ''
 
     productos = Producto.objects.select_related('categoria').all()
 
@@ -422,10 +433,10 @@ def catalogo_productos(request):
         request,
         'productos/catalogo_productos.html',
         {
-            'productos': productos,
             'busqueda': busqueda,
             'categoria_seleccionada': categoria_seleccionada,
             'categorias': Categoria.objects.all(),
+            **_paginar(request, productos, busqueda, categoria_seleccionada),
         }
     )
 

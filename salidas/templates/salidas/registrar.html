@@ -1,0 +1,285 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Registrar salida - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .sal, .sal * { box-sizing: border-box; }
+    .sal {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --red-deep: #7f1d1d; --soft: #fdeceb; --ok: #15803d; --ok-soft: #e4f4e8; --no: #57534e; --no-soft: #efebe9;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink); background: var(--page);
+    }
+    .dark .sal {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --red: #ef4444; --red-deep: #fca5a5; --soft: #2b1816; --ok: #4ade80; --ok-soft: #14281b; --no: #d6d3d1; --no-soft: #292524;
+    }
+    .sal-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+    /* Banner */
+    .sal-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.75rem 1.25rem 2rem; }
+    .sal-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 86% 30%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 7rem at 98% -10%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    .sal-hero__in { position: relative; max-width: 72rem; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; }
+    .sal-hero h1 { margin: 0; font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3rem); font-weight: 800; font-stretch: 110%; line-height: 1; letter-spacing: -.03em; }
+    .sal-hero p { margin: .5rem 0 0; max-width: 40ch; font-size: 1rem; line-height: 1.4; opacity: .95; }
+    .sal-volver { display: inline-flex; align-items: center; gap: .4rem; margin-bottom: .75rem; color: #fff; font-size: .875rem; font-weight: 700; text-decoration: none; opacity: .9; }
+    .sal-volver:hover { opacity: 1; text-decoration: underline; }
+
+    /* Botones */
+    .sal-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+        height: 2.75rem; padding: 0 1.25rem; border: 2px solid var(--red); border-radius: 999px;
+        font: inherit; font-size: .9375rem; font-weight: 800; text-decoration: none; cursor: pointer;
+        color: #fff; background: var(--red); transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .sal-btn:hover { background: #7f1d1d; border-color: #7f1d1d; }
+    .sal-btn--claro { color: #7f1d1d; background: #fff; border-color: #fff; box-shadow: 0 .75rem 1.25rem -.75rem rgba(69, 10, 10, .75); }
+    .sal-btn--claro:hover { color: #fff; background: #450a0a; border-color: #450a0a; }
+    .sal-btn--linea { color: var(--ink); background: transparent; border-color: var(--line); }
+    .sal-btn--linea:hover { color: #fff; background: var(--red); border-color: var(--red); }
+    .sal-btn:focus-visible, .sal a:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+    /* Tablero */
+    .sal-wrap { max-width: 72rem; margin: 0 auto; padding: 1.25rem .75rem 3rem; }
+    @media (min-width: 640px) { .sal-wrap { padding: 1.75rem 1.5rem 3.5rem; } }
+    .sal-board { padding: 1.25rem .875rem; background: var(--board); border-radius: 1.75rem; }
+    @media (min-width: 640px) { .sal-board { padding: 1.75rem; border-radius: 2.25rem; } }
+
+    /* Mensajes */
+    .sal-msgs { display: grid; gap: .5rem; margin-bottom: 1rem; }
+    .sal-msg { padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; line-height: 1.4; background: var(--soft); }
+    .sal-msg.is-success { background: var(--ok-soft); }
+
+    /* Campos */
+    .sal-campo { display: grid; gap: .4rem; min-width: 0; }
+    .sal-campo > label, .sal-label { font-size: .8125rem; font-weight: 800; letter-spacing: .02em; }
+    .sal-input, .sal select, .sal textarea, .sal input[type="text"], .sal input[type="date"], .sal input[type="file"] {
+        width: 100%; min-width: 0; padding: .7rem .9rem; font: inherit; font-size: 1rem; color: var(--ink);
+        background: var(--card); border: 2px solid var(--line); border-radius: .9rem; outline: 0; color-scheme: light;
+    }
+    .dark .sal select, .dark .sal input { color-scheme: dark; }
+    .sal select option { color: #1c1917; background: #fff; }
+    .dark .sal select option { color: #f5f5f4; background: #1d1c1b; }
+    .sal textarea { resize: vertical; line-height: 1.45; }
+    .sal input:focus, .sal select:focus, .sal textarea:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(185, 28, 28, .15); }
+    .sal-ayuda { margin: 0; font-size: .8125rem; color: var(--muted); }
+    .sal-error { margin: 0; font-size: .8125rem; font-weight: 700; color: var(--red); }
+    .sal-campo.con-error input, .sal-campo.con-error select, .sal-campo.con-error textarea { border-color: var(--red); }
+
+    /* Etiquetas de cambio */
+    .sal-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .65rem; border-radius: 999px; font-size: .75rem; font-weight: 800; white-space: nowrap; }
+    .sal-chip::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; }
+    .sal-chip--si { color: var(--ok); background: var(--ok-soft); }
+    .sal-chip--no { color: var(--no); background: var(--no-soft); }
+
+    @media (prefers-reduced-motion: reduce) { .sal *, .sal *::before { transition: none !important; } }
+</style>
+<style>
+    .sal-form { display: grid; gap: 1.1rem; max-width: 46rem; margin: 0 auto; }
+    .sal-fila { display: grid; gap: 1.1rem; grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 640px) { .sal-fila--2 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+    .sal-stock { font-weight: 800; color: var(--red); }
+
+    /* Motivos: tarjetas para tocar con el dedo */
+    .sal-motivos { display: grid; gap: .5rem; grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0; border: 0; }
+    @media (min-width: 640px) { .sal-motivos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .sal-motivos legend { margin-bottom: .4rem; padding: 0; font-size: .8125rem; font-weight: 800; }
+    .sal-motivos ul, .sal-motivos div { display: contents; list-style: none; }
+    .sal-motivos label {
+        display: flex; align-items: center; gap: .65rem; min-height: 3.25rem; padding: .65rem .9rem;
+        font-size: .9375rem; font-weight: 600; line-height: 1.25; cursor: pointer;
+        background: var(--card); border: 2px solid var(--line); border-radius: 1rem; transition: border-color .15s, background-color .15s;
+    }
+    .sal-motivos label:hover { border-color: var(--red); }
+    .sal-motivos input { flex: none; width: 1.15rem; height: 1.15rem; margin: 0; accent-color: #b91c1c; }
+    .sal-motivos label:has(input:checked) { border-color: var(--red); background: var(--soft); }
+
+    .sal-aviso { display: flex; align-items: flex-start; gap: .75rem; padding: .9rem 1rem; border-radius: 1rem; font-size: .9375rem; line-height: 1.4; }
+    .sal-aviso b { display: block; font-size: 1rem; }
+    .sal-aviso--si { color: var(--ok); background: var(--ok-soft); }
+    .sal-aviso--no { color: var(--no); background: var(--no-soft); }
+    .sal-aviso[hidden] { display: none; }
+
+    /* Ficha del producto elegido (cuando se llega desde la tarjeta) */
+    .sal-ficha { display: flex; align-items: center; gap: 1rem; padding: .9rem 1rem; background: var(--card); border: 2px solid var(--line); border-radius: 1.25rem; }
+    .sal-ficha__img { flex: none; display: grid; place-items: center; width: 4.5rem; height: 4.5rem; border-radius: 50%; background: var(--soft); overflow: hidden; }
+    .sal-ficha__img img { max-width: 80%; max-height: 80%; object-fit: contain; }
+    .sal-ficha__img svg { width: 1.75rem; height: 1.75rem; color: var(--muted); }
+    .sal-ficha__txt { flex: 1 1 auto; min-width: 0; }
+    .sal-ficha__txt b { display: block; font-size: 1.125rem; line-height: 1.2; }
+    .sal-ficha__txt span { font-size: .875rem; color: var(--muted); }
+    .sal-ficha a { flex: none; font-size: .875rem; font-weight: 700; color: var(--red); }
+
+    .sal-legend { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem 1rem; }
+    .sal-legend a { font-size: .8125rem; font-weight: 700; color: var(--red); }
+
+    /* Condiciones de recepción: opcional, se abre solo si hace falta */
+    .sal-mas { background: var(--card); border: 2px solid var(--line); border-radius: 1rem; }
+    .sal-mas summary { padding: .8rem 1rem; font-size: .9375rem; font-weight: 700; cursor: pointer; }
+    .sal-mas[open] summary { padding-bottom: .4rem; }
+    .sal-mas .sal-campo { padding: 0 1rem 1rem; }
+    .sal-foto-prev { max-width: 12rem; max-height: 12rem; border-radius: .9rem; object-fit: cover; }
+    .sal-foto-prev[hidden] { display: none; }
+    .sal-acciones { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: flex-end; }
+    @media (max-width: 479px) { .sal-acciones .sal-btn { flex: 1 1 100%; } }
+</style>
+
+<div class="sal" id="sal">
+    <header class="sal-hero">
+        <div class="sal-hero__in">
+            <div>
+                <a class="sal-volver" href="{% url 'lista_salidas' %}">← Salidas de productos</a>
+                <h1>Registrar salida</h1>
+                <p>Da de baja unidades que no se vendieron. Se descuentan del inventario al guardar.</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="sal-wrap">
+        <section class="sal-board">
+            {% if messages %}
+                <div class="sal-msgs" role="status">{% for m in messages %}<div class="sal-msg">{{ m }}</div>{% endfor %}</div>
+            {% endif %}
+            {% if formulario.non_field_errors %}
+                <div class="sal-msgs" role="alert">{% for e in formulario.non_field_errors %}<div class="sal-msg">{{ e }}</div>{% endfor %}</div>
+            {% endif %}
+
+            {% if not hay_motivos %}
+                <div class="sal-msgs"><div class="sal-msg">Todavía no hay motivos de salida. <a href="{% url 'motivos_salida' %}" style="color: inherit; font-weight: 800;">Agrégalos aquí</a> (hay un botón que crea los 7 de una vez).</div></div>
+            {% endif %}
+            {% if not formulario.fields.producto.queryset.exists %}
+                <div class="sal-msgs"><div class="sal-msg">No hay productos con existencias para dar de baja.</div></div>
+            {% endif %}
+
+            <form class="sal-form" method="post" enctype="multipart/form-data" novalidate id="form-salida">
+                {% csrf_token %}
+
+                <div class="sal-fila sal-fila--2">
+                    <div class="sal-campo{% if formulario.producto.errors %} con-error{% endif %}">
+                        {% if producto_elegido %}
+                            <span class="sal-label">Producto</span>
+                            <div class="sal-ficha">
+                                <span class="sal-ficha__img" data-tono="{{ producto_elegido.categoria_id|default:0 }}">
+                                    {% if producto_elegido.imagen %}
+                                        <img src="{{ producto_elegido.imagen.url }}" alt="">
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="1.75"></circle><path d="M21 16l-5-5-8 9"></path></svg>
+                                    {% endif %}
+                                </span>
+                                <span class="sal-ficha__txt"><b>{{ producto_elegido.nombre }}</b><span>Quedan {{ producto_elegido.existencias }}</span></span>
+                                <a href="{% url 'lista_salidas' %}">Cambiar</a>
+                            </div>
+                            <input type="hidden" name="producto" value="{{ producto_elegido.id }}">
+                        {% else %}
+                            <label for="{{ formulario.producto.id_for_label }}">Producto</label>
+                            {{ formulario.producto }}
+                        {% endif %}
+                        {% for e in formulario.producto.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                    </div>
+                    <div class="sal-campo{% if formulario.cantidad.errors %} con-error{% endif %}">
+                        <label for="{{ formulario.cantidad.id_for_label }}">Cantidad</label>
+                        {{ formulario.cantidad }}
+                        <p class="sal-ayuda" id="stock-ayuda" aria-live="polite"></p>
+                        {% for e in formulario.cantidad.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                    </div>
+                </div>
+
+                <fieldset class="sal-motivos{% if formulario.motivo.errors %} con-error{% endif %}">
+                    <legend class="sal-legend"><span>Motivo de la baja</span> <a href="{% url 'motivos_salida' %}">¿Falta un motivo? Agrégalo</a></legend>
+                    {{ formulario.motivo }}
+                </fieldset>
+                {% for e in formulario.motivo.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+
+                <div class="sal-aviso" id="aviso-cambio" hidden aria-live="polite"></div>
+
+                <details class="sal-mas"{% if formulario.observaciones_recepcion.value %} open{% endif %}>
+                    <summary>¿Llegó así del proveedor? Anota cómo llegó <span class="sal-ayuda">(opcional)</span></summary>
+                    <div class="sal-campo{% if formulario.observaciones_recepcion.errors %} con-error{% endif %}">
+                        <label class="sal-sr" for="{{ formulario.observaciones_recepcion.id_for_label }}">Condiciones en que llegó</label>
+                        {{ formulario.observaciones_recepcion }}
+                        {% for e in formulario.observaciones_recepcion.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                    </div>
+                </details>
+
+                <div class="sal-fila sal-fila--2">
+                    <div class="sal-campo{% if formulario.descripcion.errors %} con-error{% endif %}">
+                        <label for="{{ formulario.descripcion.id_for_label }}">Descripción de lo sucedido</label>
+                        {{ formulario.descripcion }}
+                        {% for e in formulario.descripcion.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                    </div>
+                    <div class="sal-campo{% if formulario.fecha.errors %} con-error{% endif %}">
+                        <label for="{{ formulario.fecha.id_for_label }}">Fecha de la baja</label>
+                        {{ formulario.fecha }}
+                        {% for e in formulario.fecha.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                    </div>
+                </div>
+
+                {% if fotos_habilitadas %}
+                    <div class="sal-campo{% if formulario.foto.errors %} con-error{% endif %}">
+                        <label for="{{ formulario.foto.id_for_label }}">Fotografía de evidencia <span class="sal-ayuda">(opcional, máx. 5 MB)</span></label>
+                        {{ formulario.foto }}
+                        <img class="sal-foto-prev" id="foto-prev" alt="Vista previa de la foto" hidden>
+                        {% for e in formulario.foto.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="sal-acciones">
+                    <a class="sal-btn sal-btn--linea" href="{% url 'lista_salidas' %}">Cancelar</a>
+                    <button class="sal-btn" type="submit">Confirmar salida</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+{{ existencias|json_script:"datos-existencias" }}
+{{ motivos_con_cambio|json_script:"datos-cambio" }}
+<script>
+(function () {
+    var raiz = document.getElementById('sal'), form = document.getElementById('form-salida');
+    if (!form) return;
+    raiz.classList.add('sal-js');
+    var stock = JSON.parse(document.getElementById('datos-existencias').textContent);
+    var conCambio = JSON.parse(document.getElementById('datos-cambio').textContent);
+    var selProd = form.querySelector('[name="producto"]'), cant = form.querySelector('[name="cantidad"]');
+    var ayuda = document.getElementById('stock-ayuda'), aviso = document.getElementById('aviso-cambio');
+
+    function mostrarStock() {
+        var n = stock[selProd.value];
+        ayuda.innerHTML = n === undefined ? 'Elige primero el producto.' : 'Puedes sacar hasta <span class="sal-stock">' + n + '</span>.';
+        if (n !== undefined) cant.setAttribute('max', n);
+    }
+    function mostrarMotivo() {
+        var m = form.querySelector('[name="motivo"]:checked');
+        var v = m ? m.value : '';
+        if (!v) { aviso.hidden = true; return; }
+        var si = conCambio.indexOf(v) >= 0;
+        aviso.hidden = false;
+        aviso.className = 'sal-aviso ' + (si ? 'sal-aviso--si' : 'sal-aviso--no');
+        aviso.innerHTML = si
+            ? '<div><b>El proveedor SÍ da cambio</b>Guarda el producto y la evidencia para la próxima visita del proveedor.</div>'
+            : '<div><b>El proveedor NO da cambio</b>Esta salida se cuenta como pérdida de la tienda.</div>';
+    }
+    cant.addEventListener('input', function () { cant.value = cant.value.replace(/\D+/g, ''); });
+    if (selProd.tagName === 'SELECT') selProd.addEventListener('change', mostrarStock);
+    form.addEventListener('change', function (e) { if (e.target.name === 'motivo') mostrarMotivo(); });
+    mostrarStock(); mostrarMotivo();
+
+    var foto = form.querySelector('[name="foto"]'), prev = document.getElementById('foto-prev');
+    if (foto && prev) foto.addEventListener('change', function () {
+        var f = foto.files && foto.files[0];
+        if (f && f.type.indexOf('image/') === 0) { prev.src = URL.createObjectURL(f); prev.hidden = false; } else { prev.hidden = true; }
+    });
+    form.addEventListener('submit', function () { var b = form.querySelector('[type="submit"]'); b.disabled = true; b.textContent = 'Guardando…'; });
+}());
+</script>
+{% endblock %}

@@ -18,6 +18,8 @@ urlpatterns = [
 
     # Redirigir la página principal al catálogo de productos
     path('', lambda request: redirect('informacion_tienda')),
+    
+    path('salidas/', include('salidas.urls')),
 ]
 
 

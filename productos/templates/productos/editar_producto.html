@@ -59,7 +59,7 @@
     --color-muted: #6b645e;
     --color-brand: var(--red-700);        /* rellenos: botones, chips activos */
     --color-brand-text: var(--red-700);   /* texto y enlaces sobre superficies */
-    --color-brand-hero: var(--red-600);
+    --color-brand-hero: var(--red-700);   /* el mismo rojo del catálogo y de base.html */
     --color-brand-deep: var(--red-900);   /* hover de rellenos */
     --color-brand-ink: var(--red-950);
     --color-on-brand: var(--white);
@@ -145,10 +145,39 @@
 
 .cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .cat-hero__bg::before {
-    content: ""; position: absolute; inset: -40%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='72' viewBox='0 0 320 72'%3E%3Cpath d='M0 36 C40 6 80 6 120 36 S200 66 240 36 S300 6 320 36' fill='none' stroke='%237f1d1d' stroke-opacity='.28' stroke-width='2'/%3E%3C/svg%3E");
-    background-size: 320px 72px;
-    transform: rotate(-9deg);
+    content: ""; position: absolute; inset: 0;
+    /* Cuatro círculos planos de la familia del rojo, los mismos del catálogo */
+    --claro-1: rgba(254, 205, 205, .17);
+    --claro-2: rgba(254, 205, 205, .1);
+    --vino:    rgba(69, 10, 10, .28);
+    --granate: rgba(127, 29, 29, .55);
+    background:
+        radial-gradient(circle 2.25rem at 84% 30%, var(--claro-1) calc(100% - 1px), transparent 100%),
+        radial-gradient(circle 8rem at 96% -3%, var(--claro-2) calc(100% - 1px), transparent 100%),
+        radial-gradient(circle 5rem at 93% 70%, var(--vino) calc(100% - 1px), transparent 100%),
+        radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
+}
+/* Foto de la tienda que se desvanece hacia el rojo (solo en pantallas anchas, como en el catálogo) */
+.cat-hero__photo { display: none; }
+/* El texto del banner arranca en el mismo borde que el formulario de abajo */
+.cat-hero__in { max-width: 71rem; }
+@media (min-width: 900px) {
+    .cat-hero__photo {
+        display: block; position: absolute; top: 0; right: 0; bottom: 0; width: min(55%, 60rem);
+        background:
+            linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%),
+            var(--foto) 50% 22% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+    }
+    .cat-hero__bg::before {
+        --izq: max(2.5rem, calc(50% - 40rem));
+        background:
+            radial-gradient(circle 2.75rem at calc(var(--izq) + 26rem) 26%, var(--claro-1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9.5rem at calc(var(--izq) + 30rem) -20%, var(--claro-2) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at calc(var(--izq) + 20rem) 100%, var(--vino) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 12rem at calc(var(--izq) - 3rem) 120%, var(--granate) calc(100% - 1px), transparent 100%);
+    }
 }
 .cat-hero__in {
     position: relative;
@@ -622,7 +651,9 @@
 <div class="cat">
 
     <header class="cat-hero">
-        <div class="cat-hero__bg" aria-hidden="true"></div>
+        <div class="cat-hero__bg" aria-hidden="true">
+            <div class="cat-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
+        </div>
 
         <div class="cat-hero__in">
             <div>
@@ -634,7 +665,7 @@
             <div class="cat-hero__acts">
                 <a class="cat-btn cat-btn--light" href="{% url 'lista_productos' %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg>
-                    Volver al catálogo
+                    Volver a productos
                 </a>
             </div>
         </div>

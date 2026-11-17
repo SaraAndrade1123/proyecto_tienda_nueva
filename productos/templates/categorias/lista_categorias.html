@@ -5,459 +5,372 @@
 
 {% block content %}
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+
 <style>
-    .etiqueta-card { background-color: #1e1e1e; }
+    .cat, .cat * { box-sizing: border-box; }
+    .cat {
+        --page: #ffffff; --board: #fbf6f5; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c;
+        --ta-soft: #ffe8e5; --tc-soft: #f4f1ef; --tc-strong: #e3ddd9;
+        /* Las dos etiquetas: roja y carbón (se alternan, como etiquetas de precio) */
+        --tag-rojo: #b91c1c; --tag-rojo-2: #991b1b;
+        --tag-negro: #292524; --tag-negro-2: #1c1917;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif;
+        color: var(--ink);
+    }
+    .dark .cat {
+        --page: #0f0f0f; --board: #151515; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --link: #f87171; --ta-soft: #2b1816; --tc-soft: #242221; --tc-strong: #373331;
+        --tag-negro: #38332f; --tag-negro-2: #2a2624;   /* en oscuro, un carbón más claro para que se distinga del fondo */
+    }
+    .cat-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
-    /* Celular (1 columna): alterna una a una */
-    @media (max-width: 639px) {
-        .grid-etiquetas > div:nth-child(odd) .etiqueta-card { background-color: #b91c1c; }
+    /* ---------- Banner (el mismo del catálogo y la lista de productos) ---------- */
+    .cat-hero { position: relative; color: #fff; background: #b91c1c; padding: 2rem 1.25rem 4.75rem; }
+    .cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .cat-hero__bg::before {
+        content: ""; position: absolute; inset: 0;
+        --claro-1: rgba(254, 205, 205, .17); --claro-2: rgba(254, 205, 205, .1);
+        --vino: rgba(69, 10, 10, .28); --granate: rgba(127, 29, 29, .55);
+        background:
+            radial-gradient(circle 2.25rem at 84% 35%, var(--claro-1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at 96% -3%, var(--claro-2) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 93% 76%, var(--vino) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
+    }
+    .cat-hero__photo { display: none; }
+    .cat-hero__in { position: relative; z-index: 1; max-width: 96rem; margin: 0 auto; }
+    .cat-hero__txt { max-width: 40rem; }
+    .cat-hero h1 { margin: 0; font-size: clamp(2.5rem, 1.2rem + 3.8vw, 3.75rem); line-height: .95; font-weight: 800; font-stretch: 110%; letter-spacing: -.035em; }
+    .cat-hero p { margin: .9rem 0 0; max-width: 34rem; font-size: 1.0625rem; line-height: 1.45; }
+    @media (min-width: 900px) {
+        .cat-hero { padding: 2.75rem 2.5rem 4.25rem; }
+        .cat-hero__in { min-height: 10.5rem; display: flex; align-items: center; }
+        .cat-hero__photo {
+            display: block; position: absolute; top: 0; right: 0; bottom: 0; width: min(62%, 64rem);
+            background: linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%), var(--foto) 50% 22% / cover no-repeat;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+        }
+        .cat-hero__bg::before {
+            --izq: max(2.5rem, calc(50% - 48rem));
+            background:
+                radial-gradient(circle 2.75rem at calc(var(--izq) + 26rem) 26%, var(--claro-1) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 9.5rem at calc(var(--izq) + 30rem) -20%, var(--claro-2) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 5rem at calc(var(--izq) + 20rem) 100%, var(--vino) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 12rem at calc(var(--izq) - 3rem) 120%, var(--granate) calc(100% - 1px), transparent 100%);
+        }
     }
 
-    /* 2 columnas: la 2.ª fila empieza con negro */
-    @media (min-width: 640px) and (max-width: 1023px) {
-        .grid-etiquetas > div:nth-child(4n+1) .etiqueta-card,
-        .grid-etiquetas > div:nth-child(4n+4) .etiqueta-card { background-color: #b91c1c; }
+    /* Botón «Nueva categoría»: píldora blanca con el + en un disco rojo (como «Nuevo producto») */
+    .cat-new {
+        display: inline-flex; align-items: center; gap: .65rem; height: 3rem; margin-top: 1.4rem; padding: 0 1.4rem 0 .5rem;
+        font-size: .9375rem; font-weight: 800; color: #7f1d1d; background: #fff; border-radius: 999px; text-decoration: none;
+        box-shadow: 0 .75rem 1.25rem -.75rem rgba(69, 10, 10, .75);
+        transition: color .15s, background-color .15s, transform .15s;
+    }
+    .cat-new__mas { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; color: #fff; background: #b91c1c; transition: transform .25s, color .15s, background-color .15s; }
+    .cat-new__mas svg { width: 1rem; height: 1rem; }
+    .cat-new:hover { color: #fff; background: #450a0a; transform: translateY(-2px); }
+    .cat-new:hover .cat-new__mas { color: #450a0a; background: #fff; transform: rotate(90deg); }
+    .cat-new:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    /* ---------- Buscador: la píldora que cabalga sobre el borde del banner ---------- */
+    .cat-filtro { position: relative; z-index: 4; max-width: 96rem; margin: -2.5rem auto 0; padding: 0 .75rem; }
+    @media (min-width: 640px)  { .cat-filtro { padding: 0 1.5rem; } }
+    @media (min-width: 900px)  { .cat-filtro { margin-top: -1.875rem; } }
+    @media (min-width: 1024px) { .cat-filtro { padding: 0 2.5rem; } }
+    .cat-search {
+        display: flex; align-items: center; gap: .75rem; max-width: 42rem; margin: 0 auto; padding: .5rem .5rem .5rem .625rem;
+        color: #1c1917; background: #fff; border-radius: 999px;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 1px rgba(127, 29, 29, .08);
+        transition: box-shadow .2s;
+    }
+    .dark .cat-search { color: #f5f5f4; background: #211f1e; box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 1px #3a3532; }
+    .cat-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 3px var(--red); }
+    .dark .cat-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 3px #f87171; }
+    .cat-search__lupa { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; color: var(--red); background: var(--ta-soft); }
+    .dark .cat-search__lupa { color: #f87171; }
+    .cat-search__lupa svg { width: 1.1rem; height: 1.1rem; }
+    .cat-search input { flex: 1 1 auto; min-width: 0; height: 2.75rem; padding: 0; font: inherit; font-size: 1.0625rem; font-weight: 500; color: inherit; background: transparent; border: 0; outline: 0; }
+    .cat-search input::placeholder { color: var(--muted); font-weight: 400; }
+    .cat-search input::-webkit-search-cancel-button {
+        -webkit-appearance: none; appearance: none; width: 2.25rem; height: 2.25rem; margin: 0; cursor: pointer;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2378716c' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l9 9M12.5 3.5l-9 9'/%3E%3C/svg%3E") center / .8rem no-repeat;
     }
 
-    /* 3 columnas: alternar una a una ya forma el tablero */
-    @media (min-width: 1024px) and (max-width: 1279px) {
-        .grid-etiquetas > div:nth-child(odd) .etiqueta-card { background-color: #b91c1c; }
-    }
+    /* ---------- Tablero ---------- */
+    .cat-wrap { max-width: 96rem; margin: 0 auto; padding: 1.25rem .75rem 2.5rem; }
+    @media (min-width: 640px)  { .cat-wrap { padding: 1.5rem 1.5rem 3rem; } }
+    @media (min-width: 1024px) { .cat-wrap { padding: 1.75rem 2.5rem 3.5rem; } }
+    .cat-board { padding: 1.25rem .875rem 1.5rem; background: var(--board); border-radius: 1.75rem; }
+    @media (min-width: 640px) { .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: 2.5rem; } }
+    .cat-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; margin-bottom: 1.25rem; }
+    .cat-head h2 { margin: 0; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.25rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.1; color: var(--link); }
+    .cat-head__side { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+    .cat-clear { display: inline-flex; align-items: center; gap: .4rem; font-size: .9375rem; font-weight: 600; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .cat-clear::after { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--red); }
+    .cat-clear[hidden], .cat-tags[hidden], .cat-empty[hidden], .cat-tags li[hidden] { display: none; }
 
-    /* 4 columnas: fila 1 rojo-negro-rojo-negro, fila 2 negro-rojo-negro-rojo */
-    @media (min-width: 1280px) {
-        .grid-etiquetas > div:nth-child(8n+1) .etiqueta-card,
-        .grid-etiquetas > div:nth-child(8n+3) .etiqueta-card,
-        .grid-etiquetas > div:nth-child(8n+6) .etiqueta-card,
-        .grid-etiquetas > div:nth-child(8n+8) .etiqueta-card { background-color: #b91c1c; }
+    .cat-msgs { display: grid; gap: .5rem; margin-bottom: 1.25rem; }
+    .cat-msg { display: flex; gap: .7rem; padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; line-height: 1.4; background: var(--ta-soft); }
+    .cat-msg::before { content: ""; flex: none; width: .65rem; height: .65rem; margin-top: .35rem; border-radius: 50%; background: var(--red); }
+    .cat-msg.is-success { background: #e4f4e8; }
+    .cat-msg.is-success::before { background: #16a34a; }
+    .dark .cat-msg.is-success { background: #14281b; }
+
+    /* ---------- Etiquetas de categoría ----------
+       Delgadas, con la punta a la derecha y el huequito del cordón, como una etiqueta de precio.
+       Celular: una por fila. Tableta: dos. Computador: cuatro. */
+    .cat-tags { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 640px)  { .cat-tags { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; } }
+    @media (min-width: 1100px) { .cat-tags { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+    .cat-tag {
+        --t-bg: var(--tag-negro); --t-bg-2: var(--tag-negro-2);
+        position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem;
+        min-height: 4.75rem; padding: .7rem 2.6rem .7rem 1.1rem;
+        color: #fff; background: linear-gradient(135deg, var(--t-bg) 0%, var(--t-bg-2) 100%);
+        border-radius: 1rem 0 0 1rem;
+        clip-path: polygon(0 0, calc(100% - 1.5rem) 0, 100% 50%, calc(100% - 1.5rem) 100%, 0 100%);
+        transition: transform .2s, filter .2s;
+    }
+    .cat-tags li:nth-child(odd) .cat-tag { --t-bg: var(--tag-rojo); --t-bg-2: var(--tag-rojo-2); }
+    /* el huequito del cordón, cerca de la punta */
+    .cat-tag::after {
+        content: ""; position: absolute; right: 1.5rem; top: 50%; width: .7rem; height: .7rem; margin-top: -.35rem;
+        border-radius: 50%; background: var(--board); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45);
+    }
+    .cat-tag:hover, .cat-tag:focus-within { transform: translateX(.2rem); filter: brightness(1.08); }
+    .cat-tag__txt { min-width: 0; }
+    .cat-tag__eti { display: block; font-size: .625rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; opacity: .7; }
+    .cat-tag__nom {
+        display: block; margin: .15rem 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        font-size: 1.0625rem; font-weight: 800; font-stretch: 105%; letter-spacing: .02em; text-transform: uppercase;
+    }
+    .cat-tag__n { display: block; margin-top: .15rem; font-size: .75rem; font-weight: 600; opacity: .8; }
+    .cat-tag mark { padding: 0 .08em; color: #450a0a; background: #fecaca; border-radius: .2rem; }
+
+    /* Botones de la etiqueta: pequeños, siempre a la vista */
+    .cat-tag__acc { display: flex; gap: .35rem; }
+    .cat-ico {
+        display: grid; place-items: center; width: 2.1rem; height: 2.1rem; padding: 0;
+        color: #fff; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .22); border-radius: 50%;
+        cursor: pointer; text-decoration: none; transition: background-color .15s, color .15s, transform .15s;
+    }
+    .cat-ico svg { width: .95rem; height: .95rem; }
+    .cat-ico:hover { color: #b91c1c; background: #fff; border-color: #fff; transform: scale(1.06); }
+    .cat-ico--del:hover { color: #fff; background: #450a0a; border-color: #450a0a; }
+    .cat-ico:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+    /* ---------- Mostrar 10 · 20 · 50 y paginación ---------- */
+    .cat-por { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; color: var(--muted); }
+    .cat-por[hidden] { display: none; }
+    .cat-por__g { display: inline-flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: var(--page); box-shadow: inset 0 0 0 1px var(--tc-strong); }
+    .cat-por a { display: grid; place-items: center; min-width: 2.25rem; height: 2rem; padding: 0 .6rem; border-radius: 999px; font-size: .875rem; font-weight: 800; color: var(--ink); text-decoration: none; transition: background-color .15s, color .15s; }
+    .cat-por a:hover { background: var(--ta-soft); }
+    .cat-por a[aria-current="true"] { color: #fff; background: #b91c1c; }
+    .cat-pag { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; margin-top: 1.5rem; }
+    .cat-pag[hidden] { display: none; }
+    .cat-pag__info { margin: 0; font-size: .875rem; color: var(--muted); }
+    .cat-pag__info b { color: var(--ink); }
+    .cat-pag__nums { display: flex; flex-wrap: wrap; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+    .cat-pag__nums a, .cat-pag__nums span { display: grid; place-items: center; min-width: 2.5rem; height: 2.5rem; padding: 0 .5rem; border-radius: 999px; font-size: .9375rem; font-weight: 800; color: var(--ink); text-decoration: none; }
+    .cat-pag__nums a { background: var(--page); box-shadow: inset 0 0 0 1px var(--tc-strong); transition: background-color .15s, color .15s; }
+    .cat-pag__nums a:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cat-pag__nums [aria-current="page"] { color: #fff; background: #b91c1c; }
+    .cat-pag__nums .gap { min-width: 1.25rem; color: var(--muted); }
+    .cat-pag__nums .off { opacity: .35; background: var(--page); box-shadow: inset 0 0 0 1px var(--tc-strong); }
+    .cat-pag__nums svg { width: 1rem; height: 1rem; }
+    @media (max-width: 559px) { .cat-pag { justify-content: center; } .cat-pag__info { width: 100%; text-align: center; } }
+    .cat-por a:focus-visible, .cat-pag a:focus-visible, .cat-clear:focus-visible, .cat-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+    /* ---------- Sin resultados ---------- */
+    .cat-empty { padding: 3rem 1.5rem 3.25rem; text-align: center; background: var(--tc-soft); border-radius: 4.5rem 1.25rem 1.25rem 1.25rem; }
+    .cat-empty__disc { display: grid; place-items: center; width: 5rem; height: 5rem; margin: 0 auto; border-radius: 50%; color: var(--muted); background: var(--tc-strong); }
+    .cat-empty__disc svg { width: 2.25rem; height: 2.25rem; }
+    .cat-empty h3 { margin: 1.25rem 0 0; font-size: 1.375rem; font-weight: 800; }
+    .cat-empty p { margin: .5rem auto 0; max-width: 34ch; color: var(--muted); line-height: 1.5; }
+    .cat-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 2.75rem; margin-top: 1.5rem; padding: 0 1.5rem;
+        font: inherit; font-size: .9375rem; font-weight: 700; color: #fff; background: #b91c1c; border: 0; border-radius: 999px; text-decoration: none; cursor: pointer;
+        transition: background-color .15s;
+    }
+    .cat-btn:hover { background: #7f1d1d; }
+    .cat-btn--linea { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 2px var(--tc-strong); }
+    .cat-btn--linea:hover { background: var(--tc-soft); }
+
+    /* ---------- Ventana para confirmar el borrado ---------- */
+    .cat-modal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 15, 15, .6); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+    .cat-modal.is-open { display: flex; }
+    .cat-dialog { width: 100%; max-width: 26rem; padding: 2rem 1.5rem 1.5rem; text-align: center; color: var(--ink); background: var(--page); border-radius: 4rem 1.25rem 1.25rem 1.25rem; box-shadow: 0 2rem 4rem -1rem rgba(0, 0, 0, .5); }
+    .dark .cat-dialog { background: #1a1a1a; }
+    .cat-dialog__disc { display: grid; place-items: center; width: 4.5rem; height: 4.5rem; margin: 0 auto; border-radius: 50%; color: var(--link); background: var(--ta-soft); }
+    .cat-dialog__disc svg { width: 2rem; height: 2rem; }
+    .cat-dialog h3 { margin: 1.1rem 0 0; font-size: 1.5rem; font-weight: 800; }
+    .cat-dialog p { margin: .6rem 0 0; line-height: 1.5; color: var(--muted); }
+    .cat-dialog p strong { color: var(--ink); overflow-wrap: anywhere; }
+    .cat-dialog__acts { display: flex; gap: .625rem; margin-top: 1.5rem; }
+    .cat-dialog__acts .cat-btn { flex: 1; margin-top: 0; padding: 0 .5rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cat *, .cat *::before, .cat *::after { transition: none !important; }
+        .cat-tag:hover, .cat-tag:focus-within, .cat-new:hover { transform: none; }
     }
 </style>
 
-<div class="relative isolate min-h-screen w-full text-zinc-900 dark:text-white py-6 px-4 sm:px-6 lg:px-10 transition-colors duration-500">
+<div class="cat">
 
-    <!-- FONDO -->
-    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-zinc-300 dark:bg-[#0f0f0f] transition-colors duration-500">
-
-        <div
-            class="absolute inset-0 bg-cover bg-center blur-sm scale-105 opacity-30"
-            style="background-image: url('{% get_media_prefix %}fondo_tienda.jpeg');">
+    <header class="cat-hero">
+        <div class="cat-hero__bg" aria-hidden="true">
+            <div class="cat-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
         </div>
-
-        <img
-            src="{% get_media_prefix %}fondo_categoria.jpg"
-            class="absolute inset-0 w-full h-full object-contain object-center"
-            alt=""
-        >
-
-        <!-- Velo muy suave en claro, igual que antes en oscuro -->
-        <div class="absolute inset-0 bg-white/10 dark:bg-[#0f0f0f]/30 transition-colors duration-500"></div>
-
-    </div>
-
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="relative z-10 max-w-7xl mx-auto space-y-6">
-
-
-        <!-- ENCABEZADO -->
-        <section class="relative overflow-hidden bg-[#b91c1c] rounded-3xl shadow-xl shadow-black/30 p-6 sm:p-8">
-
-            <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/10"></div>
-
-            <div class="absolute right-20 -bottom-24 w-48 h-48 rounded-full bg-[#7f1d1d]/30"></div>
-
-            <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-
-                <div>
-
-                    <div class="flex items-center gap-2 text-white/80 mb-2">
-
-                        <i class="fa-solid fa-layer-group"></i>
-
-                        <span class="text-xs font-bold uppercase tracking-[0.2em]">
-                            Gestión de inventario
-                        </span>
-
-                    </div>
-
-                    <h1 class="text-3xl sm:text-4xl font-black text-white">
-                        Categorías
-                    </h1>
-
-                    <p class="text-white/80 text-sm mt-2">
-                        Organiza los productos de tu tienda de forma sencilla y ordenada.
-                    </p>
-
-                </div>
-
-                <a
-                    href="{% url 'crear_categoria' %}"
-                    class="h-12 px-6 inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-100 text-[#b91c1c] rounded-2xl font-bold text-sm shadow-lg transition-all active:scale-95"
-                >
-
-                    <i class="fa-solid fa-plus"></i>
-
+        <div class="cat-hero__in">
+            <div class="cat-hero__txt">
+                <h1>Categorías</h1>
+                <p>Organiza los productos de la tienda. Cada categoría le da su color en el catálogo.</p>
+                <a class="cat-new" href="{% url 'crear_categoria' %}">
+                    <span class="cat-new__mas" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
                     Nueva categoría
-
                 </a>
-
             </div>
+        </div>
+    </header>
 
-        </section>
-
-
-        <!-- MENSAJES -->
-        {% if messages %}
-
-            <div class="space-y-3">
-
-                {% for message in messages %}
-
-                    <div class="flex items-center gap-3 px-4 py-3 rounded-2xl border text-sm font-medium
-                        {% if message.tags == 'success' %}
-                            bg-green-50 border-green-200 text-green-700
-                            dark:bg-green-950/80 dark:border-green-800 dark:text-green-300
-                        {% elif message.tags == 'warning' %}
-                            bg-yellow-50 border-yellow-200 text-yellow-700
-                            dark:bg-yellow-950/80 dark:border-yellow-800 dark:text-yellow-300
-                        {% else %}
-                            bg-red-50 border-red-200 text-red-700
-                            dark:bg-[#7f1d1d]/30 dark:border-[#991b1b] dark:text-red-200
-                        {% endif %}
-                    ">
-
-                        <i class="fa-solid fa-circle-info"></i>
-
-                        <span>{{ message }}</span>
-
-                    </div>
-
-                {% endfor %}
-
-            </div>
-
-        {% endif %}
-
-
-        <!-- BUSCADOR -->
-        <section>
-
-            <form method="GET" action="{% url 'lista_categorias' %}">
-
-                <div class="flex gap-3">
-
-                    <div class="relative flex-1">
-
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-
-                        <input
-                            type="text"
-                            name="buscar"
-                            id="buscar"
-                            value="{{ busqueda }}"
-                            placeholder="Buscar una categoría..."
-                            class="w-full h-12 pl-11 pr-4 bg-white dark:bg-[#1a1a1a] border border-zinc-300 dark:border-white/10 rounded-2xl text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-[#b91c1c] focus:ring-4 focus:ring-[#b91c1c]/10 shadow-sm transition-all"
-                        >
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="h-12 px-6 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-2xl font-bold text-sm shadow-lg transition-all active:scale-95"
-                    >
-
-                        Buscar
-
-                    </button>
-
-                    {% if busqueda %}
-
-                        <a
-                            href="{% url 'lista_categorias' %}"
-                            class="h-12 w-12 flex items-center justify-center bg-white dark:bg-[#1e1e1e] hover:bg-zinc-100 dark:hover:bg-[#292929] border border-zinc-300 dark:border-white/10 text-zinc-600 dark:text-white rounded-2xl transition-all"
-                            title="Limpiar búsqueda"
-                        >
-
-                            <i class="fa-solid fa-xmark"></i>
-
-                        </a>
-
-                    {% endif %}
-
-                </div>
-
+    {# Filtro en vivo: las etiquetas se van filtrando mientras escribes. Sin JavaScript funciona igual: escribe y pulsa Enter. #}
+    {% if total_categorias %}
+        <div class="cat-filtro">
+            <form class="cat-search" id="buscador" role="search" method="get" action="{% url 'lista_categorias' %}"{% if busqueda or pagina.paginator.num_pages > 1 %} data-parcial{% endif %}>
+                <span class="cat-search__lupa" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+                </span>
+                <label class="cat-sr" for="buscar">Buscar una categoría</label>
+                <input type="search" id="buscar" name="buscar" value="{{ busqueda }}" placeholder="Buscar una categoría" aria-controls="filas"
+                       autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+                <input type="hidden" name="por" value="{{ por }}">
+                <button type="submit" class="cat-sr">Buscar</button>
             </form>
+        </div>
+    {% endif %}
 
-        </section>
+    <div class="cat-wrap">
+        <section class="cat-board" aria-labelledby="titulo-cats">
 
-
-        <!-- TÍTULO DE CATEGORÍAS -->
-        <section>
-
-            <div class="flex items-center justify-between mb-5 px-1">
-
-                <div>
-
-                    <h2 class="text-xl font-black text-zinc-900 dark:text-white drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-none">
-                        Categorías registradas
-                    </h2>
-
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-400 mt-1 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-none">
-
-                        {% if categorias %}
-
-                            {{ categorias|length }} categorías registradas
-
-                        {% else %}
-
-                            No hay categorías registradas
-
-                        {% endif %}
-
-                    </p>
-
+            {% if messages %}
+                <div class="cat-msgs" role="status">
+                    {% for message in messages %}<div class="cat-msg{% if message.tags == 'success' %} is-success{% endif %}">{{ message }}</div>{% endfor %}
                 </div>
-
-            </div>
-
-
-            <!-- TARJETAS DE CATEGORÍAS -->
-            {% if categorias %}
-
-                <div class="grid-etiquetas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-
-                    {% for categoria in categorias %}
-
-                        <div class="group relative">
-
-                            <!-- ETIQUETA -->
-                            <div
-                                class="etiqueta-card relative h-36 overflow-hidden shadow-xl transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
-                                style="
-                                    clip-path: polygon(
-                                        0 0,
-                                        90% 0,
-                                        100% 18%,
-                                        100% 82%,
-                                        90% 100%,
-                                        0 100%
-                                    );
-                                "
-                            >
-
-                                <!-- TEXTURA -->
-                                <div
-                                    class="absolute inset-0 opacity-[0.06] pointer-events-none"
-                                    style="
-                                        background-image: radial-gradient(#ffffff 0.8px, transparent 0.8px);
-                                        background-size: 5px 5px;
-                                    "
-                                ></div>
-
-
-                                <!-- BRILLO -->
-                                <div class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20 pointer-events-none"></div>
-
-
-                                <!-- AGUJERO DE LA ETIQUETA -->
-                                <div class="absolute right-[12%] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-zinc-200 dark:bg-[#0f0f0f] shadow-inner border border-black/10 dark:border-white/10"></div>
-
-
-                                <!-- BOTÓN ELIMINAR -->
-                                <button
-                                    type="button"
-                                    onclick="abrirModalEliminarCategoria('{{ categoria.id }}', '{{ categoria.nombre|escapejs }}')"
-                                    title="Eliminar categoría"
-                                    class="absolute top-3 right-10 z-30 w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-black/20 transition-all"
-                                >
-
-                                    <i class="fa-solid fa-trash text-xs"></i>
-
-                                </button>
-
-
-                                <!-- INFORMACIÓN -->
-                                <div class="relative z-20 h-full flex flex-col justify-center px-6 pr-16">
-
-                                    <span class="block text-[10px] font-bold uppercase tracking-[0.25em] text-white/60 mb-2">
-
-                                        Categoría
-
-                                    </span>
-
-                                    <h3 class="text-lg sm:text-xl font-black text-white uppercase tracking-wide break-words">
-
-                                        {{ categoria.nombre }}
-
-                                    </h3>
-
-
-                                    <!-- EDITAR -->
-                                    <a
-                                        href="{% url 'editar_categoria' categoria.id %}"
-                                        class="mt-3 inline-flex items-center gap-1.5 w-fit text-xs font-bold text-white/80 hover:text-white transition-colors"
-                                    >
-
-                                        <i class="fa-solid fa-pen text-[10px]"></i>
-
-                                        Editar
-
-                                    </a>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    {% endfor %}
-
-                </div>
-
-
-            {% else %}
-
-
-                <!-- SIN RESULTADOS -->
-                <div class="bg-white/95 dark:bg-[#1e1e1e]/95 border border-zinc-200 dark:border-white/10 rounded-3xl py-14 px-6 text-center shadow-sm transition-colors duration-500">
-
-                    <div class="w-16 h-16 mx-auto rounded-full bg-[#b91c1c] flex items-center justify-center text-white shadow-lg">
-
-                        <i class="fa-solid fa-tags text-2xl"></i>
-
-                    </div>
-
-                    {% if busqueda %}
-
-                        <h3 class="text-xl font-black mt-5 text-zinc-900 dark:text-white">
-                            No encontramos resultados
-                        </h3>
-
-                        <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
-                            No existe ninguna categoría que coincida con "{{ busqueda }}".
-                        </p>
-
-                        <a
-                            href="{% url 'lista_categorias' %}"
-                            class="inline-flex items-center gap-2 mt-6 px-5 h-11 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-xl text-sm font-bold transition-all"
-                        >
-
-                            <i class="fa-solid fa-rotate-left"></i>
-
-                            Limpiar búsqueda
-
-                        </a>
-
-                    {% else %}
-
-                        <h3 class="text-xl font-black mt-5 text-zinc-900 dark:text-white">
-                            Aún no hay categorías
-                        </h3>
-
-                        <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
-                            Crea la primera categoría para comenzar a organizar tus productos.
-                        </p>
-
-                        <a
-                            href="{% url 'crear_categoria' %}"
-                            class="inline-flex items-center gap-2 mt-6 px-6 h-11 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-xl font-bold text-sm transition-all"
-                        >
-
-                            <i class="fa-solid fa-plus"></i>
-
-                            Crear categoría
-
-                        </a>
-
-                    {% endif %}
-
-                </div>
-
             {% endif %}
 
-        </section>
+            <div class="cat-head">
+                <h2 id="titulo-cats">Categorías registradas</h2>
+                <div class="cat-head__side">
+                    <a class="cat-clear" id="quitar" href="{% url 'lista_categorias' %}?por={{ por }}"{% if not busqueda %} hidden{% endif %}>Quitar filtro</a>
+                    {% if pagina %}
+                        <div class="cat-por" id="por">
+                            <span>Mostrar</span>
+                            <div class="cat-por__g">
+                                {% for n in opciones_por %}
+                                    <a href="?por={{ n }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}"{% if n == por %} aria-current="true"{% endif %} aria-label="Mostrar {{ n }} por página">{{ n }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
 
+            <ul class="cat-tags" id="filas"{% if not categorias %} hidden{% endif %}>
+                {% for categoria in categorias %}
+                    <li>
+                        <article class="cat-tag">
+                            <div class="cat-tag__txt">
+                                <span class="cat-tag__eti">Categoría</span>
+                                <h3 class="cat-tag__nom" title="{{ categoria.nombre }}">{{ categoria.nombre }}</h3>
+                                <span class="cat-tag__n">{{ categoria.num_productos }} producto{{ categoria.num_productos|pluralize }}</span>
+                            </div>
+                            <div class="cat-tag__acc">
+                                <a class="cat-ico" href="{% url 'editar_categoria' categoria.id %}" title="Editar">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg>
+                                    <span class="cat-sr">Editar {{ categoria.nombre }}</span>
+                                </a>
+                                <button type="button" class="cat-ico cat-ico--del" title="Eliminar" data-id="{{ categoria.id }}" data-nombre="{{ categoria.nombre }}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path></svg>
+                                    <span class="cat-sr">Eliminar {{ categoria.nombre }}</span>
+                                </button>
+                            </div>
+                        </article>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            {% if pagina and pagina.paginator.num_pages > 1 %}
+                <nav class="cat-pag" id="paginas" aria-label="Páginas de categorías">
+                    <p class="cat-pag__info">Del <b>{{ pagina.start_index }}</b> al <b>{{ pagina.end_index }}</b> de <b>{{ pagina.paginator.count }}</b> categorías</p>
+                    <ul class="cat-pag__nums">
+                        <li>
+                            {% if pagina.has_previous %}
+                                <a href="?por={{ por }}&amp;pagina={{ pagina.previous_page_number }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}" aria-label="Página anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+                            {% else %}
+                                <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+                            {% endif %}
+                        </li>
+                        {% for n in rango_paginas %}
+                            <li>
+                                {% if n == pagina.number %}
+                                    <span aria-current="page">{{ n }}</span>
+                                {% elif n == pagina.paginator.ELLIPSIS %}
+                                    <span class="gap">…</span>
+                                {% else %}
+                                    <a href="?por={{ por }}&amp;pagina={{ n }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}">{{ n }}</a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        <li>
+                            {% if pagina.has_next %}
+                                <a href="?por={{ por }}&amp;pagina={{ pagina.next_page_number }}{% if filtros_qs %}&amp;{{ filtros_qs }}{% endif %}" aria-label="Página siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
+                            {% else %}
+                                <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+
+            <div class="cat-empty" id="sin-filtro"{% if categorias or not busqueda %} hidden{% endif %}>
+                <div class="cat-empty__disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg></div>
+                <h3>No hay categorías con ese nombre</h3>
+                <p id="sin-filtro-p">Revisa cómo lo escribiste o prueba con otra palabra.</p>
+                <a class="cat-btn" id="ver-todas" href="{% url 'lista_categorias' %}?por={{ por }}">Ver todas las categorías</a>
+            </div>
+
+            {% if not total_categorias %}
+                <div class="cat-empty">
+                    <div class="cat-empty__disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></div>
+                    <h3>Aún no hay categorías</h3>
+                    <p>Crea la primera para empezar a ordenar los productos.</p>
+                    <a class="cat-btn" href="{% url 'crear_categoria' %}">Crear categoría</a>
+                </div>
+            {% endif %}
+        </section>
     </div>
 
-</div>
-
-
-<!-- MODAL ELIMINAR CATEGORÍA -->
-<div
-    id="modalEliminarCategoria"
-    class="hidden fixed inset-0 z-50 items-center justify-center p-4"
->
-
-    <!-- FONDO -->
-    <div
-        class="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onclick="cerrarModalEliminarCategoria()"
-    ></div>
-
-
-    <!-- CONTENIDO DEL MODAL -->
-    <div class="relative w-full max-w-md bg-white dark:bg-[#1e1e1e] border border-zinc-200 dark:border-white/10 rounded-3xl shadow-2xl p-7">
-
-        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-[#7f1d1d]/30 border border-red-200 dark:border-[#7f1d1d] flex items-center justify-center text-[#b91c1c] dark:text-red-400">
-
-            <i class="fa-solid fa-trash text-xl"></i>
-
+    {# Confirmar antes de borrar #}
+    <div class="cat-modal" id="modalEliminarCategoria" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <div class="cat-dialog">
+            <div class="cat-dialog__disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path><path d="M10 11v5M14 11v5"></path></svg></div>
+            <h3 id="modal-titulo">¿Eliminar categoría?</h3>
+            <p>Vas a eliminar <strong id="nombreCategoriaEliminar"></strong>. Si tiene productos, no se podrá borrar.</p>
+            <form id="formEliminarCategoria" method="POST" action="">
+                {% csrf_token %}
+                <div class="cat-dialog__acts">
+                    <button type="button" class="cat-btn cat-btn--linea" id="cancelarEliminar">Cancelar</button>
+                    <button type="submit" class="cat-btn">Sí, eliminar</button>
+                </div>
+            </form>
         </div>
-
-        <h2 class="text-xl font-black text-zinc-900 dark:text-white mt-4">
-
-            ¿Eliminar categoría?
-
-        </h2>
-
-        <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed">
-
-            Estás a punto de eliminar
-
-            <span
-                id="nombreCategoriaEliminar"
-                class="font-bold text-zinc-900 dark:text-white"
-            ></span>.
-
-            Esta acción no se puede deshacer.
-
-        </p>
-
-
-        <!-- FORMULARIO -->
-        <form
-            id="formEliminarCategoria"
-            method="POST"
-            class="flex flex-col-reverse sm:flex-row gap-3 mt-6"
-        >
-
-            {% csrf_token %}
-
-            <button
-                type="button"
-                onclick="cerrarModalEliminarCategoria()"
-                class="flex-1 h-11 bg-zinc-100 dark:bg-[#292929] hover:bg-zinc-200 dark:hover:bg-[#333333] border border-zinc-200 dark:border-transparent text-zinc-700 dark:text-white rounded-xl font-bold text-xs transition-all"
-            >
-
-                <i class="fa-solid fa-xmark mr-1"></i>
-
-                Cancelar
-
-            </button>
-
-            <button
-                type="submit"
-                class="flex-1 h-11 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-xl font-bold text-xs transition-all"
-            >
-
-                <i class="fa-solid fa-trash mr-1"></i>
-
-                Eliminar
-
-            </button>
-
-        </form>
-
     </div>
 
 </div>
@@ -465,6 +378,99 @@
 
 <!-- JAVASCRIPT -->
 <script>
+/* Ventana para confirmar el borrado */
+(function () {
+    var modal = document.getElementById('modalEliminarCategoria');
+    var form = document.getElementById('formEliminarCategoria');
+    var nombre = document.getElementById('nombreCategoriaEliminar');
+    var ultimo = null;
+    function abrir(b) {
+        ultimo = b;
+        nombre.textContent = '«' + b.getAttribute('data-nombre') + '»';
+        form.action = "{% url 'eliminar_categoria' 0 %}".replace('/0/', '/' + b.getAttribute('data-id') + '/');
+        modal.classList.add('is-open');
+        document.getElementById('cancelarEliminar').focus();
+    }
+    function cerrar() {
+        modal.classList.remove('is-open');
+        if (ultimo) ultimo.focus();
+    }
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('.cat-ico--del');
+        if (b) abrir(b);
+    });
+    document.getElementById('cancelarEliminar').addEventListener('click', cerrar);
+    modal.addEventListener('click', function (e) { if (e.target === modal) cerrar(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) cerrar(); });
+}());
+
+/* Filtro en vivo. Sin texto se ven las etiquetas de ESTA página; al escribir se busca en TODAS
+   (se piden UNA vez con ?todos=1) y se esconden la paginación y el «Mostrar». */
+(function () {
+    var form = document.getElementById('buscador');
+    var ul = document.getElementById('filas');
+    if (!form || !ul) return;
+    var input = document.getElementById('buscar');
+    var quitar = document.getElementById('quitar');
+    var sinFiltro = document.getElementById('sin-filtro');
+    var sinFiltroP = document.getElementById('sin-filtro-p');
+    var verTodas = document.getElementById('ver-todas');
+    var paginas = document.getElementById('paginas');
+    var porSel = document.getElementById('por');
+    var completa = !form.hasAttribute('data-parcial');
+    var originales = Array.prototype.slice.call(ul.children);
+    var todas = null, filas = [];
+    var AYUDA = 'Revisa cómo lo escribiste o prueba con otra palabra.';
+
+    function norm(t) { return String(t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function leer() {
+        filas = Array.prototype.map.call(ul.children, function (li) {
+            var el = li.querySelector('.cat-tag__nom');
+            return { li: li, el: el, nombre: el.textContent.trim(), n: norm(el.textContent.trim()) };
+        });
+    }
+    function poner(lista) {
+        if (ul.firstElementChild === lista[0] && ul.children.length === lista.length) return;
+        ul.textContent = '';
+        lista.forEach(function (li) { li.hidden = false; ul.appendChild(li); });
+        leer();
+    }
+    function pintar(f, t) {
+        var i = t ? f.n.indexOf(t) : -1;
+        if (i < 0 || f.n.length !== f.nombre.length) { f.el.textContent = f.nombre; return; }
+        f.el.textContent = '';
+        f.el.appendChild(document.createTextNode(f.nombre.slice(0, i)));
+        var m = document.createElement('mark'); m.textContent = f.nombre.slice(i, i + t.length); f.el.appendChild(m);
+        f.el.appendChild(document.createTextNode(f.nombre.slice(i + t.length)));
+    }
+    leer();
+
+    function aplicar() {
+        var texto = input.value.trim(), t = norm(texto), n = 0;
+        poner(t && todas ? todas : originales);
+        if (paginas) paginas.hidden = !!t;
+        if (porSel) porSel.hidden = !!t;
+        filas.forEach(function (f) {
+            var ok = !t || f.n.indexOf(t) >= 0;
+            f.li.hidden = !ok; if (ok) n++;
+            pintar(f, ok ? t : '');
+        });
+        ul.hidden = n === 0;
+        sinFiltro.hidden = !(n === 0 && filas.length > 0);
+        sinFiltroP.textContent = texto ? 'No hay categorías parecidas a «' + texto + '». ' + AYUDA : AYUDA;
+        quitar.hidden = !texto;
+    }
+    var cargando = null;
+    function cargar() {
+        if (completa || todas) return Promise.resolve();
+        if (!cargando) {
+            cargando = fetch(form.getAttribute('action') + '?todos=1', { credentials: 'same-origin' })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(function (h) {
+                    var nuevas = new DOMParser().parseFromString(h, 'text/html').querySelectorAll('#filas > li');
+                    todas = Array.prototype.map.call(nuevas, function (li) { return document.importNode(li, true); });
+                })
+                .catch(function () {});
 
     function abrirModalEliminarCategoria(id, nombre) {
 
@@ -509,9 +515,20 @@
             cerrarModalEliminarCategoria();
 
         }
-
+        return cargando;
+    }
+    input.addEventListener('focus', function () { cargar().then(aplicar); });
+    input.addEventListener('input', function () { cargar().then(aplicar); });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (window.matchMedia('(pointer: coarse)').matches) input.blur();
     });
-
+    if (verTodas) verTodas.addEventListener('click', function (e) {
+        if (input.defaultValue) return;
+        e.preventDefault(); input.value = ''; aplicar(); input.focus();
+    });
+    window.addEventListener('pageshow', function () { if (input.value !== input.defaultValue) cargar().then(aplicar); });
+}());
 </script>
 
 {% endblock %}

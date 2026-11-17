@@ -1,0 +1,291 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Motivos de salida - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .sal, .sal * { box-sizing: border-box; }
+    .sal {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c; --soft: #ffe8e5; --ok: #15803d; --ok-soft: #e4f4e8; --off: #d6d3d1;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .sal {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --red: #ef4444; --link: #f87171; --soft: #2b1816; --ok: #4ade80; --ok-soft: #14281b; --off: #44403c;
+    }
+    .sal-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+    /* ---------- Banner ---------- */
+    .sal-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.75rem 1.25rem 2.25rem; }
+    .sal-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 86% 30%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at 98% -10%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    .sal-hero__in { position: relative; max-width: 64rem; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; }
+    @media (min-width: 900px) { .sal-hero { padding: 2.5rem 2.5rem 2.75rem; } }
+    .sal-volver {
+        display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; margin-bottom: 1.1rem; padding: 0 1.1rem 0 .4rem;
+        font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none;
+        background: rgba(69, 10, 10, .3); border: 2px solid rgba(255, 255, 255, .3); border-radius: 999px;
+        transition: background-color .15s, border-color .15s;
+    }
+    .sal-volver span { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #b91c1c; background: #fff; transition: transform .2s; }
+    .sal-volver svg { width: .9rem; height: .9rem; }
+    .sal-volver:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+    .sal-volver:hover span { transform: translateX(-.15rem); }
+    .sal-volver:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .sal-hero h1 { margin: 0; font-size: clamp(2.1rem, 1.4rem + 2.8vw, 3.25rem); font-weight: 800; font-stretch: 110%; line-height: 1; letter-spacing: -.03em; }
+    .sal-hero p { margin: .6rem 0 0; max-width: 44ch; line-height: 1.45; opacity: .95; }
+    .sal-hero__cifras { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .sal-hero__cifra {
+        display: inline-flex; align-items: baseline; gap: .4rem; padding: .45rem .95rem;
+        border-radius: 999px; background: rgba(69, 10, 10, .32); line-height: 1;
+    }
+    .sal-hero__cifra b { font-size: 1.25rem; font-weight: 800; font-stretch: 85%; }
+    .sal-hero__cifra span { font-size: .875rem; font-weight: 700; opacity: .9; }
+    .sal-hero__cifra--si b::before { content: ""; display: inline-block; width: .55rem; height: .55rem; margin-right: .4rem; border-radius: 50%; background: #4ade80; vertical-align: .15em; }
+    @media (min-width: 720px) {
+        .sal-hero__cifra { display: block; padding: .7rem 1rem; border-radius: 1.1rem; }
+        .sal-hero__cifra b { display: block; font-size: 1.75rem; font-stretch: 80%; }
+        .sal-hero__cifra span { display: block; margin-top: .3rem; font-size: .75rem; font-weight: 600; }
+    }
+    @media (max-width: 559px) {
+        .sal-hero { padding: 1.25rem 1.25rem 1.75rem; }
+        .sal-hero h1 { font-size: 2.1rem; }
+        .sal-hero p { font-size: .9375rem; }
+        .sal-hero__in { gap: 1rem; }
+    }
+
+    /* ---------- Contenedor ---------- */
+    .sal-wrap { max-width: 64rem; margin: 0 auto; padding: 1.25rem .75rem 3rem; }
+    @media (min-width: 640px) { .sal-wrap { padding: 1.75rem 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .sal-wrap { padding: 2rem 2.5rem 4rem; } }
+    .sal-cols { display: grid; gap: 1.25rem; }
+    @media (min-width: 860px) { .sal-cols { grid-template-columns: 19rem minmax(0, 1fr); align-items: start; gap: 1.75rem; } }
+
+    .sal-msgs { display: grid; gap: .5rem; margin-bottom: 1.25rem; }
+    .sal-msg { padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; line-height: 1.4; background: var(--soft); }
+    .sal-msg.is-success { background: var(--ok-soft); }
+
+    /* ---------- Botones ---------- */
+    .sal-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem; flex: none;
+        height: 2.75rem; padding: 0 1.25rem; border: 0; border-radius: 999px;
+        font: inherit; font-size: .9375rem; font-weight: 800; cursor: pointer; color: #fff; background: #b91c1c;
+        transition: background-color .15s, color .15s, transform .15s;
+    }
+    .sal-btn:hover { background: #7f1d1d; }
+    .sal-btn svg { width: 1rem; height: 1rem; }
+    .sal-btn--chico { height: 2.25rem; padding: 0 .95rem; font-size: .8125rem; }
+    .sal-borrar {
+        flex: none; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0; cursor: pointer;
+        color: var(--muted); background: transparent; border: 0; border-radius: 50%; transition: background-color .15s, color .15s;
+    }
+    .sal-borrar svg { width: 1.1rem; height: 1.1rem; }
+    .sal-borrar:hover { color: #fff; background: #b91c1c; }
+    .sal-borrar:disabled { opacity: .3; cursor: not-allowed; }
+    .sal-borrar:disabled:hover { color: var(--muted); background: transparent; }
+    .sal-btn:focus-visible, .sal-borrar:focus-visible, .sal a:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+    /* ---------- Interruptor «Da cambio» ---------- */
+    .sal-sw { position: relative; display: inline-flex; align-items: center; gap: .55rem; flex: none; cursor: pointer; user-select: none; }
+    .sal-sw input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .sal-sw__pista {
+        position: relative; flex: none; width: 2.9rem; height: 1.65rem; border-radius: 999px; background: var(--off);
+        transition: background-color .2s;
+    }
+    .sal-sw__bola {
+        position: absolute; top: .2rem; left: .2rem; display: grid; place-items: center; width: 1.25rem; height: 1.25rem;
+        border-radius: 50%; color: #16a34a; background: #fff; box-shadow: 0 .15rem .35rem rgba(0, 0, 0, .25);
+        transition: transform .22s cubic-bezier(.3, 1.4, .5, 1);
+    }
+    .sal-sw__bola svg { width: .75rem; height: .75rem; opacity: 0; transition: opacity .15s; }
+    .sal-sw__txt { font-size: .875rem; font-weight: 700; white-space: nowrap; color: var(--muted); }
+    .sal-sw__txt .si { display: none; color: var(--ok); }
+    .sal-sw input:checked + .sal-sw__pista { background: #16a34a; }
+    .sal-sw input:checked + .sal-sw__pista .sal-sw__bola { transform: translateX(1.25rem); }
+    .sal-sw input:checked + .sal-sw__pista .sal-sw__bola svg { opacity: 1; }
+    .sal-sw input:checked ~ .sal-sw__txt .si { display: inline; }
+    .sal-sw input:checked ~ .sal-sw__txt .no { display: none; }
+    .sal-sw input:focus-visible + .sal-sw__pista { outline: 3px solid var(--red); outline-offset: 2px; }
+
+    /* ---------- Tarjeta «Nuevo motivo» ---------- */
+    .sal-nuevo { display: grid; gap: .9rem; padding: 1.25rem; background: var(--board); border-radius: 1.75rem; }
+    @media (min-width: 860px) { .sal-nuevo { position: sticky; top: 5.5rem; padding: 1.5rem; } }
+    .sal-nuevo h2, .sal-lista-t h2 { margin: 0; font-size: 1.375rem; font-weight: 800; font-stretch: 105%; letter-spacing: -.01em; color: var(--link); }
+    .sal-nuevo p { margin: -.4rem 0 0; font-size: .875rem; line-height: 1.4; color: var(--muted); }
+    .sal-input {
+        width: 100%; min-width: 0; height: 2.85rem; padding: 0 1rem; font: inherit; font-size: 1rem; color: var(--ink);
+        background: var(--card); border: 2px solid var(--line); border-radius: .9rem; outline: 0;
+    }
+    .sal-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(185, 28, 28, .15); }
+    .sal-nuevo .sal-sw { padding: .55rem .75rem; background: var(--card); border-radius: .9rem; }
+    .sal-nuevo .sal-btn { width: 100%; }
+    .sal-error { margin: -.4rem 0 0; font-size: .8125rem; font-weight: 700; color: var(--red); }
+
+    /* ---------- Lista ---------- */
+    .sal-lista-t { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0 .25rem .75rem; }
+    .sal-lista-t span { font-size: .875rem; color: var(--muted); }
+    .sal-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+    .sal-fila {
+        display: grid; align-items: center; gap: .55rem .75rem;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        grid-template-areas: "nom nom nom nom" "sw usos guardar borrar";
+        padding: .75rem .75rem .75rem 1rem; background: var(--board); border: 2px solid transparent; border-radius: 1.25rem;
+        transition: border-color .15s, background-color .15s;
+    }
+    .sal-fila:hover { background: var(--card); border-color: var(--line); }
+    .sal-fila.cambio { border-color: var(--red); background: var(--card); }
+    @media (min-width: 640px) {
+        .sal-fila { grid-template-columns: minmax(0, 1fr) auto auto auto auto; grid-template-areas: "nom sw usos guardar borrar"; }
+    }
+    .sal-fila__nom {
+        grid-area: nom; width: 100%; min-width: 0; height: 2.4rem; padding: 0 .6rem; margin-left: -.6rem;
+        font: inherit; font-size: 1rem; font-weight: 700; color: var(--ink);
+        background: transparent; border: 2px solid transparent; border-radius: .75rem; outline: 0;
+        text-overflow: ellipsis;
+    }
+    .sal-fila__nom:hover { border-color: var(--line); }
+    .sal-fila__nom:focus { border-color: var(--red); background: var(--page); }
+    .sal-fila .sal-sw { grid-area: sw; }
+    .sal-usos { grid-area: usos; font-size: .8125rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .sal-guardar { grid-area: guardar; }
+    .sal-fila .sal-borrar { grid-area: borrar; }
+    .sal-js .sal-fila:not(.cambio) .sal-guardar { visibility: hidden; }
+
+    /* ---------- Sin motivos ---------- */
+    .sal-vacio { padding: 1.75rem 1.25rem; text-align: center; background: var(--board); border-radius: 1.75rem; }
+    .sal-vacio h3 { margin: 0; font-size: 1.25rem; font-weight: 800; }
+    .sal-vacio > p { margin: .4rem auto 0; max-width: 40ch; color: var(--muted); line-height: 1.45; }
+    .sal-base { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; margin: 1.1rem 0 1.25rem; padding: 0; }
+    .sal-base li { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .7rem; font-size: .8125rem; font-weight: 700; background: var(--card); border-radius: 999px; }
+    .sal-base li::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--off); }
+    .sal-base li.si::before { background: #16a34a; }
+
+    @media (prefers-reduced-motion: reduce) { .sal *, .sal *::before { transition: none !important; } }
+</style>
+
+<div class="sal" id="sal">
+    <header class="sal-hero">
+        <div class="sal-hero__in">
+            <div>
+                <a class="sal-volver" href="{% url 'lista_salidas' %}">
+                    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg></span>
+                    Salidas de productos
+                </a>
+                <h1>Motivos de salida</h1>
+                <p>Las razones por las que un producto sale sin venderse. Marca cuáles tienen cambio del proveedor.</p>
+            </div>
+            {% if motivos %}
+                <div class="sal-hero__cifras">
+                    <div class="sal-hero__cifra"><b>{{ motivos|length }}</b><span>motivo{{ motivos|length|pluralize }}</span></div>
+                    <div class="sal-hero__cifra sal-hero__cifra--si"><b>{{ con_cambio }}</b><span>con cambio</span></div>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="sal-wrap">
+        {% if messages %}
+            <div class="sal-msgs" role="status">
+                {% for m in messages %}<div class="sal-msg{% if m.tags %} is-{{ m.tags }}{% endif %}">{{ m }}</div>{% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="sal-cols">
+            {# Agregar un motivo #}
+            <form class="sal-nuevo" method="post" novalidate>
+                {% csrf_token %}
+                <h2>Nuevo motivo</h2>
+                <p>Escribe el motivo y marca si el proveedor lo cambia.</p>
+                <label class="sal-sr" for="{{ formulario.nombre.id_for_label }}">Nombre del motivo</label>
+                <input class="sal-input" type="text" name="nombre" id="{{ formulario.nombre.id_for_label }}" value="{{ formulario.nombre.value|default:'' }}"
+                       maxlength="80" placeholder="Ej: Consumo de la casa" autocomplete="off" required>
+                {% for e in formulario.nombre.errors %}<p class="sal-error">{{ e }}</p>{% endfor %}
+                <label class="sal-sw">
+                    <input type="checkbox" name="da_cambio"{% if formulario.da_cambio.value %} checked{% endif %}>
+                    <span class="sal-sw__pista" aria-hidden="true"><span class="sal-sw__bola"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span></span>
+                    <span class="sal-sw__txt"><span class="si">El proveedor da cambio</span><span class="no">Sin cambio del proveedor</span></span>
+                </label>
+                <button class="sal-btn" type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                    Agregar motivo
+                </button>
+            </form>
+
+            <section>
+                <div class="sal-lista-t">
+                    <h2>Motivos</h2>
+                    {% if motivos %}<span>Toca un nombre para cambiarlo</span>{% endif %}
+                </div>
+
+                {% if motivos %}
+                    <ul class="sal-lista">
+                        {% for m in motivos %}
+                            <li>
+                                <form class="sal-fila" method="post" action="{% url 'editar_motivo_salida' m.id %}">
+                                    {% csrf_token %}
+                                    <label class="sal-sr" for="motivo-{{ m.id }}">Nombre del motivo</label>
+                                    <input class="sal-fila__nom" type="text" name="nombre" id="motivo-{{ m.id }}" value="{{ m.nombre }}" maxlength="80" required autocomplete="off">
+                                    <label class="sal-sw">
+                                        <input type="checkbox" name="da_cambio"{% if m.da_cambio %} checked{% endif %}>
+                                        <span class="sal-sw__pista" aria-hidden="true"><span class="sal-sw__bola"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span></span>
+                                        <span class="sal-sw__txt"><span class="si">Da cambio</span><span class="no">Sin cambio</span></span>
+                                    </label>
+                                    <span class="sal-usos">{% if m.usos %}{{ m.usos }} uso{{ m.usos|pluralize }}{% else %}Sin usar{% endif %}</span>
+                                    <button class="sal-btn sal-btn--chico sal-guardar" type="submit">Guardar</button>
+                                    <button class="sal-borrar" type="submit" form="borrar-{{ m.id }}"
+                                            {% if m.usos %}disabled title="Ya tiene salidas: no se puede borrar"{% else %}title="Eliminar"{% endif %}
+                                            aria-label="Eliminar {{ m.nombre }}" data-nombre="{{ m.nombre }}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+                                    </button>
+                                </form>
+                                <form id="borrar-{{ m.id }}" method="post" action="{% url 'eliminar_motivo_salida' m.id %}" hidden>{% csrf_token %}</form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="sal-vacio">
+                        <h3>Aún no hay motivos</h3>
+                        <p>Puedes crearlos uno por uno, o cargar de una vez los de la HU (el punto verde es «da cambio»):</p>
+                        <ul class="sal-base">
+                            {% for nombre, da_cambio in motivos_base %}<li{% if da_cambio %} class="si"{% endif %}>{{ nombre }}</li>{% endfor %}
+                        </ul>
+                        <form method="post" action="{% url 'cargar_motivos_salida' %}">
+                            {% csrf_token %}
+                            <button class="sal-btn" type="submit">Cargar los {{ motivos_base|length }} motivos</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    document.getElementById('sal').classList.add('sal-js');
+    // El botón «Guardar» solo aparece en la fila que cambió
+    document.querySelectorAll('.sal-fila').forEach(function (fila) {
+        var inicial = new URLSearchParams(new FormData(fila)).toString();
+        function revisar() { fila.classList.toggle('cambio', new URLSearchParams(new FormData(fila)).toString() !== inicial); }
+        fila.addEventListener('input', revisar);
+        fila.addEventListener('change', revisar);
+    });
+    // Confirmar antes de borrar
+    document.querySelectorAll('form[id^="borrar-"]').forEach(function (f) {
+        f.addEventListener('submit', function (e) {
+            var b = document.querySelector('[form="' + f.id + '"]');
+            if (!confirm('¿Eliminar el motivo «' + b.getAttribute('data-nombre') + '»?')) e.preventDefault();
+        });
+    });
+}());
+</script>
+{% endblock %}
