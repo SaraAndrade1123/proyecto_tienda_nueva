@@ -375,6 +375,8 @@
 
 </div>
 
+
+<!-- JAVASCRIPT -->
 <script>
 /* Ventana para confirmar el borrado */
 (function () {
@@ -469,6 +471,49 @@
                     todas = Array.prototype.map.call(nuevas, function (li) { return document.importNode(li, true); });
                 })
                 .catch(function () {});
+
+    function abrirModalEliminarCategoria(id, nombre) {
+
+        const modal = document.getElementById("modalEliminarCategoria");
+
+        const nombreCategoria = document.getElementById("nombreCategoriaEliminar");
+
+        const formulario = document.getElementById("formEliminarCategoria");
+
+        nombreCategoria.textContent = '"' + nombre + '"';
+
+        formulario.action =
+            "{% url 'eliminar_categoria' 0 %}"
+            .replace("/0/", "/" + id + "/");
+
+        modal.classList.remove("hidden");
+
+        modal.classList.add("flex");
+
+        document.body.classList.add("overflow-hidden");
+
+    }
+
+
+    function cerrarModalEliminarCategoria() {
+
+        const modal = document.getElementById("modalEliminarCategoria");
+
+        modal.classList.add("hidden");
+
+        modal.classList.remove("flex");
+
+        document.body.classList.remove("overflow-hidden");
+
+    }
+
+
+    document.addEventListener("keydown", function(event) {
+
+        if (event.key === "Escape") {
+
+            cerrarModalEliminarCategoria();
+
         }
         return cargando;
     }

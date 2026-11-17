@@ -55,11 +55,12 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.staticfiles',
 
- 
+
     'accounts',
     'gestor_inventario',
     'productos',
     'salidas',
+    'reportes',
 ]
 
 MIDDLEWARE = [
@@ -157,6 +158,12 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+CLOUDINARY_STORAGE = {
+    'PREFIX': '/',
+}
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
