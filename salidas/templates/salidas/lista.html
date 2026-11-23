@@ -1,0 +1,1077 @@
+{% extends 'layouts/base.html' %}
+{% load static pesos %}
+
+{% block title %}Salidas de productos - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+
+<style>
+    .sal, .sal * { box-sizing: border-box; }
+    .sal {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c; --warn: #92400e;
+        --ok: #15803d; --ok-soft: #e4f4e8; --no: #57534e; --no-soft: #efebe9;
+
+        /* Los mismos cuatro tonos suaves del catálogo */
+        --ta-soft: #ffe8e5;  --ta-strong: #ffc7c0;
+        --tb-soft: #fff0e6;  --tb-strong: #ffd3b8;
+        --tc-soft: #f4f1ef;  --tc-strong: #e3ddd9;
+        --td-soft: #fde7ec;  --td-strong: #f8b9c9;
+        --soft: var(--tc-soft); --strong: var(--tc-strong);
+
+        font-family: "Archivo", Verdana, Tahoma, sans-serif;
+        color: var(--ink);
+    }
+    .dark .sal {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --link: #f87171; --warn: #fbbf24;
+        --ok: #4ade80; --ok-soft: #14281b; --no: #d6d3d1; --no-soft: #292524;
+        --ta-soft: #2b1816;  --ta-strong: #45221f;
+        --tb-soft: #2b1d15;  --tb-strong: #47291a;
+        --tc-soft: #242221;  --tc-strong: #373331;
+        --td-soft: #2b1720;  --td-strong: #46212f;
+    }
+    /* Igual que en el catálogo: el tono sale del id de la categoría */
+    .sal [data-tono$="1"], .sal [data-tono$="5"], .sal [data-tono$="9"] { --soft: var(--ta-soft); --strong: var(--ta-strong); }
+    .sal [data-tono$="2"], .sal [data-tono$="6"]                         { --soft: var(--tb-soft); --strong: var(--tb-strong); }
+    .sal [data-tono$="3"], .sal [data-tono$="7"]                         { --soft: var(--tc-soft); --strong: var(--tc-strong); }
+    .sal [data-tono$="0"], .sal [data-tono$="4"], .sal [data-tono$="8"] { --soft: var(--td-soft); --strong: var(--td-strong); }
+
+    .sal-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+    /* ---------- Banner (el mismo del catálogo) ---------- */
+    .sal-hero { position: relative; color: #fff; background: #b91c1c; padding: 2.25rem 1.25rem 4.75rem; }
+    .sal-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .sal-hero__bg::before {
+        content: ""; position: absolute; inset: 0;
+        --claro-1: rgba(254, 205, 205, .17); --claro-2: rgba(254, 205, 205, .1);
+        --vino: rgba(69, 10, 10, .28); --granate: rgba(127, 29, 29, .55);
+        background:
+            radial-gradient(circle 2.25rem at 84% 35%, var(--claro-1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at 96% -3%, var(--claro-2) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 93% 76%, var(--vino) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
+    }
+    .sal-hero__photo {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 8.5rem; pointer-events: none;
+        background: linear-gradient(0deg, rgba(127, 29, 29, .12), rgba(185, 28, 28, .45)), var(--foto) 50% 40% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+                mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+    }
+    .sal-hero__in { position: relative; z-index: 1; max-width: 96rem; margin: 0 auto; }
+    .sal-hero__txt { max-width: 40rem; }
+    .sal-hero h1 {
+        margin: 0; font-size: clamp(2.5rem, 1.1rem + 4vw, 3.75rem); line-height: .95;
+        font-weight: 800; font-stretch: 110%; letter-spacing: -.035em; text-wrap: balance;
+    }
+    .sal-hero p { margin: 1rem 0 0; max-width: 34rem; font-size: 1.125rem; line-height: 1.45; }
+    .sal-hero__acc { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; margin-top: 1.4rem; }
+    @media (min-width: 560px) { .sal-hero__acc { display: flex; flex-wrap: wrap; gap: .9rem; margin-top: 1.6rem; } }
+    @media (max-width: 899px) { .sal-hero__photo { display: none; } }   /* en el celular la foto quedaba turbia detrás de los botones */
+    @media (max-width: 559px) {
+        .sal-hero { padding-top: 1.75rem; }
+        .sal-hero h1 { font-size: 2.25rem; }
+        .sal-hero p { margin-top: .6rem; font-size: 1rem; }
+        .sal-hist { min-width: 0; padding-right: .8rem; }
+        .sal-hist__txt { min-width: 0; }
+        .sal-hist__txt b, .sal-hist__txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sal-hist__txt b { font-size: .9375rem; }
+        .sal-mot { flex-direction: column; justify-content: center; gap: .2rem; width: 4.75rem; padding: 0; font-size: .75rem; }
+    }
+    @media (min-width: 900px) {
+        .sal-hero { padding: 2.75rem 2.5rem 4.25rem; }
+        .sal-hero__in { min-height: 11.5rem; display: flex; align-items: center; }
+        .sal-hero__photo {
+            left: auto; top: 0; height: auto; width: min(62%, 64rem);
+            background: linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%), var(--foto) 50% 22% / cover no-repeat;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+        }
+        .sal-hero__bg::before {
+            --izq: max(2.5rem, calc(50% - 48rem));
+            background:
+                radial-gradient(circle 2.75rem at calc(var(--izq) + 26rem) 26%, var(--claro-1) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 9.5rem at calc(var(--izq) + 30rem) -20%, var(--claro-2) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 5rem at calc(var(--izq) + 20rem) 100%, var(--vino) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 12rem at calc(var(--izq) - 3rem) 120%, var(--granate) calc(100% - 1px), transparent 100%);
+        }
+    }
+
+    /* ---------- Botones ---------- */
+    .sal-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+        height: 2.75rem; padding: 0 1.25rem; border: 2px solid var(--red); border-radius: 999px;
+        font: inherit; font-size: .9375rem; font-weight: 800; text-decoration: none; cursor: pointer;
+        color: #fff; background: var(--red); transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .sal-btn:hover { background: #7f1d1d; border-color: #7f1d1d; }
+    .sal-btn svg { width: 1.1rem; height: 1.1rem; flex: none; }
+    .sal-btn:focus-visible, .sal a:focus-visible, .sal button:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+    /* ---------- Filtro: la píldora de lista_productos, cabalgando sobre el borde del banner ---------- */
+    .sal-filtro { position: relative; z-index: 4; max-width: 96rem; margin: -2.5rem auto 0; padding: 0 .75rem; }
+    @media (min-width: 640px)  { .sal-filtro { padding: 0 1.5rem; } }
+    @media (min-width: 900px)  { .sal-filtro { margin-top: -1.875rem; } }
+    @media (min-width: 1024px) { .sal-filtro { padding: 0 2.5rem; } }
+    .sal-search {
+        display: flex; align-items: center; gap: .75rem;
+        max-width: 42rem; margin: 0 auto; padding: .5rem .5rem .5rem .625rem;
+        color: #1c1917; background: #fff; border-radius: 999px;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 1px rgba(127, 29, 29, .08);
+        transition: box-shadow .2s;
+    }
+    .dark .sal-search { color: #f5f5f4; background: #211f1e; box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 1px #3a3532; }
+    .sal-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 3px var(--red); }
+    .dark .sal-search:focus-within { box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 3px #f87171; }
+    .sal-search__lupa { flex: none; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--red); background: var(--ta-soft); }
+    .dark .sal-search__lupa { color: #f87171; }
+    .sal-search__lupa svg { width: 1.1rem; height: 1.1rem; }
+    .sal-search input {
+        flex: 1 1 auto; min-width: 0; height: 2.75rem; padding: 0;
+        font: inherit; font-size: 1.0625rem; font-weight: 500; color: inherit; background: transparent; border: 0; outline: 0;
+    }
+    .sal-search input::placeholder { color: var(--muted); font-weight: 400; }
+    .sal-search input::-webkit-search-cancel-button {
+        -webkit-appearance: none; appearance: none; width: 2.25rem; height: 2.25rem; margin: 0; cursor: pointer;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2378716c' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3.5 3.5l9 9M12.5 3.5l-9 9'/%3E%3C/svg%3E") center / .8rem no-repeat;
+    }
+    .sal-clear { display: inline-flex; align-items: center; gap: .4rem; font-size: .9375rem; font-weight: 600; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .sal-clear::after { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--red); }
+    .sal-head__side { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+    .sal-por[hidden] { display: none; }
+    .sal-lista[hidden], .sal-clear[hidden], .sal-empty[hidden] { display: none; }
+    .sal-btn-v { display: inline-flex; align-items: center; margin-top: 1.5rem; height: 2.75rem; padding: 0 1.5rem; font-weight: 700; font-size: .9375rem; color: #fff; background: var(--red); border-radius: 999px; text-decoration: none; }
+    .sal-btn-v:hover { background: #7f1d1d; }
+
+    /* ---------- Contenedor ---------- */
+    .sal-wrap { max-width: 96rem; margin: 0 auto; padding: 1.25rem .75rem 2.5rem; }
+    @media (min-width: 640px)  { .sal-wrap { padding: 1.5rem 1.5rem 3rem; } }
+    @media (min-width: 1024px) { .sal-wrap { padding: 1.75rem 2.5rem 3.5rem; } }
+    .sal-board { padding: 1.25rem .875rem 1.5rem; background: var(--board); border-radius: 1.75rem; }
+    @media (min-width: 640px) { .sal-board { padding: 2rem 1.75rem 2.25rem; border-radius: 2.5rem; } }
+    .sal-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1.5rem; margin-bottom: 1.5rem; }
+    .sal-head h2 { margin: 0; font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem); font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.1; color: var(--link); }
+    .sal-count { margin: 0; font-size: .9375rem; color: var(--muted); }
+    .sal-count strong { color: var(--ink); }
+
+    .sal-msgs { display: grid; gap: .5rem; margin-bottom: 1.25rem; }
+    .sal-msg { padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; line-height: 1.4; background: var(--ta-soft); }
+    .sal-msg.is-success { background: var(--ok-soft); }
+
+    /* ---------- Lista: las mismas filas de lista_productos ---------- */
+    .sal-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+    .sal-fila {
+        --f-linea: #efe4e0;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas: "foto info acc" "foto num acc";
+        align-items: center; column-gap: .625rem; row-gap: .1rem;
+        padding: .625rem .5rem; background: var(--page); border-radius: 1.1rem;
+        box-shadow: inset 0 0 0 1px var(--f-linea);
+        transition: background-color .15s, box-shadow .15s;
+    }
+    .dark .sal-fila { --f-linea: #2a2623; }
+    .sal-fila:hover, .sal-fila:focus-within { background: var(--soft); box-shadow: inset 0 0 0 1px var(--strong); }
+    .sal-fila[hidden] { display: none; }
+    .sal-fila__foto {
+        grid-area: foto; width: 2.75rem; height: 2.75rem; display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; overflow: hidden; font-size: 1.1rem; font-weight: 800; color: var(--link); background: var(--strong);
+    }
+    .sal-fila__foto img { display: block; width: 82%; height: 82%; object-fit: contain; }
+    .sal-fila__info { grid-area: info; min-width: 0; align-self: end; }
+    .sal-name {
+        margin: 0; font-size: .9375rem; font-weight: 700; line-height: 1.2;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+    }
+    .sal-fila__num { grid-area: num; min-width: 0; align-self: start; }
+    .sal-fila__stock { margin: 0; display: inline-flex; align-items: center; gap: .35rem; font-size: .75rem; font-weight: 600; color: var(--muted); }
+    .sal-fila__stock::before { content: ""; flex: none; width: .4rem; height: .4rem; border-radius: 50%; background: #16a34a; }
+    .sal-fila__stock.is-low { color: var(--warn); }
+    .sal-fila__stock.is-low::before { background: currentColor; }
+    .sal-fila__acc { grid-area: acc; }
+    .sal-dar {
+        display: inline-flex; align-items: center; gap: .4rem; height: 2.25rem; padding: 0 .9rem;
+        font-size: .875rem; font-weight: 800; color: #fff; background: #b91c1c; border-radius: 999px; text-decoration: none;
+        transition: background-color .15s, transform .15s;
+    }
+    .sal-dar svg { width: .95rem; height: .95rem; }
+    .sal-dar:hover { background: #450a0a; }
+    .sal-dar:active { transform: scale(.96); }
+    .sal-fila mark { padding: 0 .08em; color: inherit; background: #ffd9d3; border-radius: .2rem; }
+    .dark .sal-fila mark { background: #6b2a25; }
+    @media (max-width: 400px) { .sal-dar { padding: 0 .7rem; font-size: .8125rem; } .sal-dar svg { display: none; } }
+    @media (min-width: 560px) { .sal-fila { padding: .75rem .75rem .75rem .625rem; column-gap: .875rem; } .sal-fila__foto { width: 3.25rem; height: 3.25rem; } }
+    @media (min-width: 768px) {
+        .sal-lista { gap: .625rem; }
+        .sal-fila { column-gap: 1.25rem; padding: .75rem 1rem .75rem .75rem; }
+        .sal-fila__foto { width: 3.5rem; height: 3.5rem; }
+        .sal-name { font-size: 1.0625rem; -webkit-line-clamp: 2; }
+        .sal-fila__stock { font-size: .8125rem; }
+        .sal-dar { height: 2.5rem; padding: 0 1.1rem; }
+    }
+
+    /* ---------- Cuántos mostrar (10 · 20 · 50) ---------- */
+    .sal-por { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; color: var(--muted); }
+    .sal-por__g { display: inline-flex; gap: .2rem; padding: .2rem; border-radius: 999px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+    .sal-por a {
+        display: grid; place-items: center; min-width: 2.25rem; height: 2rem; padding: 0 .6rem; border-radius: 999px;
+        font-size: .875rem; font-weight: 800; color: var(--ink); text-decoration: none; transition: background-color .15s, color .15s;
+    }
+    .sal-por a:hover { background: var(--soft); }
+    .sal-por a[aria-current="true"] { color: #fff; background: #b91c1c; }
+
+    /* ---------- Paginación ---------- */
+    .sal-pag { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; margin-top: 1.5rem; }
+    .sal-pag[hidden] { display: none; }
+    .sal-pag__info { margin: 0; font-size: .875rem; color: var(--muted); }
+    .sal-pag__info b { color: var(--ink); }
+    .sal-pag__nums { display: flex; flex-wrap: wrap; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+    .sal-pag__nums a, .sal-pag__nums span {
+        display: grid; place-items: center; min-width: 2.5rem; height: 2.5rem; padding: 0 .5rem; border-radius: 999px;
+        font-size: .9375rem; font-weight: 800; color: var(--ink); text-decoration: none;
+    }
+    .sal-pag__nums a { background: var(--page); box-shadow: inset 0 0 0 1px var(--line); transition: background-color .15s, color .15s; }
+    .sal-pag__nums a:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .sal-pag__nums [aria-current="page"] { color: #fff; background: #b91c1c; }
+    .sal-pag__nums .gap { color: var(--muted); min-width: 1.25rem; }
+    .sal-pag__nums svg { width: 1rem; height: 1rem; }
+    .sal-pag__nums .off { opacity: .35; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+    @media (max-width: 559px) { .sal-pag { justify-content: center; } .sal-pag__info { width: 100%; text-align: center; } }
+
+    /* ---------- Sin productos ---------- */
+    .sal-empty { padding: 3.5rem 1.5rem 3.75rem; text-align: center; background: var(--tc-soft); border-radius: 4.5rem 1.25rem 1.25rem 1.25rem; }
+    .sal-empty__disc { width: 5rem; height: 5rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--tc-strong); color: var(--muted); }
+    .sal-empty__disc svg { width: 2.25rem; height: 2.25rem; }
+    .sal-empty h3 { margin: 1.25rem 0 0; font-size: 1.375rem; font-weight: 800; }
+    .sal-empty p { margin: .5rem auto 0; max-width: 34ch; color: var(--muted); line-height: 1.5; }
+
+    /* ---------- Botón del historial: una pila de recibos ---------- */
+    .sal-hist {
+        position: relative; isolation: isolate;
+        display: inline-flex; align-items: center; gap: .8rem;
+        min-height: 3.5rem; padding: .45rem 1.1rem .45rem .45rem;
+        font: inherit; text-align: left; cursor: pointer;
+        color: #1c1917; background: #fff; border: 0; border-radius: 1.1rem;
+        box-shadow: 0 1rem 1.5rem -1rem rgba(69, 10, 10, .9);
+        transition: transform .2s;
+    }
+    /* Las dos hojas de atrás */
+    .sal-hist::before, .sal-hist::after {
+        content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+        background: #fecaca; transform: rotate(-3deg) translate(-.2rem, .25rem);
+        transition: transform .25s;
+    }
+    .sal-hist::after { background: #fca5a5; transform: rotate(2.5deg) translate(.25rem, .4rem); z-index: -2; }
+    .sal-hist:hover { transform: translateY(-.15rem); }
+    .sal-hist:hover::before { transform: rotate(-6deg) translate(-.5rem, .35rem); }
+    .sal-hist:hover::after { transform: rotate(5deg) translate(.55rem, .55rem); }
+    .sal-hist > * { position: relative; }
+    .sal-hist > span:first-child, .sal-hist__ico {
+        flex: none; display: grid; place-items: center; width: 2.6rem; height: 2.6rem;
+        border-radius: .8rem; color: #fff; background: #b91c1c;
+    }
+    .sal-hist__ico svg { width: 1.3rem; height: 1.3rem; }
+    .sal-hist__txt { display: grid; gap: .1rem; line-height: 1.15; }
+    .sal-hist__txt b { font-size: 1rem; font-weight: 800; }
+    .sal-hist__txt small { font-size: .8125rem; font-weight: 600; color: #6b645e; }
+    .sal-hist__num {
+        position: absolute !important; top: -.55rem; right: -.55rem;
+        display: grid; place-items: center; min-width: 1.75rem; height: 1.75rem; padding: 0 .45rem;
+        font-size: .8125rem; font-weight: 800; color: #fff; background: #1c1917;
+        border: 3px solid #b91c1c; border-radius: 999px;
+    }
+    .sal-hist:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+
+    .sal-mot {
+        display: inline-flex; align-items: center; gap: .5rem; min-height: 3.5rem; padding: 0 1.2rem;
+        font-size: .9375rem; font-weight: 800; color: #fff; text-decoration: none;
+        border: 2px solid rgba(255, 255, 255, .35); border-radius: 1.1rem;
+        background: rgba(69, 10, 10, .3);
+        transition: background-color .15s, border-color .15s;
+    }
+    .sal-mot svg { width: 1.15rem; height: 1.15rem; }
+    .sal-mot:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+
+    /* ---------- Ventana del historial ---------- */
+    .sal-dlg {
+        width: 100%; max-width: 100%; max-height: 92dvh; margin: auto 0 0; padding: 0;
+        color: var(--ink); background: var(--page); border: 0; border-radius: 1.75rem 1.75rem 0 0;
+        box-shadow: 0 -1.5rem 3rem -1rem rgba(0, 0, 0, .4); overflow: hidden;
+    }
+    .sal-dlg[open] { display: flex; flex-direction: column; animation: sal-sube .32s cubic-bezier(.2, .9, .3, 1.15); }
+    .sal-dlg::backdrop { background: rgba(28, 25, 23, .55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    @keyframes sal-sube { from { transform: translateY(2.5rem); opacity: 0; } }
+    @media (min-width: 640px) {
+        .sal-dlg { width: min(48rem, calc(100% - 3rem)); max-height: min(46rem, calc(100dvh - 3rem)); margin: auto; border-radius: 2rem; }
+        .sal-dlg[open] { animation-name: sal-crece; }
+        @keyframes sal-crece { from { transform: translateY(1rem) scale(.96); opacity: 0; } }
+    }
+
+    /* Cabecera roja con borde de recibo */
+    .sal-dlg__top {
+        position: relative; flex: none; padding: 1rem 1.25rem 2.5rem; color: #fff; background: #b91c1c; overflow: hidden;
+    }
+    .sal-dlg__top:focus { outline: none; }
+    .sal-dlg__top::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 6rem at 102% -20%, rgba(254, 205, 205, .14) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 1.6rem at 80% 30%, rgba(254, 205, 205, .16) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 7rem at -10% 120%, rgba(127, 29, 29, .6) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 640px) { .sal-dlg__top { padding: 1.6rem 1.9rem 2.75rem; } }
+    .sal-dlg__top > * { position: relative; }
+    .sal-asa { display: block; width: 2.75rem; height: .3rem; margin: 0 auto .9rem; border-radius: 999px; background: rgba(255, 255, 255, .45); }
+    @media (min-width: 640px) { .sal-asa { display: none; } }
+    .sal-dlg__fila { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .sal-dlg__eti { margin: 0; font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .8; }
+    .sal-dlg h2 { margin: .2rem 0 0; font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.25rem); font-weight: 800; font-stretch: 110%; letter-spacing: -.03em; line-height: 1; }
+    .sal-dlg__sub { margin: .45rem 0 0; font-size: .9375rem; opacity: .9; }
+    .sal-x {
+        flex: none; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; padding: 0; cursor: pointer;
+        color: #b91c1c; background: #fff; border: 0; border-radius: 50%;
+        box-shadow: 0 .6rem 1rem -.6rem rgba(69, 10, 10, .9); transition: transform .25s, background-color .15s, color .15s;
+    }
+    .sal-x:hover { color: #fff; background: #450a0a; transform: rotate(90deg); }
+    .sal-x:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .sal-x svg { width: 1.05rem; height: 1.05rem; }
+
+
+    /* Barra de búsqueda y filtro rápido */
+    .sal-herr { position: relative; z-index: 5; flex: none; display: grid; gap: .6rem; margin-top: -1.25rem; padding: 1.1rem 1.25rem .6rem; background: var(--page); border-radius: 1.5rem 1.5rem 0 0; }
+    /* Buscador a lo ancho; debajo, el mes y «con / sin cambio» lado a lado */
+    @media (min-width: 640px) {
+        .sal-herr { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 1.25rem 1.9rem .6rem; border-radius: 1.75rem 1.75rem 0 0; }
+        .sal-herr .sal-buscar { grid-column: 1 / -1; }
+    }
+    .sal-buscar { position: relative; display: block; }
+    .sal-buscar svg { position: absolute; left: .95rem; top: 50%; width: 1.1rem; height: 1.1rem; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .sal-buscar input {
+        width: 100%; height: 2.75rem; padding: 0 1rem 0 2.7rem; font: inherit; font-size: 1rem; color: var(--ink);
+        background: var(--board); border: 2px solid transparent; border-radius: 999px; outline: 0;
+    }
+    .sal-buscar input:focus { border-color: var(--red); background: var(--card); }
+    .sal-buscar input::-webkit-search-cancel-button { filter: grayscale(1); opacity: .6; cursor: pointer; }
+    .sal-mesel { position: relative; display: block; }
+    .sal-mesel svg { position: absolute; left: .9rem; top: 50%; width: 1.05rem; height: 1.05rem; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .sal-mesel select {
+        width: 100%; height: 2.75rem; padding: 0 2.25rem 0 2.6rem; font: inherit; font-size: .9375rem; font-weight: 700; color: var(--ink);
+        background: var(--board) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right .85rem center / 1rem no-repeat;
+        border: 2px solid transparent; border-radius: 999px; outline: 0; cursor: pointer; -webkit-appearance: none; appearance: none;
+    }
+    .sal-mesel select:focus { border-color: var(--red); }
+    .sal-mesel select[hidden], .sal-drop[hidden], .sal-drop__lista[hidden] { display: none; }
+
+    /* Menú propio del mes (reemplaza la lista del navegador) */
+    .sal-drop { position: static; display: block; }
+    .sal-drop__btn {
+        display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; height: 2.75rem; padding: 0 .9rem 0 2.6rem;
+        font: inherit; font-size: .9375rem; font-weight: 700; text-align: left; color: var(--ink);
+        background: var(--board); border: 2px solid transparent; border-radius: 999px; cursor: pointer;
+    }
+    .sal-drop__btn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sal-drop__btn svg { position: static; flex: none; width: 1rem; height: 1rem; transform: none; color: var(--muted); transition: transform .2s; }
+    .sal-drop__btn[aria-expanded="true"] { border-color: var(--red); }
+    .sal-drop__btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .sal-drop__btn:focus-visible { outline: none; border-color: var(--red); }
+    .sal-drop__lista {
+        position: absolute; z-index: 40; top: calc(100% + .45rem); left: 0; right: 0;
+        max-height: min(16rem, 45vh); overflow-y: auto; overscroll-behavior: contain;
+        margin: 0; padding: .35rem; list-style: none;
+        color: var(--ink); background: var(--card); border-radius: 1.1rem;
+        box-shadow: 0 1.25rem 2.5rem -1rem rgba(69, 10, 10, .55), 0 0 0 1px var(--line);
+        animation: sal-drop-in .16s ease-out;
+    }
+    .dark .sal-drop__lista { box-shadow: 0 1.25rem 2.5rem -1rem rgba(0, 0, 0, .9), 0 0 0 1px var(--line); }
+    .sal-drop__lista:focus { outline: none; }
+    @keyframes sal-drop-in { from { opacity: 0; transform: translateY(-.3rem); } }
+    .sal-drop__lista li {
+        display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+        padding: .6rem .85rem; border-radius: .8rem; font-size: .9375rem; font-weight: 600; cursor: pointer;
+    }
+    .sal-drop__lista li.is-activo { background: var(--ta-soft); }
+    .sal-drop__lista li[aria-selected="true"] { font-weight: 800; color: var(--link); }
+    .sal-drop__lista li[aria-selected="true"]::after { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+    .sal-mesel select option { color: #1c1917; background: #fff; }
+    .dark .sal-mesel select { color-scheme: dark; }
+    .dark .sal-mesel select option { color: #f5f5f4; background: #1d1c1b; }
+    .sal-hpag { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1.1rem; }
+    .sal-hpag[hidden] { display: none; }
+    .sal-hpag span { min-width: 8rem; text-align: center; font-size: .875rem; font-weight: 700; color: var(--muted); }
+    .sal-hpag button {
+        display: grid; place-items: center; width: 2.5rem; height: 2.5rem; padding: 0; cursor: pointer;
+        color: var(--ink); background: var(--board); border: 0; border-radius: 50%; transition: background-color .15s, color .15s;
+    }
+    .sal-hpag button svg { width: 1rem; height: 1rem; }
+    .sal-hpag button:hover:not(:disabled) { color: #fff; background: #b91c1c; }
+    .sal-hpag button:disabled { opacity: .35; cursor: not-allowed; }
+    .sal-seg { display: flex; gap: .25rem; padding: .25rem; border-radius: 999px; background: var(--board); }
+    .sal-seg button {
+        flex: 1 1 auto; height: 2.25rem; padding: 0 .85rem; font: inherit; font-size: .8125rem; font-weight: 800; white-space: nowrap;
+        color: var(--muted); background: transparent; border: 0; border-radius: 999px; cursor: pointer; transition: background-color .15s, color .15s;
+    }
+    .sal-seg button:hover { color: var(--ink); }
+    .sal-seg button[aria-pressed="true"] { color: #fff; background: #b91c1c; }
+
+    /* Línea de tiempo por mes */
+    .sal-dlg__top + .sal-dlg__lista { position: relative; margin-top: -1.25rem; background: var(--page); border-radius: 1.5rem 1.5rem 0 0; }
+    .sal-dlg__lista { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: .25rem 1.25rem 1.5rem; scrollbar-width: thin; }
+    @media (min-width: 640px) { .sal-dlg__lista { padding: .25rem 1.9rem 1.75rem; } }
+    .sal-mes[hidden] { display: none; }
+    .sal-mes__t {
+        position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; justify-content: space-between;
+        margin: 0; padding: .9rem 0 .5rem; background: var(--page);
+        font-size: .875rem; font-weight: 800; letter-spacing: .02em; text-transform: capitalize; color: var(--link);
+    }
+    .sal-mes__t small { font-size: .75rem; font-weight: 600; text-transform: none; color: var(--muted); }
+    .sal-his { list-style: none; margin: 0; padding: 0 0 0 1.35rem; position: relative; display: grid; gap: .6rem; }
+    .sal-his::before { content: ""; position: absolute; left: .3rem; top: .5rem; bottom: .5rem; border-left: 2px dashed var(--line); }
+    .sal-his li { position: relative; }
+    .sal-his li[hidden] { display: none; }
+    .sal-his li::before {   /* el punto de la línea de tiempo */
+        content: ""; position: absolute; left: -1.35rem; top: 50%; width: .75rem; height: .75rem; margin-top: -.375rem;
+        border-radius: 50%; background: var(--no); box-shadow: 0 0 0 3px var(--page);
+    }
+    .sal-his li[data-cambio="si"]::before { background: #16a34a; }
+
+    .sal-item {
+        display: grid; grid-template-columns: 3.25rem minmax(0, 1fr) auto; align-items: center; gap: .85rem;
+        padding: .7rem .9rem .7rem .7rem; color: inherit; text-decoration: none;
+        background: var(--board); border-radius: 1.25rem; transition: transform .2s, box-shadow .2s, background-color .2s;
+    }
+    .sal-item:hover { background: var(--card); transform: translateX(.25rem); box-shadow: 0 .75rem 1.5rem -1rem rgba(127, 29, 29, .5); }
+    .sal-item:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .dark .sal-item:hover { background: #222020; }
+    .sal-av { position: relative; display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; background: var(--strong); }
+    .sal-av img { max-width: 72%; max-height: 72%; object-fit: contain; }
+    .sal-av > b { font-size: 1.25rem; font-weight: 800; color: var(--ink); opacity: .7; }
+    .sal-av i {   /* sello: ↺ con cambio / × sin cambio */
+        position: absolute; right: -.2rem; bottom: -.2rem; display: grid; place-items: center; width: 1.3rem; height: 1.3rem;
+        border-radius: 50%; color: #fff; background: var(--no); box-shadow: 0 0 0 2.5px var(--board);
+        font-style: normal;
+    }
+    .sal-av i svg { width: .75rem; height: .75rem; }
+    .sal-his li[data-cambio="si"] .sal-av i { background: #16a34a; }
+    .dark .sal-av i { color: #1c1917; }
+    .sal-item__txt { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .3rem; }
+    .sal-item__prod { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; line-height: 1.2; }
+    .sal-item__meta { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; font-size: .8125rem; color: var(--muted); }
+    .sal-tag { display: inline-block; max-width: 100%; padding: .15rem .55rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .75rem; font-weight: 700; color: var(--ink); background: var(--soft); border-radius: .5rem; }
+    .sal-item__cant { text-align: right; line-height: 1; }
+    .sal-item__cant b { display: block; font-size: 1.75rem; font-weight: 800; font-stretch: 75%; color: var(--link); font-variant-numeric: tabular-nums; }
+    .sal-item__cant small { display: block; margin-top: .3rem; font-size: .75rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+    @media (max-width: 419px) {
+        .sal-item { grid-template-columns: 2.75rem minmax(0, 1fr) auto; gap: .7rem; }
+        .sal-av { width: 2.75rem; height: 2.75rem; }
+        .sal-item__cant b { font-size: 1.5rem; }
+    }
+
+    .sal-nada { padding: 2.75rem 1rem 2rem; text-align: center; color: var(--muted); }
+    .sal-nada[hidden] { display: none; }
+    .sal-nada svg { display: block; width: 3rem; height: 3rem; margin: 0 auto .75rem; color: var(--line); }
+    .sal-nada b { display: block; margin-bottom: .25rem; font-size: 1.0625rem; color: var(--ink); }
+    .sal-nota { margin: 1rem 0 0; font-size: .8125rem; color: var(--muted); text-align: center; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sal *, .sal *::before, .sal *::after { transition: none !important; }
+        .sal-dlg[open] { animation: none; }
+        .sal-hist:hover, .sal-item:hover, .sal-x:hover { transform: none; }
+    }
+</style>
+
+<div class="sal">
+
+    <header class="sal-hero">
+        <div class="sal-hero__bg" aria-hidden="true">
+            <div class="sal-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
+        </div>
+        <div class="sal-hero__in">
+            <div class="sal-hero__txt">
+                <h1>Salidas de productos</h1>
+                <p>Lo que sale sin venderse: vencidos, dañados o perdidos. Se descuenta del inventario.</p>
+                <div class="sal-hero__acc">
+                    <button class="sal-hist" type="button" id="abrir-historial" aria-haspopup="dialog" aria-controls="historial">
+                        <span class="sal-hist__ico">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6M9 16h3"></path></svg>
+                        </span>
+                        <span class="sal-hist__txt">
+                            <b>Historial de retiros</b>
+                            <small>{% if ultimo %}Último: {{ ultimo.fecha|date:'j \d\e F' }}{% else %}Aún no hay retiros{% endif %}</small>
+                        </span>
+                        {% if total_retiros %}<span class="sal-hist__num" aria-label="{{ total_retiros }} retiros">{{ total_retiros }}</span>{% endif %}
+                    </button>
+                    <a class="sal-mot" href="{% url 'motivos_salida' %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>
+                        Motivos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {# Filtro en tiempo real: las tarjetas se van filtrando mientras escribes. Sin JavaScript funciona igual: escribe y pulsa Enter. #}
+    {% if filas or busqueda %}
+        <div class="sal-filtro">
+            <form class="sal-search" id="buscador" role="search" method="get" action="{% url 'lista_salidas' %}"{% if busqueda or pagina.paginator.num_pages > 1 %} data-parcial{% endif %}>
+                <span class="sal-search__lupa" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+                </span>
+                <label class="sal-sr" for="buscar">Filtrar productos por nombre</label>
+                <input type="search" id="buscar" name="buscar" value="{{ busqueda }}" placeholder="Filtrar productos por nombre"
+                       aria-controls="filas" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+                <button type="submit" class="sal-sr">Buscar</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <div class="sal-wrap">
+        <section class="sal-board" aria-labelledby="titulo-productos">
+
+            {% if messages %}
+                <div class="sal-msgs" role="status">
+                    {% for m in messages %}<div class="sal-msg{% if m.tags %} is-{{ m.tags }}{% endif %}">{{ m }}</div>{% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="sal-head">
+                <h2 id="titulo-productos">¿Qué producto sale?</h2>
+                <div class="sal-head__side">
+                    <a class="sal-clear" id="quitar" href="{% url 'lista_salidas' %}?por={{ por }}"{% if not busqueda %} hidden{% endif %}>Quitar filtro</a>
+                    {% if pagina %}
+                        <div class="sal-por" id="por">
+                            <span>Mostrar</span>
+                            <div class="sal-por__g">
+                                {% for n in opciones_por %}
+                                    <a href="?por={{ n }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}"{% if n == por %} aria-current="true"{% endif %} aria-label="Mostrar {{ n }} por página">{{ n }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <ul class="sal-lista" id="filas"{% if not filas %} hidden{% endif %}>
+                {% for producto in filas %}
+                    <li class="sal-fila{% if producto.existencias <= 5 %} is-low{% endif %}" data-tono="{{ producto.categoria_id|default:0 }}">
+                        <span class="sal-fila__foto" aria-hidden="true">{% if producto.imagen %}<img src="{{ producto.imagen.url }}" alt="" loading="lazy" decoding="async">{% else %}{{ producto.nombre|slice:":1"|upper }}{% endif %}</span>
+                        <div class="sal-fila__info">
+                            <h3 class="sal-name">{{ producto.nombre }}</h3>
+                        </div>
+                        <div class="sal-fila__num">
+                            {% if producto.existencias > 5 %}
+                                <p class="sal-fila__stock">{{ producto.existencias }} disponibles</p>
+                            {% else %}
+                                <p class="sal-fila__stock is-low">Quedan {{ producto.existencias }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="sal-fila__acc">
+                            <a class="sal-dar" href="{% url 'registrar_salida' %}?producto={{ producto.id }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M19 12l-7 7-7-7"></path></svg>
+                                Dar salida<span class="sal-sr"> a {{ producto.nombre }}</span>
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            {% if pagina and pagina.paginator.num_pages > 1 %}
+                <nav class="sal-pag" id="paginas" aria-label="Páginas de productos">
+                    <p class="sal-pag__info">Del <b>{{ pagina.start_index }}</b> al <b>{{ pagina.end_index }}</b> de <b>{{ pagina.paginator.count }}</b></p>
+                    <ul class="sal-pag__nums">
+                        <li>
+                            {% if pagina.has_previous %}
+                                <a href="?por={{ por }}&amp;pagina={{ pagina.previous_page_number }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}" aria-label="Página anterior">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+                                </a>
+                            {% else %}
+                                <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+                            {% endif %}
+                        </li>
+                        {% for n in rango_paginas %}
+                            <li>
+                                {% if n == pagina.number %}
+                                    <span aria-current="page">{{ n }}</span>
+                                {% elif n == pagina.paginator.ELLIPSIS %}
+                                    <span class="gap">…</span>
+                                {% else %}
+                                    <a href="?por={{ por }}&amp;pagina={{ n }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}">{{ n }}</a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        <li>
+                            {% if pagina.has_next %}
+                                <a href="?por={{ por }}&amp;pagina={{ pagina.next_page_number }}{% if busqueda %}&amp;buscar={{ busqueda|urlencode }}{% endif %}" aria-label="Página siguiente">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+                                </a>
+                            {% else %}
+                                <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+
+            <div class="sal-empty" id="sin-filtro"{% if filas or not busqueda %} hidden{% endif %}>
+                <div class="sal-empty__disc">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+                </div>
+                <h3>No encontramos productos con ese filtro</h3>
+                <p id="sin-filtro-p">Revisa cómo escribiste el nombre o prueba con otra palabra.</p>
+                <a class="sal-btn-v" id="ver-todos" href="{% url 'lista_salidas' %}?por={{ por }}">Ver todos los productos</a>
+            </div>
+
+            {% if not filas and not busqueda %}
+                <div class="sal-empty">
+                    <div class="sal-empty__disc">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
+                    </div>
+                    {% if total_productos %}
+                        <h3>Todos los productos están en cero</h3>
+                        <p>Hay {{ total_productos }} producto{{ total_productos|pluralize }}, pero ninguno tiene unidades. Súmales existencias y aparecerán aquí.</p>
+                        <a class="sal-btn-v" href="{% url 'lista_productos' %}">Ir a la lista de productos</a>
+                    {% else %}
+                        <h3>Aún no hay productos</h3>
+                        <p>Cuando se agreguen productos con unidades, aparecerán aquí para darles salida.</p>
+                        <a class="sal-btn-v" href="{% url 'crear_producto' %}">Agregar un producto</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    {# Ventana con el historial. Se abre con el botón del banner (o entrando con ?historial=1). #}
+    {% regroup historial by fecha|date:"F Y" as meses %}
+    <dialog class="sal-dlg" id="historial" aria-labelledby="titulo-historial">
+        <div class="sal-dlg__top" tabindex="-1" autofocus>
+            <span class="sal-asa" aria-hidden="true"></span>
+            <div class="sal-dlg__fila">
+                <div>
+                    <p class="sal-dlg__eti">Lo que salió sin venderse</p>
+                    <h2 id="titulo-historial">Historial de retiros</h2>
+                    <p class="sal-dlg__sub">{% if total_retiros %}{{ total_retiros }} retiro{{ total_retiros|pluralize }}, del más reciente al más antiguo{% else %}Aún no hay retiros{% endif %}</p>
+                </div>
+                <button class="sal-x" type="button" id="cerrar-historial" aria-label="Cerrar historial">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                </button>
+            </div>
+
+        </div>
+
+        {% if historial %}
+            <div class="sal-herr">
+                <label class="sal-buscar">
+                    <span class="sal-sr">Buscar en el historial</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+                    <input type="search" id="buscar-historial" placeholder="Busca producto, motivo o fecha" autocomplete="off">
+                </label>
+                <label class="sal-mesel">
+                    <span class="sal-sr">Mes</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+                    <select id="mes-historial">
+                        <option value="">Todos los meses</option>
+                        {% for mes in meses %}<option value="{{ mes.list.0.fecha|date:'Y-m' }}">{{ mes.grouper|capfirst }}</option>{% endfor %}
+                    </select>
+                    {# Menú propio: la lista del navegador no se puede estilizar y en el celular sale enorme. Lo arma el script de abajo. #}
+                    <span class="sal-drop" id="mes-drop" hidden>
+                        <button type="button" class="sal-drop__btn" id="mes-drop-btn" aria-haspopup="listbox" aria-expanded="false" aria-controls="mes-drop-lista">
+                            <span id="mes-drop-txt"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                        </button>
+                        <ul class="sal-drop__lista" id="mes-drop-lista" role="listbox" aria-label="Mes" tabindex="-1" hidden></ul>
+                    </span>
+                </label>
+                <div class="sal-seg" role="group" aria-label="Filtrar por cambio del proveedor">
+                    <button type="button" data-filtro="" aria-pressed="true">Todos</button>
+                    <button type="button" data-filtro="si" aria-pressed="false">Con cambio</button>
+                    <button type="button" data-filtro="no" aria-pressed="false">Sin cambio</button>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="sal-dlg__lista">
+            {% if historial %}
+                {% for mes in meses %}
+                    <section class="sal-mes" data-mes="{{ mes.list.0.fecha|date:'Y-m' }}">
+                        <h3 class="sal-mes__t">{{ mes.grouper }} <small>{{ mes.list|length }} retiro{{ mes.list|length|pluralize }}</small></h3>
+                        <ol class="sal-his">
+                            {% for s in mes.list %}
+                                <li data-cambio="{% if s.aplica_cambio %}si{% else %}no{% endif %}"
+                                    data-texto="{{ s.nom_producto }} {{ s.motivo_nombre }} {{ s.fecha|date:'d/m/Y' }} {{ s.fecha|date:'j F Y' }} {{ s.registrado_por_nombre }}">
+                                    <a class="sal-item" href="{% url 'detalle_salida' s.id %}">
+                                        <span class="sal-av" data-tono="{{ s.producto.categoria_id|default:0 }}">
+                                            {% if s.producto.imagen %}
+                                                <img src="{{ s.producto.imagen.url }}" alt="" loading="lazy" decoding="async">
+                                            {% else %}
+                                                <b aria-hidden="true">{{ s.nom_producto|first|upper }}</b>
+                                            {% endif %}
+                                            <i title="{% if s.aplica_cambio %}El proveedor da cambio{% else %}Sin cambio del proveedor{% endif %}">
+                                                {% if s.aplica_cambio %}
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v5h-5"></path></svg>
+                                                {% else %}
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"></path></svg>
+                                                {% endif %}
+                                            </i>
+                                        </span>
+                                        <span class="sal-item__txt">
+                                            <span class="sal-item__prod">{{ s.nom_producto }}</span>
+                                            <span class="sal-item__meta">
+                                                <span class="sal-tag" data-tono="{{ s.motivo_id }}">{{ s.motivo_nombre }}</span>
+                                                <span>{{ s.fecha|date:'j M' }}{% if s.registrado_por_nombre %} · {{ s.registrado_por_nombre }}{% endif %}</span>
+                                            </span>
+                                        </span>
+                                        <span class="sal-item__cant">
+                                            <b>−{{ s.cantidad }}</b>
+                                            <small>${{ s.valor_perdido|pesos }}</small>
+                                        </span>
+                                        <span class="sal-sr">{% if s.aplica_cambio %}, el proveedor da cambio{% else %}, sin cambio del proveedor{% endif %}</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </section>
+                {% endfor %}
+                <div class="sal-nada" id="sin-coincidencias" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+                    <b>Nada por aquí</b>Prueba con otra palabra o cambia el filtro.
+                </div>
+                <nav class="sal-hpag" id="pag-historial" aria-label="Páginas del historial" hidden>
+                    <button type="button" data-ir="-1" aria-label="Página anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button>
+                    <span id="pag-historial-txt" aria-live="polite"></span>
+                    <button type="button" data-ir="1" aria-label="Página siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+                </nav>
+                {% if total_retiros > historial_max %}
+                    <p class="sal-nota">Se muestran los últimos {{ historial_max }}. Los anteriores siguen guardados.</p>
+                {% endif %}
+            {% else %}
+                <div class="sal-nada">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+                    <b>Todavía no hay retiros</b>Cuando le des salida a un producto, aparecerá aquí.
+                </div>
+            {% endif %}
+        </div>
+    </dialog>
+
+</div>
+
+<script>
+(function () {
+    var ventana = document.getElementById('historial');
+    var abrir = document.getElementById('abrir-historial');
+    var cerrar = document.getElementById('cerrar-historial');
+    if (!ventana || typeof ventana.showModal !== 'function') return;
+
+    function abrirVentana() { ventana.showModal(); }
+    abrir.addEventListener('click', abrirVentana);
+    cerrar.addEventListener('click', function () { ventana.close(); });
+    // Tocar fuera de la ventana (en lo oscuro) también la cierra
+    ventana.addEventListener('click', function (e) { if (e.target === ventana) ventana.close(); });
+    if (new URLSearchParams(location.search).get('historial') === '1') abrirVentana();
+
+    // Buscador, mes y «con cambio / sin cambio», con 10 retiros por página
+    var caja = document.getElementById('buscar-historial');
+    if (!caja) return;
+    var POR_PAGINA = 10;
+    var filas = Array.prototype.slice.call(ventana.querySelectorAll('.sal-his li'));
+    var meses = Array.prototype.slice.call(ventana.querySelectorAll('.sal-mes'));
+    var botones = Array.prototype.slice.call(ventana.querySelectorAll('[data-filtro]'));
+    var selMes = document.getElementById('mes-historial');
+    var nada = document.getElementById('sin-coincidencias');
+    var pag = document.getElementById('pag-historial');
+    var pagTxt = document.getElementById('pag-historial-txt');
+    var lista = ventana.querySelector('.sal-dlg__lista');
+    var filtro = '', pagina = 1;
+    function limpio(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+    filas.forEach(function (f) {
+        f._t = limpio(f.getAttribute('data-texto'));
+        f._mes = f.closest('.sal-mes').getAttribute('data-mes');
+    });
+
+    function aplicar() {
+        var palabras = limpio(caja.value).split(/\s+/).filter(Boolean), mes = selMes.value;
+        var coinciden = filas.filter(function (f) {
+            return (!filtro || f.getAttribute('data-cambio') === filtro) && (!mes || f._mes === mes) &&
+                   palabras.every(function (p) { return f._t.indexOf(p) >= 0; });
+        });
+        var total = Math.max(1, Math.ceil(coinciden.length / POR_PAGINA));
+        if (pagina > total) pagina = total;
+        var desde = (pagina - 1) * POR_PAGINA, visibles = coinciden.slice(desde, desde + POR_PAGINA);
+        filas.forEach(function (f) { f.hidden = visibles.indexOf(f) < 0; });
+        meses.forEach(function (m) {
+            m.hidden = !m.querySelector('li:not([hidden])');
+            var n = coinciden.filter(function (f) { return f._mes === m.getAttribute('data-mes'); }).length;
+            m.querySelector('small').textContent = n + (n === 1 ? ' retiro' : ' retiros');
+        });
+        nada.hidden = coinciden.length > 0;
+        pag.hidden = coinciden.length <= POR_PAGINA;
+        pagTxt.textContent = 'Página ' + pagina + ' de ' + total;
+        pag.querySelector('[data-ir="-1"]').disabled = pagina <= 1;
+        pag.querySelector('[data-ir="1"]').disabled = pagina >= total;
+    }
+    function desdeCero() { pagina = 1; aplicar(); }
+    caja.addEventListener('input', desdeCero);
+    selMes.addEventListener('change', desdeCero);
+    botones.forEach(function (b) {
+        b.addEventListener('click', function () {
+            filtro = b.getAttribute('data-filtro');
+            botones.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+            desdeCero();
+        });
+    });
+    pag.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-ir]');
+        if (!b || b.disabled) return;
+        pagina += Number(b.getAttribute('data-ir'));
+        aplicar();
+        lista.scrollTop = 0;
+    });
+    aplicar();
+}());
+</script>
+<script>
+/* Filtro en tiempo real (el mismo de lista_productos). Las tarjetas se va filtrando mientras escribes (sin pedir nada al servidor por tecla).
+   Si la página llegó ya filtrada por texto, se pide UNA vez la lista completa para poder filtrar todos los productos. */
+(function () {
+    var form = document.getElementById('buscador');
+    var ul = document.getElementById('filas');
+    if (!form || !ul) return;
+    var input = document.getElementById('buscar');
+    var quitar = document.getElementById('quitar');
+    var sinFiltro = document.getElementById('sin-filtro');
+    var sinFiltroP = document.getElementById('sin-filtro-p');
+    var verTodos = document.getElementById('ver-todos');
+    var completa = !form.hasAttribute('data-parcial');       /* false = la página trae solo los productos de una búsqueda */
+    var AYUDA = 'Revisa cómo escribiste el nombre o prueba con otra palabra.';
+
+    function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function palabras(s) { return norm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+
+    /* Distancia de edición (para perdonar una letra mal escrita) */
+    function lev(a, b) {
+        var m = a.length, n = b.length, i, j, prev = [], cur = [];
+        for (j = 0; j <= n; j++) prev[j] = j;
+        for (i = 1; i <= m; i++) {
+            cur = [i];
+            for (j = 1; j <= n; j++) {
+                cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+            }
+            prev = cur;
+        }
+        return prev[n];
+    }
+
+    /* ¿La fila se parece a lo escrito? null = no. Se mira el nombre (por palabra, por trozo y con una letra de error) */
+    function puntuar(p, q) {
+        var suma = 0;
+        for (var k = 0; k < q.tokens.length; k++) {
+            var t = q.tokens[k], mejor = 99, i, w, d;
+            for (i = 0; i < p.w.length; i++) {
+                w = p.w[i];
+                if (w === t) mejor = Math.min(mejor, 0);
+                else if (w.indexOf(t) === 0) mejor = Math.min(mejor, 1);
+                else if (w.indexOf(t) > 0) mejor = Math.min(mejor, 3);
+                else if (t.length >= 5) {                          /* con menos letras «coca» y «cola» se confundirían */
+                    d = lev(t, w.slice(0, t.length));
+                    if (d <= (t.length >= 7 ? 2 : 1)) mejor = Math.min(mejor, 4 + d);
+                }
+            }
+            if (mejor === 99 && p.c.indexOf(t) >= 0) mejor = 3;      /* «cocacola» encuentra «Coca-Cola» */
+            if (mejor === 99) return null;
+            suma += mejor;
+        }
+        return suma;
+    }
+
+    /* Resalta lo que escribió la persona dentro del nombre */
+    function resaltar(el, nombre, tokens) {
+        var n = norm(nombre), marcas = [];
+        if (n.length === nombre.length) {
+            tokens.forEach(function (t) { var i = n.indexOf(t); if (i >= 0) marcas.push([i, i + t.length]); });
+        }
+        marcas.sort(function (a, b) { return a[0] - b[0]; });
+        var fusion = [];
+        marcas.forEach(function (m) {
+            var u = fusion[fusion.length - 1];
+            if (u && m[0] <= u[1]) u[1] = Math.max(u[1], m[1]); else fusion.push(m.slice());
+        });
+        var pos = 0;
+        fusion.forEach(function (m) {
+            if (m[0] > pos) el.appendChild(document.createTextNode(nombre.slice(pos, m[0])));
+            var mk = document.createElement('mark');
+            mk.textContent = nombre.slice(m[0], m[1]);
+            el.appendChild(mk);
+            pos = m[1];
+        });
+        if (pos < nombre.length) el.appendChild(document.createTextNode(nombre.slice(pos)));
+    }
+
+    /* Las filas de la lista, con lo necesario para compararlas */
+    var paginas = document.getElementById('paginas');
+    var porSel = document.getElementById('por');
+    var originales = Array.prototype.slice.call(ul.children);   /* las filas de esta página */
+    var todas = null;                                           /* todas las filas (se traen al empezar a escribir) */
+    var filas = [];
+    function leer() {
+        filas = Array.prototype.map.call(ul.children, function (li) {
+            var elNombre = li.querySelector('.sal-name');
+            var nombre = elNombre.textContent.trim();
+            return {
+                li: li, el: elNombre, nombre: nombre, marcado: false,
+                w: palabras(nombre),
+                c: norm(nombre).replace(/[^a-z0-9]/g, '')
+            };
+        });
+    }
+    function poner(lista) {
+        if (ul.firstElementChild === lista[0] && ul.children.length === lista.length) return;
+        ul.textContent = '';
+        lista.forEach(function (li) { li.hidden = false; ul.appendChild(li); });
+        leer();
+    }
+    leer();
+
+    function pintarNombre(f, tokens) {
+        if (!tokens.length) { if (f.marcado) { f.el.textContent = f.nombre; f.marcado = false; } return; }
+        f.el.textContent = '';
+        resaltar(f.el, f.nombre, tokens);
+        f.marcado = true;
+    }
+
+    function aplicar() {
+        var texto = input.value.trim();
+        var tokens = palabras(texto);
+        /* Sin texto: se vuelve a la página de siempre. Escribiendo: se busca en todos los productos. */
+        poner(tokens.length && todas ? todas : originales);
+        if (paginas) paginas.hidden = tokens.length > 0;
+        if (porSel) porSel.hidden = tokens.length > 0;
+        var q = { tokens: tokens, junto: norm(texto).replace(/[^a-z0-9]/g, '') };
+        var n = 0;
+        filas.forEach(function (f) {
+            var ok = !tokens.length || puntuar(f, q) !== null;
+            f.li.hidden = !ok;
+            if (ok) n++;
+            pintarNombre(f, ok ? tokens : []);
+        });
+        ul.hidden = n === 0;
+        sinFiltro.hidden = !(n === 0 && filas.length > 0);
+        sinFiltroP.textContent = texto ? 'No hay nada parecido a «' + texto + '». ' + AYUDA : AYUDA;
+        quitar.hidden = !texto;
+    }
+
+    /* Si hay más de una página (o la página llegó filtrada), trae UNA vez todos los productos para poder buscar en todos */
+    var cargando = null;
+    function cargar() {
+        if (completa || todas) return Promise.resolve();
+        if (!cargando) {
+            cargando = fetch(form.getAttribute('action') + '?todos=1', { credentials: 'same-origin' })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(function (t) {
+                    var nuevas = new DOMParser().parseFromString(t, 'text/html').querySelectorAll('#filas > li');
+                    todas = Array.prototype.map.call(nuevas, function (li) { return document.importNode(li, true); });
+                })
+                .catch(function () { /* sin conexión: se filtra lo que ya hay en pantalla */ });
+        }
+        return cargando;
+    }
+
+    input.addEventListener('focus', function () { cargar().then(aplicar); });
+    input.addEventListener('input', function () { cargar().then(aplicar); });
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();                                   /* ya está filtrado: Enter solo cierra el teclado en el teléfono */
+        if (window.matchMedia('(pointer: coarse)').matches) input.blur();
+    });
+    if (verTodos) {
+        verTodos.addEventListener('click', function (e) {
+            if (input.defaultValue) return;                   /* si la página llegó filtrada sin JavaScript, el enlace recarga normal */
+            e.preventDefault();
+            input.value = '';
+            aplicar();
+            input.focus();
+        });
+    }
+    /* Al volver con «atrás» el navegador puede devolver el texto escrito pero no la lista filtrada */
+    window.addEventListener('pageshow', function () { if (input.value !== input.defaultValue) cargar().then(aplicar); });
+}());
+</script>
+<script>
+/* Menú propio para el mes del historial: se abre con clic o con las flechas, ↑ ↓ para moverse, Enter elige y Esc cierra.
+   Por debajo sigue el <select>: al elegir se cambia su valor y se avisa con «change» (el filtro del historial hace el resto). */
+(function () {
+    var sel = document.getElementById('mes-historial');
+    var caja = document.getElementById('mes-drop');
+    if (!sel || !caja) return;
+    var btn = document.getElementById('mes-drop-btn');
+    var txt = document.getElementById('mes-drop-txt');
+    var lista = document.getElementById('mes-drop-lista');
+    var activo = sel.selectedIndex;
+
+    sel.hidden = true;
+    caja.hidden = false;
+    var ops = Array.prototype.map.call(sel.options, function (o, i) {
+        var li = document.createElement('li');
+        li.id = 'mes-op-' + i;
+        li.setAttribute('role', 'option');
+        li.setAttribute('aria-selected', o.selected ? 'true' : 'false');
+        li.textContent = o.text;
+        lista.appendChild(li);
+        return li;
+    });
+    txt.textContent = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+
+    function marcar(i) {
+        activo = Math.max(0, Math.min(ops.length - 1, i));
+        ops.forEach(function (li, j) { li.classList.toggle('is-activo', j === activo); });
+        lista.setAttribute('aria-activedescendant', ops[activo].id);
+        ops[activo].scrollIntoView({ block: 'nearest' });
+    }
+    function abrir() {
+        lista.hidden = false;
+        btn.setAttribute('aria-expanded', 'true');
+        marcar(sel.selectedIndex);
+        lista.focus({ preventScroll: true });
+    }
+    function cerrar(devolverFoco) {
+        if (lista.hidden) return;
+        lista.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+        if (devolverFoco) btn.focus();
+    }
+    function elegir(i) {
+        cerrar(true);
+        if (i === sel.selectedIndex) return;
+        sel.selectedIndex = i;
+        ops.forEach(function (li, j) { li.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+        txt.textContent = sel.options[i].text;
+        sel.dispatchEvent(new Event('change'));
+    }
+
+    /* El <label> envuelve el botón: se evita que un clic en la lista «rebote» al botón */
+    btn.addEventListener('click', function (e) { e.preventDefault(); if (lista.hidden) abrir(); else cerrar(true); });
+    btn.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); abrir(); }
+    });
+    lista.addEventListener('click', function (e) {
+        e.preventDefault();
+        var li = e.target.closest('li');
+        if (li) elegir(ops.indexOf(li));
+    });
+    lista.addEventListener('mousemove', function (e) {
+        var li = e.target.closest('li');
+        if (li && ops.indexOf(li) !== activo) marcar(ops.indexOf(li));
+    });
+    lista.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); marcar(activo + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); marcar(activo - 1); }
+        else if (e.key === 'Home') { e.preventDefault(); marcar(0); }
+        else if (e.key === 'End') { e.preventDefault(); marcar(ops.length - 1); }
+        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); elegir(activo); }
+        else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cerrar(true); }   /* Esc cierra el menú, no la ventana */
+        else if (e.key === 'Tab') { cerrar(false); }
+    });
+    document.addEventListener('click', function (e) { if (!caja.contains(e.target)) cerrar(false); });
+}());
+</script>
+
+{% endblock %}

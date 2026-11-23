@@ -5,18 +5,18 @@ from django.conf.urls.static import static
 from django.shortcuts import redirect
 
 
+def inicio(request):
+    return redirect('informacion_tienda')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
     path('usuarios/', include('accounts.urls')),
-
     path('inventario/', include('gestor_inventario.urls')),
-
     path('productos/', include('productos.urls')),
-
-    # Redirigir la página principal al catálogo de productos
-    path('', lambda request: redirect('informacion_tienda')),
+    path('reportes/', include('reportes.urls')),
+    path('salidas/', include('salidas.urls')),
+    path('', inicio, name='inicio'),
 ]
 
 

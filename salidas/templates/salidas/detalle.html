@@ -1,0 +1,241 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Salida #{{ salida.id }} · {{ salida.nom_producto }} - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .sal, .sal * { box-sizing: border-box; }
+    .sal {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c; --ok: #15803d; --ok-soft: #e4f4e8; --no: #57534e; --no-soft: #efebe9;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .sal {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --red: #ef4444; --link: #f87171; --ok: #4ade80; --ok-soft: #14281b; --no: #d6d3d1; --no-soft: #292524;
+    }
+    .sal-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+    /* ---------- Banner ---------- */
+    .sal-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.25rem 1.25rem 4.5rem; }
+    .sal-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 84% 28%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at 98% -15%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 92% 92%, rgba(69, 10, 10, .28) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 10rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 900px) { .sal-hero { padding: 1.75rem 2.5rem 5rem; } }
+    .sal-hero__in { position: relative; max-width: 64rem; margin: 0 auto; }
+
+    .sal-volver {
+        display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 1.1rem 0 .4rem;
+        font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none;
+        background: rgba(69, 10, 10, .3); border: 2px solid rgba(255, 255, 255, .3); border-radius: 999px;
+        transition: background-color .15s, border-color .15s;
+    }
+    .sal-volver span { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #b91c1c; background: #fff; transition: transform .2s; }
+    .sal-volver svg { width: .9rem; height: .9rem; }
+    .sal-volver:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+    .sal-volver:hover span { transform: translateX(-.15rem); }
+    .sal-volver:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    .sal-cab { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
+    @media (min-width: 720px) { .sal-cab { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+    /* Celular: foto + fecha y nombre al lado; las etiquetas debajo, a todo lo ancho */
+    .sal-quien {
+        display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: .9rem; row-gap: .15rem;
+        grid-template-areas: "av eti" "av nom" "chips chips"; min-width: 0;
+    }
+    .sal-quien .sal-av { grid-area: av; }
+    .sal-quien .sal-eti { grid-area: eti; align-self: end; }
+    .sal-quien h1 { grid-area: nom; align-self: start; }
+    .sal-quien .sal-chips { grid-area: chips; }
+    @media (min-width: 720px) {
+        .sal-quien { column-gap: 1.1rem; grid-template-areas: "av eti" "av nom" "av chips"; }
+        .sal-quien .sal-chips { align-self: start; }
+    }
+    .sal-av {
+        flex: none; display: grid; place-items: center; width: 3.75rem; height: 3.75rem; border-radius: 50%; overflow: hidden;
+        font-size: 1.75rem; font-weight: 800; color: #fff; background: rgba(69, 10, 10, .32);   /* disco del mismo rojo, sin blanco */
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25);
+    }
+    .sal-av img { width: 80%; height: 80%; object-fit: contain; }
+    @media (min-width: 720px) { .sal-av { width: 5.5rem; height: 5.5rem; font-size: 2.1rem; } }
+    .sal-eti { margin: 0; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+    .sal-hero h1 {
+        margin: 0; font-size: clamp(1.9rem, 1.3rem + 3vw, 3.25rem); font-weight: 800; font-stretch: 108%;
+        line-height: 1; letter-spacing: -.03em; overflow-wrap: anywhere;
+    }
+    .sal-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .85rem; }
+    @media (min-width: 720px) { .sal-chips { margin-top: .6rem; } }
+    .sal-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .75rem; border-radius: 999px; font-size: .8125rem; font-weight: 800; background: rgba(69, 10, 10, .32); }
+    .sal-chip svg { width: .85rem; height: .85rem; }
+    .sal-chip--si { color: #14532d; background: #bbf7d0; }
+    .sal-chip--no { color: #fff; background: rgba(255, 255, 255, .2); }
+
+    /* Cuánto salió: directo sobre el rojo, sin caja */
+    .sal-cuanto { display: grid; justify-items: end; text-align: right; color: #fff; }
+    .sal-cuanto__t { margin-right: .2rem; font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+    .sal-cuanto__n { display: flex; align-items: baseline; gap: .45rem; }
+    .sal-cuanto__n b { font-size: clamp(3rem, 2.4rem + 2.5vw, 4.25rem); font-weight: 800; font-stretch: 80%; line-height: .95; font-variant-numeric: tabular-nums; }
+    .sal-cuanto__n span { font-size: 1.125rem; font-weight: 800; }
+    .sal-cuanto__v { justify-self: stretch; margin-top: .4rem; padding-top: .45rem; border-top: 2px dashed rgba(255, 255, 255, .35); font-size: .9375rem; font-weight: 600; opacity: .95; }
+    .sal-cuanto__v strong { font-weight: 800; }
+    /* Celular: una franja con la cantidad a la izquierda y lo que valía a la derecha */
+    @media (max-width: 719px) {
+        .sal-cuanto {
+            display: flex; align-items: center; justify-content: space-between; gap: .75rem; text-align: left;
+            padding: .7rem 1rem; border-radius: 1.1rem; background: rgba(69, 10, 10, .3);
+        }
+        .sal-cuanto__n b { font-size: 2.25rem; }
+        .sal-cuanto__n span { font-size: 1rem; }
+        .sal-cuanto__t { font-size: .75rem; }
+        .sal-cuanto__v { margin: 0; padding: 0; border: 0; text-align: right; font-size: .875rem; line-height: 1.25; }
+        .sal-cuanto__v strong { display: block; font-size: 1.0625rem; }
+    }
+
+    /* ---------- Contenido ---------- */
+    .sal-wrap { position: relative; max-width: 64rem; margin: -2.75rem auto 0; padding: 0 .75rem 3rem; }
+    @media (min-width: 640px) { .sal-wrap { padding: 0 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .sal-wrap { padding: 0 2.5rem 4rem; } }
+    .sal-board { padding: 1rem; background: var(--board); border-radius: 1.75rem; }
+    @media (min-width: 640px) { .sal-board { padding: 1.5rem; border-radius: 2.25rem; } }
+    .sal-msgs { display: grid; gap: .5rem; margin-bottom: 1rem; }
+    .sal-msg { padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; line-height: 1.4; background: #ffe8e5; }
+    .dark .sal-msg { background: #2b1816; }
+    .sal-msg.is-success { background: var(--ok-soft); }
+
+    .sal-det { display: grid; gap: 1rem; }
+    @media (min-width: 820px) { .sal-det { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; } }
+    .sal-col { display: grid; gap: 1rem; }
+    .sal-card { padding: 1.15rem 1.25rem 1.25rem; background: var(--card); border-radius: 1.4rem; }
+    .sal-card h2 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .75rem; font-size: 1rem; font-weight: 800; }
+    .sal-card h2 span { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .7rem; color: var(--link); background: var(--board); }
+    .sal-card h2 svg { width: 1rem; height: 1rem; }
+    .sal-texto { margin: 0; font-size: 1rem; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
+
+    .sal-datos { margin: 0; display: grid; }
+    .sal-datos div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .7rem 0; }
+    .sal-datos div + div { border-top: 1px dashed var(--line); }
+    .sal-datos dt { font-size: .875rem; color: var(--muted); }
+    .sal-datos dd { margin: 0; font-size: .9375rem; font-weight: 800; text-align: right; overflow-wrap: anywhere; }
+    .sal-datos a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+
+    .sal-foto { display: block; width: 100%; max-height: 26rem; object-fit: contain; border-radius: 1rem; background: var(--board); }
+    .sal-sinfoto {
+        display: grid; place-items: center; gap: .5rem; padding: 2.25rem 1rem; text-align: center;
+        font-size: .9375rem; color: var(--muted); border: 2px dashed var(--line); border-radius: 1rem;
+    }
+    .sal-sinfoto svg { width: 2.25rem; height: 2.25rem; color: var(--line); }
+
+    .sal-acc { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .sal-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 2.75rem; padding: 0 1.25rem;
+        font-size: .9375rem; font-weight: 800; color: #fff; text-decoration: none; background: #b91c1c; border-radius: 999px;
+        transition: background-color .15s;
+    }
+    .sal-btn svg { width: 1rem; height: 1rem; }
+    .sal-btn:hover { background: #7f1d1d; }
+    .sal-btn--linea { color: var(--ink); background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
+    .sal-btn--linea:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .sal-btn:focus-visible, .sal a:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    @media (max-width: 479px) { .sal-acc .sal-btn { flex: 1 1 100%; } }
+</style>
+
+<div class="sal">
+    <header class="sal-hero">
+        <div class="sal-hero__in">
+            <a class="sal-volver" href="{% url 'lista_salidas' %}?historial=1">
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg></span>
+                Historial de retiros
+            </a>
+
+            <div class="sal-cab">
+                <div class="sal-quien">
+                    <span class="sal-av" aria-hidden="true">
+                        {% if salida.producto.imagen %}<img src="{{ salida.producto.imagen.url }}" alt="">{% else %}{{ salida.nom_producto|first|upper }}{% endif %}
+                    </span>
+                    <p class="sal-eti">Salida #{{ salida.id }} · {{ salida.fecha|date:"j M Y" }}</p>
+                    <h1>{{ salida.nom_producto }}</h1>
+                    <div class="sal-chips">
+                            <span class="sal-chip">{{ salida.motivo_texto }}</span>
+                            {% if salida.aplica_cambio %}
+                                <span class="sal-chip sal-chip--si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v5h-5"></path></svg>El proveedor da cambio</span>
+                            {% else %}
+                                <span class="sal-chip sal-chip--no">Sin cambio del proveedor</span>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="sal-cuanto">
+                    <span class="sal-cuanto__n"><span class="sal-cuanto__t">Retiro</span><b>{{ salida.cantidad }}</b><span>unidad{{ salida.cantidad|pluralize:"es" }}</span></span>
+                    <span class="sal-cuanto__v"><strong>{{ valor_perdido }}</strong> en mercancía</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sal-wrap">
+        <section class="sal-board">
+            {% if messages %}
+                <div class="sal-msgs" role="status">{% for m in messages %}<div class="sal-msg{% if m.tags == 'success' %} is-success{% endif %}">{{ m }}</div>{% endfor %}</div>
+            {% endif %}
+
+            <div class="sal-det">
+                <div class="sal-col">
+                    <article class="sal-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>Qué pasó</h2>
+                        <p class="sal-texto">{{ salida.descripcion }}</p>
+                    </article>
+
+                    {% if salida.observaciones_recepcion %}
+                        <article class="sal-card">
+                            <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"></path><path d="M3 8l9 5 9-5M12 13v8"></path></svg></span>Cómo llegó del proveedor</h2>
+                            <p class="sal-texto">{{ salida.observaciones_recepcion }}</p>
+                        </article>
+                    {% endif %}
+
+                    <article class="sal-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg></span>Datos del registro</h2>
+                        <dl class="sal-datos">
+                            <div><dt>Producto</dt><dd>{% if salida.producto %}<a href="{% url 'detalle_producto' salida.producto.id %}">{{ salida.nom_producto }}</a>{% else %}{{ salida.nom_producto }} (ya no existe){% endif %}</dd></div>
+                            <div><dt>Precio por unidad</dt><dd>{{ precio }}</dd></div>
+                            <div><dt>Valor de la salida</dt><dd>{{ valor_perdido }}</dd></div>
+                            <div><dt>Fecha de la salida</dt><dd>{{ salida.fecha|date:"d/m/Y" }}</dd></div>
+                            <div><dt>Registrado por</dt><dd>{{ salida.registrado_por_nombre|default:"—" }}</dd></div>
+                            <div><dt>Registrado el</dt><dd>{{ salida.creado_en|date:"d/m/Y, h:i a" }}</dd></div>
+                        </dl>
+                    </article>
+                </div>
+
+                <div class="sal-col">
+                    <article class="sal-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></span>Evidencia</h2>
+                        {% if salida.foto %}
+                            <a href="{{ salida.foto.url }}" target="_blank" rel="noopener"><img class="sal-foto" src="{{ salida.foto.url }}" alt="Foto de evidencia de la salida #{{ salida.id }}"></a>
+                        {% else %}
+                            <div class="sal-sinfoto">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="1.75"></circle><path d="M21 16l-5-5-8 9"></path></svg>
+                                No se adjuntó foto.
+                            </div>
+                        {% endif %}
+                    </article>
+
+                    <div class="sal-acc">
+                        <a class="sal-btn" href="{% url 'lista_salidas' %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                            Registrar otra
+                        </a>
+                        <a class="sal-btn sal-btn--linea" href="{% url 'lista_salidas' %}?historial=1">Ver historial</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

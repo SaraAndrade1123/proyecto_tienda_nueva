@@ -2,19 +2,16 @@ import secrets
 from datetime import datetime, timedelta
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import (login_required, permission_required, user_passes_test,)
+from django.contrib.auth import (authenticate,login,logout,)
+from django.contrib.auth.decorators import ( login_required, permission_required, user_passes_test,)
 from django.contrib.auth.models import Group, Permission
-from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
 from .models import User
 from gestor_inventario.models import Perfil
-
 
 
 # ==================================================
@@ -98,16 +95,9 @@ def registro(request):
 def recuperar_password(request):
 
     if request.method != 'POST':
-        return render(
-            request,
-            'usuario/recuperar_password.html'
-        )
+        return render(request, 'usuario/recuperar_password.html')
 
     accion = request.POST.get('accion', 'solicitar')
-
-    # ----------------------------------------------
-    # SOLICITAR O REENVIAR CÓDIGO
-    # ----------------------------------------------
 
     if accion in ['solicitar', 'reenviar']:
 
@@ -123,9 +113,7 @@ def recuperar_password(request):
                     request,
                     'usuario/recuperar_password.html',
                     {
-                        'error': (
-                            'No encontramos una cuenta con ese correo.'
-                        )
+                        'error': 'No encontramos una cuenta con ese correo.'
                     }
                 )
 
@@ -139,10 +127,7 @@ def recuperar_password(request):
                     request,
                     'usuario/recuperar_password.html',
                     {
-                        'error': (
-                            'Ingresa tu correo para solicitar '
-                            'un código nuevo.'
-                        )
+                        'error': 'Ingresa tu correo para solicitar un código nuevo.'
                     }
                 )
 
@@ -151,20 +136,13 @@ def recuperar_password(request):
             )
 
             if fecha_reenvio:
-                momento_reenvio = datetime.fromisoformat(
-                    fecha_reenvio
-                )
-
+                momento_reenvio = datetime.fromisoformat(fecha_reenvio)
                 ahora = timezone.now()
 
                 if ahora < momento_reenvio:
                     segundos = max(
                         1,
-                        int(
-                            (
-                                momento_reenvio - ahora
-                            ).total_seconds()
-                        )
+                        int((momento_reenvio - ahora).total_seconds())
                     )
 
                     return render(
@@ -172,10 +150,7 @@ def recuperar_password(request):
                         'usuario/recuperar_password.html',
                         {
                             'codigo_enviado': True,
-                            'error': (
-                                'Debes esperar antes de reenviar '
-                                'el código.'
-                            ),
+                            'error': 'Debes esperar antes de reenviar el código.',
                             'reenviar_en': segundos,
                         }
                     )
@@ -193,24 +168,18 @@ def recuperar_password(request):
                     }
                 )
 
-        # Crear un código de seis dígitos.
         codigo = str(secrets.randbelow(900000) + 100000)
-
         ahora = timezone.now()
 
-        # Guardar el código y su fecha de vencimiento.
         request.session['recuperacion_codigo'] = codigo
-
         request.session['recuperacion_expira'] = (
             ahora + timedelta(minutes=4)
         ).isoformat()
 
-        # Esperar dos minutos antes de permitir otro envío.
         request.session['recuperacion_reenviar_despues'] = (
             ahora + timedelta(minutes=2)
         ).isoformat()
 
-        # Preparar el correo.
         nombre = usuario.first_name or usuario.username
 
         mensaje_correo = (
@@ -222,16 +191,11 @@ def recuperar_password(request):
             f"Tu código de verificación es: {codigo}\n\n"
             f"Este código es válido durante 4 minutos. "
             f"Por seguridad, no lo compartas con nadie.\n\n"
-            f"Si no solicitaste este cambio, ignora este "
-            f"mensaje. Tu contraseña no se modificará "
-            f"por esta solicitud.\n\n"
+            f"Si no solicitaste este cambio, ignora este mensaje.\n\n"
             f"Atentamente,\n"
-            f"Equipo de Tienda Nueva\n\n"
-            f"Mensaje automático. Por favor, no respondas "
-            f"a este correo."
+            f"Equipo de Tienda Nueva"
         )
 
-        # Enviar el correo electrónico.
         send_mail(
             subject='Recuperación de contraseña | Tienda Nueva',
             message=mensaje_correo,
@@ -246,98 +210,65 @@ def recuperar_password(request):
             {
                 'codigo_enviado': True,
                 'reenviar_en': 120,
-                'mensaje': (
-                    'Te enviamos un código de recuperación. '
-                    'Revisa tu correo electrónico.'
-                ),
+                'mensaje': 'Te enviamos un código de recuperación. Revisa tu correo electrónico.',
             }
         )
 
-    # ----------------------------------------------
-    # VERIFICAR CÓDIGO Y CAMBIAR CONTRASEÑA
-    # ----------------------------------------------
-
     elif accion == 'verificar':
 
-        codigo_ingresado = request.POST.get(
-            'codigo', ''
-        ).strip()
-
+        codigo_ingresado = request.POST.get('codigo', '').strip()
         password1 = request.POST.get('password1', '')
         password2 = request.POST.get('password2', '')
 
-        codigo_guardado = request.session.get(
-            'recuperacion_codigo'
-        )
-
-        fecha_expiracion = request.session.get(
-            'recuperacion_expira'
-        )
-
-        correo = request.session.get(
-            'recuperacion_email'
-        )
+        codigo_guardado = request.session.get('recuperacion_codigo')
+        fecha_expiracion = request.session.get('recuperacion_expira')
+        correo = request.session.get('recuperacion_email')
 
         if not codigo_guardado or not fecha_expiracion or not correo:
             return render(
                 request,
                 'usuario/recuperar_password.html',
                 {
-                    'error': (
-                        'Solicita un nuevo código de recuperación.'
-                    )
+                    'error': 'Solicita un nuevo código de recuperación.'
                 }
             )
 
-        # Comprobar si el código venció.
         expiracion = datetime.fromisoformat(fecha_expiracion)
 
         if timezone.now() >= expiracion:
 
-            request.session.pop('recuperacion_codigo', None)
-            request.session.pop('recuperacion_expira', None)
-            request.session.pop(
+            for clave in [
+                'recuperacion_codigo',
+                'recuperacion_expira',
                 'recuperacion_reenviar_despues',
-                None
-            )
+            ]:
+                request.session.pop(clave, None)
 
             return render(
                 request,
                 'usuario/recuperar_password.html',
                 {
-                    'error': (
-                        'El código venció. Solicita uno nuevo.'
-                    )
+                    'error': 'El código venció. Solicita uno nuevo.'
                 }
             )
 
-        # Comprobar el código ingresado.
-        if not secrets.compare_digest(
-            codigo_ingresado,
-            codigo_guardado
-        ):
+        if not secrets.compare_digest(codigo_ingresado, codigo_guardado):
             return render(
                 request,
                 'usuario/recuperar_password.html',
                 {
                     'codigo_enviado': True,
-                    'error': (
-                        'El código ingresado es incorrecto.'
-                    ),
+                    'error': 'El código ingresado es incorrecto.',
                 }
             )
 
-        # Validar la nueva contraseña.
         if len(password1) < 8:
             return render(
                 request,
                 'usuario/recuperar_password.html',
                 {
                     'codigo_enviado': True,
-                    'error': (
-                        'La contraseña debe tener '
-                        'al menos 8 caracteres.'
-                    ),
+                    'error': 'La contraseña debe tener al menos 8 caracteres.',
                 }
             )
 
@@ -351,7 +282,6 @@ def recuperar_password(request):
                 }
             )
 
-        # Buscar al usuario.
         usuario = User.objects.filter(
             email__iexact=correo
         ).first()
@@ -365,11 +295,9 @@ def recuperar_password(request):
                 }
             )
 
-        # Guardar la nueva contraseña.
         usuario.set_password(password1)
         usuario.save()
 
-        # Eliminar los datos temporales de la sesión.
         claves = [
             'recuperacion_codigo',
             'recuperacion_expira',
@@ -384,15 +312,11 @@ def recuperar_password(request):
             request,
             'usuario/recuperar_password.html',
             {
-                'mensaje': (
-                    '¡Contraseña actualizada! '
-                    'Ya puedes iniciar sesión.'
-                ),
+                'mensaje': '¡Contraseña actualizada! Ya puedes iniciar sesión.',
                 'recuperacion_completa': True,
             }
         )
 
-    # Acción no reconocida.
     return render(
         request,
         'usuario/recuperar_password.html',
@@ -414,9 +338,7 @@ def iniciar_sesion(request):
         contraseña = request.POST.get('password', '')
 
         try:
-            usuario = User.objects.get(
-                email__iexact=correo
-            )
+            usuario = User.objects.get(email__iexact=correo)
 
         except User.DoesNotExist:
             return render(
@@ -467,36 +389,17 @@ def editar_perfil(request):
 
     user = request.user
 
-    perfil, _ = Perfil.objects.get_or_create(
-        user=user
-    )
+    perfil, _ = Perfil.objects.get_or_create(user=user)
 
     if request.method == 'POST':
 
-        user.first_name = request.POST.get(
-            'first_name', ''
-        ).strip()
+        user.first_name = request.POST.get('first_name', '').strip()
+        user.last_name = request.POST.get('last_name', '').strip()
+        user.username = request.POST.get('username', '').strip()
+        user.phone = request.POST.get('phone', '').strip()
+        user.email = request.POST.get('email', '').strip()
 
-        user.last_name = request.POST.get(
-            'last_name', ''
-        ).strip()
-
-        user.username = request.POST.get(
-            'username', ''
-        ).strip()
-
-        user.phone = request.POST.get(
-            'phone', ''
-        ).strip()
-
-        user.email = request.POST.get(
-            'email', ''
-        ).strip()
-
-        fecha_nac = request.POST.get(
-            'fecha_nacimiento', ''
-        ).strip()
-
+        fecha_nac = request.POST.get('fecha_nacimiento', '').strip()
         user.fecha_nacimiento = fecha_nac or None
 
         errores = []
@@ -505,33 +408,19 @@ def editar_perfil(request):
             errores.append('El nombre es obligatorio.')
 
         if not user.username:
-            errores.append(
-                'El nombre de usuario es obligatorio.'
-            )
+            errores.append('El nombre de usuario es obligatorio.')
 
         if not user.email or '@' not in user.email:
             errores.append('El correo no es válido.')
 
-        if User.objects.filter(
-            username=user.username
-        ).exclude(pk=user.pk).exists():
-            errores.append(
-                'Ese nombre de usuario ya está en uso.'
-            )
+        if User.objects.filter(username=user.username).exclude(pk=user.pk).exists():
+            errores.append('Ese nombre de usuario ya está en uso.')
 
-        if User.objects.filter(
-            email__iexact=user.email
-        ).exclude(pk=user.pk).exists():
-            errores.append(
-                'Ese correo ya está registrado.'
-            )
+        if User.objects.filter(email__iexact=user.email).exclude(pk=user.pk).exists():
+            errores.append('Ese correo ya está registrado.')
 
-        if user.phone and User.objects.filter(
-            phone=user.phone
-        ).exclude(pk=user.pk).exists():
-            errores.append(
-                'Ese teléfono ya está registrado.'
-            )
+        if user.phone and User.objects.filter(phone=user.phone).exclude(pk=user.pk).exists():
+            errores.append('Ese teléfono ya está registrado.')
 
         if errores:
 
@@ -542,7 +431,6 @@ def editar_perfil(request):
 
             user.save()
 
-            # Eliminar la foto de perfil.
             if request.POST.get('eliminar_foto'):
 
                 if perfil.foto:
@@ -550,23 +438,14 @@ def editar_perfil(request):
                     perfil.foto = None
                     perfil.save()
 
-                messages.success(
-                    request,
-                    'Foto de perfil eliminada.'
-                )
-
+                messages.success(request, 'Foto de perfil eliminada.')
                 return redirect('editar_perfil')
 
-            # Guardar una foto nueva.
             if 'foto' in request.FILES:
                 perfil.foto = request.FILES['foto']
                 perfil.save()
 
-            messages.success(
-                request,
-                'Perfil actualizado correctamente.'
-            )
-
+            messages.success(request, 'Perfil actualizado correctamente.')
             return redirect('editar_perfil')
 
     return render(
@@ -607,13 +486,9 @@ def grupos(request):
 
     if request.method == 'POST':
 
-        nombre = request.POST.get(
-            'nombre', ''
-        ).strip()
+        nombre = request.POST.get('nombre', '').strip()
 
-        if nombre and not Group.objects.filter(
-            name=nombre
-        ).exists():
+        if nombre and not Group.objects.filter(name=nombre).exists():
             Group.objects.create(name=nombre)
 
         return redirect('grupos')
@@ -636,11 +511,7 @@ def eliminar_grupo(request, id_grupo):
 
     if request.method == 'POST':
 
-        grupo = get_object_or_404(
-            Group,
-            id=id_grupo
-        )
-
+        grupo = get_object_or_404(Group, id=id_grupo)
         grupo.delete()
 
     return redirect('grupos')
@@ -655,26 +526,18 @@ def dar_no_miembros(grupo):
     miembros = dar_miembros(grupo)
 
     return User.objects.exclude(
-        id__in=miembros.values_list(
-            'id',
-            flat=True
-        )
+        id__in=miembros.values_list('id', flat=True)
     )
 
 
 @user_passes_test(es_superadmin)
 def editar_grupo(request, id_grupo):
 
-    grupo = get_object_or_404(
-        Group,
-        id=id_grupo
-    )
+    grupo = get_object_or_404(Group, id=id_grupo)
 
     if request.method == 'POST':
 
-        nuevo_nombre = request.POST.get(
-            'nombre', ''
-        ).strip()
+        nuevo_nombre = request.POST.get('nombre', '').strip()
 
         if nuevo_nombre:
             grupo.name = nuevo_nombre
@@ -699,27 +562,17 @@ def editar_grupo(request, id_grupo):
 @user_passes_test(es_superadmin)
 def agregar_usuario_grupo(request, id_grupo):
 
-    grupo = get_object_or_404(
-        Group,
-        id=id_grupo
-    )
+    grupo = get_object_or_404(Group, id=id_grupo)
 
     if request.method == 'POST':
 
         id_user = request.POST.get('id_usuario')
 
         if id_user:
-            user = get_object_or_404(
-                User,
-                id=id_user
-            )
-
+            user = get_object_or_404(User, id=id_user)
             grupo.user_set.add(user)
 
-        return redirect(
-            'agregar_usuario_grupo',
-            id_grupo=grupo.id
-        )
+        return redirect('agregar_usuario_grupo', id_grupo=grupo.id)
 
     return redirect('grupos')
 
@@ -727,91 +580,53 @@ def agregar_usuario_grupo(request, id_grupo):
 @user_passes_test(es_superadmin)
 def eliminar_usuario_grupo(request, id_grupo):
 
-    grupo = get_object_or_404(
-        Group,
-        id=id_grupo
-    )
+    grupo = get_object_or_404(Group, id=id_grupo)
 
     if request.method == 'POST':
 
         id_user = request.POST.get('id_usuario')
 
         if id_user:
-            user = get_object_or_404(
-                User,
-                id=id_user
-            )
-
+            user = get_object_or_404(User, id=id_user)
             grupo.user_set.remove(user)
 
-        return redirect(
-            'editar_grupo',
-            id_grupo=grupo.id
-        )
+        return redirect('editar_grupo', id_grupo=grupo.id)
 
-    return redirect(
-        'editar_grupo',
-        id_grupo=grupo.id
-    )
+    return redirect('editar_grupo', id_grupo=grupo.id)
 
 
 # ==================================================
 # PERMISOS
 # ==================================================
 
-@permission_required(
-    'auth.add_permission',
-    raise_exception=True
-)
+@permission_required('auth.add_permission', raise_exception=True)
 def permisos(request):
 
     permisos_lista = Permission.objects.all()
     grupos_lista = Group.objects.all()
 
-    grupo_id = (
-        request.POST.get('grupo')
-        or request.GET.get('grupo')
-    )
+    grupo_id = request.POST.get('grupo') or request.GET.get('grupo')
 
     if grupo_id:
-
-        grupo = get_object_or_404(
-            Group,
-            id=grupo_id
-        )
-
+        grupo = get_object_or_404(Group, id=grupo_id)
     else:
         grupo = grupos_lista.first()
 
     if request.method == 'POST':
 
         if not grupo:
-            messages.error(
-                request,
-                'Primero debes crear un grupo.'
-            )
-
+            messages.error(request, 'Primero debes crear un grupo.')
             return redirect('grupos')
 
-        permisos_ids = request.POST.getlist(
-            'permisos'
-        )
-
+        permisos_ids = request.POST.getlist('permisos')
         grupo.permissions.set(permisos_ids)
 
-        return redirect(
-            f"{reverse('permisos')}?grupo={grupo.id}"
-        )
+        return redirect(f"{reverse('permisos')}?grupo={grupo.id}")
 
     if grupo:
-
         permisos_grupo = set(
-            grupo.permissions.values_list(
-                'id',
-                flat=True
-            )
+            grupo.permissions.values_list('id', flat=True)
         )
-
     else:
         permisos_grupo = set()
 

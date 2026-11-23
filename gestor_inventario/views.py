@@ -18,9 +18,11 @@ from accounts.views import es_superadmin as es_admin
 
 # =========================================================
 
-@login_required
 def informacion_tienda(request):
-    imagenes = ImagenCarrusel.objects.all()
+    imagenes = [
+    imagen for imagen in ImagenCarrusel.objects.all()
+    if imagen.imagen and imagen.imagen.storage.exists(imagen.imagen.name)
+]
 
     if request.method == 'POST':
         accion = request.POST.get('accion')
