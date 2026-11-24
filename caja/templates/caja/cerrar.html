@@ -1,0 +1,415 @@
+{% extends 'layouts/base.html' %}
+{% load pesos caja_extras %}
+
+{% block title %}Cerrar caja del {{ caja.fecha|date:"d/m/Y" }} - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .cj, .cj * { box-sizing: border-box; }
+    .cj {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c;
+        --ok: #15803d; --ok-soft: #dcf3e3; --ok-ink: #14532d;
+        --warn: #a16207; --warn-soft: #fdf1cf; --warn-ink: #713f12;
+        --bad: #b91c1c; --bad-soft: #fde4e1; --bad-ink: #7f1d1d;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .cj {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --red: #ef4444; --link: #f87171;
+        --ok: #4ade80; --ok-soft: #13281a; --ok-ink: #bbf7d0;
+        --warn: #facc15; --warn-soft: #2a2410; --warn-ink: #fde68a;
+        --bad: #f87171; --bad-soft: #2b1614; --bad-ink: #fecaca;
+    }
+    .cj [hidden] { display: none !important; }
+
+    /* ---------- Banner rojo ---------- */
+    .cj-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.25rem 1.25rem 4.5rem; }
+    .cj-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 84% 28%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at 98% -15%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 92% 92%, rgba(69, 10, 10, .28) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 10rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 900px) { .cj-hero { padding: 1.75rem 2.5rem 5rem; } }
+    .cj-hero__in { position: relative; max-width: 72rem; margin: 0 auto; }
+    .cj-volver {
+        display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 1.1rem 0 .4rem;
+        font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none;
+        background: rgba(69, 10, 10, .3); border: 2px solid rgba(255, 255, 255, .3); border-radius: 999px;
+        transition: background-color .15s, border-color .15s;
+    }
+    .cj-volver span { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #b91c1c; background: #fff; transition: transform .2s; }
+    .cj-volver svg { width: .9rem; height: .9rem; }
+    .cj-volver:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+    .cj-volver:hover span { transform: translateX(-.15rem); }
+    .cj-volver:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    .cj-cab { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
+    @media (min-width: 760px) { .cj-cab { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+    .cj-eti { margin: 0 0 .35rem; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+    .cj-hero h1 { margin: 0; font-size: clamp(2rem, 1.3rem + 3vw, 3.4rem); font-weight: 800; font-stretch: 108%; line-height: 1; letter-spacing: -.03em; }
+    .cj-sub { margin: .6rem 0 0; font-size: 1rem; font-weight: 600; opacity: .92; }
+    .cj-cifra { display: grid; justify-items: end; text-align: right; }
+    .cj-cifra__t { font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+    .cj-cifra__n { font-size: clamp(2.5rem, 2rem + 2.4vw, 4rem); font-weight: 800; font-stretch: 80%; line-height: .95; font-variant-numeric: tabular-nums; }
+    .cj-cifra__v { margin-top: .4rem; padding-top: .45rem; border-top: 2px dashed rgba(255, 255, 255, .35); justify-self: stretch; font-size: .9375rem; font-weight: 600; }
+    @media (max-width: 759px) {
+        .cj-cifra { display: flex; align-items: center; justify-content: space-between; gap: .75rem; text-align: left; padding: .75rem 1rem; border-radius: 1.1rem; background: rgba(69, 10, 10, .3); }
+        .cj-cifra__n { font-size: 2.1rem; }
+        .cj-cifra__v { margin: 0; padding: 0; border: 0; text-align: right; font-size: .8125rem; line-height: 1.25; max-width: 9rem; }
+    }
+
+    /* ---------- Tablero ---------- */
+    .cj-wrap { position: relative; max-width: 72rem; margin: -2.75rem auto 0; padding: 0 .75rem 3rem; }
+    @media (min-width: 640px) { .cj-wrap { padding: 0 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .cj-wrap { padding: 0 2.5rem 4rem; } }
+    .cj-board { padding: 1rem; background: var(--board); border-radius: 1.75rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 640px) { .cj-board { padding: 1.5rem; border-radius: 2.25rem; } }
+    .cj-msgs { display: grid; gap: .5rem; }
+    .cj-msg { padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; color: var(--bad-ink); background: var(--bad-soft); }
+    .cj-msg.is-success { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-msg.is-info { color: var(--ink); background: var(--card); }
+
+    .cj-grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 860px) { .cj-grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; } }
+    .cj-col { display: grid; gap: 1rem; min-width: 0; }
+    .cj-card { padding: 1.15rem 1.25rem 1.3rem; background: var(--card); border-radius: 1.4rem; min-width: 0; }
+    .cj-card h2 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .85rem; font-size: 1.0625rem; font-weight: 800; }
+    .cj-card h2 > span { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .7rem; color: var(--link); background: var(--board); }
+    .cj-card h2 svg { width: 1rem; height: 1rem; }
+
+    .cj-aviso { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem 1.15rem; border-radius: 1.25rem; color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-aviso svg { flex: none; width: 1.4rem; height: 1.4rem; }
+    .cj-aviso p { margin: 0; font-size: .9375rem; line-height: 1.45; }
+
+    /* Renglones tipo recibo */
+    .cj-cuenta { margin: 0; display: grid; }
+    .cj-cuenta div { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; padding: .65rem 0; }
+    .cj-cuenta div + div { border-top: 1px dashed var(--line); }
+    .cj-cuenta i { font-style: normal; font-weight: 800; color: var(--muted); text-align: center; }
+    .cj-cuenta dt { font-size: .9375rem; }
+    .cj-cuenta dt small { display: block; font-size: .8125rem; color: var(--muted); }
+    .cj-cuenta dd { margin: 0; font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+    .cj-cuenta .cj-total { margin-top: .35rem; padding: .85rem .9rem; border: 0; border-radius: 1rem; background: var(--board); }
+    .cj-cuenta .cj-total + div { border-top: 0; }
+    .cj-cuenta .cj-total dt { font-weight: 800; }
+    .cj-cuenta .cj-total dd { font-size: 1.375rem; color: var(--link); }
+    .cj-cuenta--info dd { color: var(--muted); }
+    .cj-nota { margin: .85rem 0 0; font-size: .875rem; line-height: 1.45; color: var(--muted); }
+
+    /* ---------- Campos ---------- */
+    .cj-campo { display: grid; grid-template-columns: minmax(0, 1fr); gap: .35rem; margin-bottom: 1rem; }
+    .cj-campo > label { font-size: .9375rem; font-weight: 800; }
+    .cj-campo .cj-help { margin: 0; font-size: .8125rem; color: var(--muted); }
+    .cj-campo textarea {
+        width: 100%; min-height: 5.5rem; padding: .7rem .95rem; font: inherit; font-size: 1rem; color: var(--ink); resize: vertical;
+        background: var(--page); border: 2px solid var(--line); border-radius: 1rem; outline: none; transition: border-color .15s;
+    }
+    .cj-campo textarea:focus { border-color: var(--red); }
+    .cj-err { margin: 0; font-size: .875rem; font-weight: 700; color: var(--bad); }
+    .cj-campo.is-error textarea, .cj-campo.is-error .cj-plata { border-color: var(--bad); }
+    .cj-oblig { display: none; margin-left: .35rem; padding: .1rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 800; color: #fff; background: #b91c1c; vertical-align: .1em; }
+    .cj-campo.is-oblig .cj-oblig { display: inline-block; }
+
+    .cj-plata {
+        display: flex; align-items: center; gap: .35rem; padding: 0 1.1rem; min-height: 4.25rem;
+        background: var(--page); border: 2px solid var(--line); border-radius: 1.25rem; transition: border-color .15s;
+    }
+    .cj-plata:focus-within { border-color: var(--red); }
+    .cj-plata b { font-size: 1.75rem; font-weight: 800; color: var(--muted); }
+    .cj-plata input {
+        flex: 1; width: 100%; min-width: 0; height: 4rem; padding: 0; font: inherit; font-size: 2rem; font-weight: 800; font-stretch: 90%;
+        font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; outline: none;
+    }
+    /* El dinero contado ya escrito: se ve, pero no se puede cambiar */
+    .cj-campo > .cj-lab { font-size: .9375rem; font-weight: 800; }
+    .cj-fijo { display: flex; align-items: center; gap: .35rem; min-height: 3.5rem; padding: 0 1.1rem; border-radius: 1.1rem; background: var(--board); }
+    .cj-fijo b { font-size: 1.35rem; font-weight: 800; color: var(--muted); }
+    .cj-fijo span { flex: 1; min-width: 0; font-size: 1.6rem; font-weight: 800; font-stretch: 90%; font-variant-numeric: tabular-nums; }
+    .cj-fijo svg { flex: none; width: 1.1rem; height: 1.1rem; color: var(--muted); }
+    .cj-plata--chica { min-height: 3rem; border-radius: 1rem; }
+    .cj-plata--chica b { font-size: 1.15rem; }
+    .cj-plata--chica input { height: 2.75rem; font-size: 1.125rem; font-weight: 700; font-stretch: 100%; }
+
+    /* Resultado en vivo mientras escribe lo contado */
+    .cj-listo { display: flex; gap: .6rem; align-items: flex-start; margin: 0 0 1rem; padding: .85rem 1rem; border-radius: 1.1rem; font-size: .9375rem; line-height: 1.45; color: var(--ink); background: var(--board); }
+    .cj-listo svg { flex: none; width: 1.15rem; height: 1.15rem; margin-top: .15rem; }
+    .cj-vivo { display: grid; gap: .2rem; margin: -.25rem 0 1rem; padding: .9rem 1rem; border-radius: 1.1rem; background: var(--board); transition: background-color .2s, color .2s; }
+    .cj-vivo__t { font-size: 1.125rem; font-weight: 800; }
+    .cj-vivo__d { font-size: .875rem; opacity: .85; }
+    .cj-vivo.is-cuadra { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-vivo.is-sobrante { color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-vivo.is-faltante { color: var(--bad-ink); background: var(--bad-soft); }
+
+    /* ---------- Botones ---------- */
+    .cj-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.9rem; padding: 0 1.3rem;
+        font: inherit; font-size: 1rem; font-weight: 800; color: #fff; text-decoration: none; cursor: pointer;
+        background: #b91c1c; border: 0; border-radius: 999px; transition: background-color .15s, transform .15s;
+    }
+    .cj-btn svg { width: 1.05rem; height: 1.05rem; }
+    .cj-btn:hover { background: #7f1d1d; }
+    .cj-btn:active { transform: scale(.98); }
+    .cj-btn--grande { width: 100%; min-height: 3.35rem; font-size: 1.0625rem; }
+    .cj-btn--linea { color: var(--ink); background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
+    .cj-btn--linea:hover { color: #fff; background: #1c1917; box-shadow: none; }
+    .cj a:focus-visible, .cj button:focus-visible, .cj input:focus-visible, .cj textarea:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cj .cj-plata input:focus-visible { outline: none; }   /* el borde rojo ya lo pone la caja de afuera */
+
+    /* ---------- Confirmación ---------- */
+    .cj-conf { display: grid; gap: .25rem; justify-items: center; padding: 1.75rem 1.25rem 1.6rem; text-align: center; border-radius: 1.6rem; }
+    .cj-conf--cuadra { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-conf--sobrante { color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-conf--faltante { color: var(--bad-ink); background: var(--bad-soft); }
+    .cj-conf__ic { display: grid; place-items: center; width: 3.75rem; height: 3.75rem; margin-bottom: .5rem; border-radius: 50%; color: #fff; }
+    .cj-conf--cuadra .cj-conf__ic { background: #15803d; }
+    .cj-conf--sobrante .cj-conf__ic { background: #ca8a04; }
+    .cj-conf--faltante .cj-conf__ic { background: #b91c1c; }
+    .cj-conf__ic svg { width: 1.9rem; height: 1.9rem; }
+    .cj-conf__t { margin: 0; font-size: clamp(1.75rem, 1.3rem + 2vw, 2.6rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+    .cj-conf__s { margin: .2rem 0 0; font-size: 1rem; font-weight: 600; opacity: .85; }
+
+    .cj-datos { margin: 0; display: grid; }
+    .cj-datos div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .6rem 0; }
+    .cj-datos div + div { border-top: 1px dashed var(--line); }
+    .cj-datos dt { font-size: .9rem; color: var(--muted); }
+    .cj-datos dd { margin: 0; font-size: .9375rem; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+    .cj-datos .is-fuerte dt { color: var(--ink); font-weight: 800; }
+    .cj-datos .is-fuerte dd { font-size: 1.125rem; }
+    .cj-obs { margin: 0; padding: .85rem 1rem; border-left: 4px solid var(--red); border-radius: .5rem 1rem 1rem .5rem; background: var(--board); font-size: .9375rem; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+    .cj-ojo { display: flex; gap: .6rem; align-items: flex-start; margin: 1rem 0; font-size: .9375rem; font-weight: 600; line-height: 1.45; }
+    .cj-ojo svg { flex: none; width: 1.25rem; height: 1.25rem; color: var(--red); margin-top: .1rem; }
+    .cj-botones { display: grid; gap: .6rem; }
+    @media (min-width: 520px) { .cj-botones { grid-template-columns: 1fr 1.6fr; } .cj-botones form:first-child { order: 2; } }
+    .cj-botones form { display: grid; }
+</style>
+
+<div class="cj">
+    <header class="cj-hero">
+        <div class="cj-hero__in">
+            <a class="cj-volver" href="{% url 'caja_hoy' %}">
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg></span>
+                Volver a la caja
+            </a>
+            <div class="cj-cab">
+                <div>
+                    <p class="cj-eti">Cierre · {{ caja.fecha|date:"l j \d\e F" }}</p>
+                    <h1>{% if paso == 'confirmar' %}Revisa antes de cerrar{% else %}Cerrar la caja{% endif %}</h1>
+                    <p class="cj-sub">Abierta por {{ caja.abierta_por_nombre|default:"—" }} a las {{ caja.abierta_en|time:"g:i a" }} con ${{ caja.base_inicial|pesos }}.</p>
+                </div>
+                <div class="cj-cifra">
+                    <span><span class="cj-cifra__t">Debería haber</span><br><span class="cj-cifra__n" id="hero-esperado">{% if paso == 'confirmar' %}{{ datos.esperado|plata }}{% else %}{{ r.esperado_ahora|plata }}{% endif %}</span></span>
+                    <span class="cj-cifra__v">{% if r.cobros_transferencia %}ya sin las transferencias{% else %}en efectivo{% endif %}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="cj-wrap">
+        <section class="cj-board">
+            {% if messages %}
+                <div class="cj-msgs" role="status">{% for m in messages %}<div class="cj-msg{% if m.tags == 'success' %} is-success{% elif m.tags == 'info' %} is-info{% endif %}">{{ m }}</div>{% endfor %}</div>
+            {% endif %}
+            {% if cambio %}
+                <div class="cj-aviso" role="alert">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+                    <p>Mientras revisabas se registró algo nuevo (una venta o un pago). Los números ya están actualizados: <strong>revisa otra vez</strong> antes de confirmar.</p>
+                </div>
+            {% endif %}
+
+            {% if paso == 'confirmar' %}
+                {# ================= PASO 2: CONFIRMAR ================= #}
+                <div class="cj-conf cj-conf--{{ resultado }}" role="status">
+                    <span class="cj-conf__ic" aria-hidden="true">
+                        {% if resultado == 'cuadra' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                        {% elif resultado == 'sobrante' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                        {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"></path></svg>{% endif %}
+                    </span>
+                    <p class="cj-conf__t">{% if resultado == 'cuadra' %}Cuadra{% elif resultado == 'sobrante' %}Sobrante de ${{ datos.diferencia_abs|pesos }}{% else %}Faltante de ${{ datos.diferencia_abs|pesos }}{% endif %}</p>
+                    <p class="cj-conf__s">Debería haber {{ datos.esperado|plata }} · Contaste ${{ datos.contado|pesos }}</p>
+                </div>
+
+                <div class="cj-grid2">
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg></span>Esto es lo que se va a guardar</h2>
+                        <dl class="cj-datos">
+                            <div><dt>Base al abrir</dt><dd>${{ r.base_inicial|pesos }}</dd></div>
+                            <div><dt>Ventas ({{ r.ventas_cantidad }} · {{ r.ventas_unidades }} u.)</dt><dd>${{ r.ventas_total|pesos }}</dd></div>
+                            <div><dt>Entró por transferencia (cobros del carrito)</dt><dd>${{ datos.transferencias_total|pesos }}</dd></div>
+                            <div><dt>Pagos a proveedores ({{ r.pagos_proveedor_cantidad }})</dt><dd>${{ r.pagos_proveedor_total|pesos }}</dd></div>
+                            <div class="is-fuerte"><dt>Debería haber</dt><dd>{{ datos.esperado|plata }}</dd></div>
+                            <div class="is-fuerte"><dt>Contaste</dt><dd>${{ datos.contado|pesos }}</dd></div>
+                            <div><dt>Consumos personales ({{ r.consumos_cantidad }})</dt><dd>${{ r.consumos_total|pesos }}</dd></div>
+                            <div><dt>Salidas sin cambio (pérdida)</dt><dd>${{ r.salidas_perdida_total|pesos }}</dd></div>
+                            <div><dt>Salidas con cambio del proveedor</dt><dd>${{ r.salidas_cambio_total|pesos }}</dd></div>
+                        </dl>
+                    </article>
+
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>¿Cerramos?</h2>
+                        {% if datos.observacion %}
+                            <p class="cj-obs">{{ datos.observacion }}</p>
+                        {% else %}
+                            <p class="cj-nota" style="margin:0">Sin observación.</p>
+                        {% endif %}
+                        <p class="cj-ojo">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+                            Después de confirmar, este cierre queda guardado tal cual y no se puede editar ni borrar.
+                        </p>
+                        <div class="cj-botones">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="contado" value="{{ datos.contado|stringformat:'d' }}">
+                                <textarea name="observacion" hidden>{{ datos.observacion }}</textarea>
+                                <input type="hidden" name="esperado_visto" value="{{ datos.esperado|stringformat:'d' }}">
+                                <input type="hidden" name="confirmado" value="1">
+                                <button class="cj-btn cj-btn--grande" type="submit">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                    Sí, cerrar la caja
+                                </button>
+                            </form>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="contado" value="{{ datos.contado|stringformat:'d' }}">
+                                <textarea name="observacion" hidden>{{ datos.observacion }}</textarea>
+                                <input type="hidden" name="corregir" value="1">
+                                <button class="cj-btn cj-btn--linea cj-btn--grande" type="submit">Cambiar la observación</button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+
+            {% else %}
+                {# ================= PASO 1: LOS DATOS ================= #}
+                <div class="cj-grid2">
+                    <div class="cj-col">
+                        <article class="cj-card">
+                            <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"></rect><path d="M8 6h8M8 10h8M8 14h2M14 14h2M8 18h2M14 18h2"></path></svg></span>Lo que dice el sistema</h2>
+                            <dl class="cj-cuenta">
+                                <div><i></i><dt>Base al abrir</dt><dd>${{ r.base_inicial|pesos }}</dd></div>
+                                <div><i>+</i><dt>Ventas del día<small>{{ r.ventas_cantidad }} venta{{ r.ventas_cantidad|pluralize }} · {{ r.ventas_unidades }} unidad{{ r.ventas_unidades|pluralize:"es" }}</small></dt><dd>${{ r.ventas_total|pesos }}</dd></div>
+                                <div><i>−</i><dt>Pagos a proveedores<small>{{ r.pagos_proveedor_cantidad }} pago{{ r.pagos_proveedor_cantidad|pluralize }}{% for p in pagos|slice:":3" %}{% if forloop.first %}: {% else %}, {% endif %}{{ p.proveedor_nombre }}{% endfor %}{% if pagos|length > 3 %}…{% endif %}</small></dt><dd>${{ r.pagos_proveedor_total|pesos }}</dd></div>
+                                {% if r.cobros_cantidad %}
+                                    <div><i>−</i><dt>Cobrado por transferencia<small>{{ r.cobros_cantidad }} cobro{{ r.cobros_cantidad|pluralize }} con el carrito · ${{ r.cobros_efectivo|pesos }} en efectivo</small></dt><dd>${{ r.cobros_transferencia|pesos }}</dd></div>
+                                {% endif %}
+                                <div class="cj-total"><i>=</i><dt>Debería haber</dt><dd id="linea-esperado">{{ r.esperado_ahora|plata }}</dd></div>
+                            </dl>
+                        </article>
+
+                        <article class="cj-card">
+                            <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M12 13v8M3 8l9 5 9-5"></path></svg></span>Mercancía que salió sin venderse</h2>
+                            <dl class="cj-cuenta cj-cuenta--info">
+                                <div><i></i><dt>Consumos personales<small>{{ r.consumos_cantidad }} registro{{ r.consumos_cantidad|pluralize }}</small></dt><dd>${{ r.consumos_total|pesos }}</dd></div>
+                                <div><i></i><dt>Salidas sin cambio (pérdida)<small>{{ r.salidas_perdida_unidades }} unidad{{ r.salidas_perdida_unidades|pluralize:"es" }}</small></dt><dd>${{ r.salidas_perdida_total|pesos }}</dd></div>
+                                <div><i></i><dt>Salidas con cambio del proveedor<small>se reponen, no son pérdida</small></dt><dd>${{ r.salidas_cambio_total|pesos }}</dd></div>
+                            </dl>
+                            <p class="cj-nota">No es plata del cajón: no cambian lo que debería haber, pero quedan guardados en el cierre.</p>
+                        </article>
+                    </div>
+
+                    <form class="cj-card" method="post" novalidate id="form-cierre"
+                          data-base="{{ r.esperado_ahora|stringformat:'d' }}" data-ventas="{{ r.ventas_total|stringformat:'d' }}">
+                        {% csrf_token %}
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle><path d="M6 12h.01M18 12h.01"></path></svg></span>Ahora cuenta el dinero</h2>
+
+                        {% if r.cobros_transferencia or r.sin_cobro_cantidad %}
+                            <p class="cj-listo">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+                                <span>{% if r.cobros_transferencia %}Las transferencias salen solas de los cobros del carrito: <b>${{ r.cobros_transferencia|pesos }}</b>.{% endif %}{% if r.sin_cobro_cantidad %} {% if r.sin_cobro_cantidad == 1 %}La venta que no pasó por el carrito se cuenta{% else %}Las {{ r.sin_cobro_cantidad }} ventas que no pasaron por el carrito se cuentan{% endif %} como efectivo.{% endif %}</span>
+                            </p>
+                        {% endif %}
+
+                        {% if contado_fijo is not None %}
+                            <div class="cj-campo">
+                                <span class="cj-lab">Dinero contado en la caja</span>
+                                <div class="cj-fijo" title="Ya quedó escrito, no se puede cambiar">
+                                    <b aria-hidden="true">$</b><span>{{ contado_fijo|pesos }}</span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                </div>
+                                <p class="cj-help">Ya quedó escrito y no se puede cambiar.</p>
+                                <input type="hidden" name="contado" id="id_contado" value="{{ contado_fijo|stringformat:'d' }}">
+                            </div>
+                        {% else %}
+                            <div class="cj-campo{% if form.contado.errors %} is-error{% endif %}">
+                                <label for="{{ form.contado.id_for_label }}">{{ form.contado.label }}</label>
+                                <p class="cj-help">Solo billetes y monedas.</p>
+                                <div class="cj-plata"><b aria-hidden="true">$</b>{{ form.contado }}</div>
+                                {% for e in form.contado.errors %}<p class="cj-err">{{ e }}</p>{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="cj-vivo" id="vivo" aria-live="polite" hidden>
+                            <span class="cj-vivo__t" id="vivo-t"></span>
+                            <span class="cj-vivo__d" id="vivo-d"></span>
+                        </div>
+
+                        <div class="cj-campo{% if form.observacion.errors %} is-error is-oblig{% endif %}" id="campo-obs">
+                            <label for="{{ form.observacion.id_for_label }}">Observación<span class="cj-oblig">obligatoria</span></label>
+                            <p class="cj-help">Si no cuadra, cuenta qué pudo pasar: un vuelto mal dado, una venta sin registrar…</p>
+                            {{ form.observacion }}
+                            {% for e in form.observacion.errors %}<p class="cj-err">{{ e }}</p>{% endfor %}
+                        </div>
+
+                        <button class="cj-btn cj-btn--grande" type="submit">
+                            Revisar cierre
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+(function () {
+    function digitos(texto) { return (texto || '').replace(/\D/g, ''); }
+    function miles(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function pesos(n) { return (n < 0 ? '-$' : '$') + miles(Math.abs(n)); }
+    function formatear(input) {
+        var d = digitos(input.value).replace(/^0+(?=\d)/, '').slice(0, 10);
+        input.value = miles(d);
+    }
+
+    var form = document.getElementById('form-cierre');
+    if (!form) return;
+    var base = parseInt(form.dataset.base, 10) || 0;
+    var contado = document.getElementById('id_contado');
+    var obs = document.getElementById('campo-obs');
+    var vivo = document.getElementById('vivo');
+
+    function calcular() {
+        var esperado = base;
+
+        if (digitos(contado.value) === '') {
+            vivo.hidden = true;
+            obs.classList.remove('is-oblig');
+            return;
+        }
+        var c = parseInt(digitos(contado.value), 10) || 0;
+        var dif = c - esperado;
+        vivo.hidden = false;
+        vivo.className = 'cj-vivo ' + (dif === 0 ? 'is-cuadra' : dif > 0 ? 'is-sobrante' : 'is-faltante');
+        document.getElementById('vivo-t').textContent = dif === 0 ? 'Cuadra' : (dif > 0 ? 'Sobrante de ' : 'Faltante de ') + pesos(Math.abs(dif));
+        document.getElementById('vivo-d').textContent = 'Debería haber ' + pesos(esperado) + ' y contaste ' + pesos(c) + '.';
+        obs.classList.toggle('is-oblig', dif !== 0);
+    }
+
+    if (contado.type !== 'hidden') {          // si ya quedó escrito, no se toca
+        if (contado.value) formatear(contado);
+        contado.addEventListener('input', function () { formatear(contado); calcular(); });
+    }
+    else if (obs.classList.contains('is-error')) {   // solo falta la observación: el cursor va directo ahí
+        var nota = obs.querySelector('textarea');
+        if (nota) nota.focus();
+    }
+    calcular();
+})();
+</script>
+{% endblock %}

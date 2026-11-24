@@ -4,6 +4,8 @@
 {% block title %}Productos - Tienda Nueva{% endblock %}
 
 {% block content %}
+{# «as url_cobrar»: si la app de caja no está instalada no da error; la lista sigue vendiendo como antes #}
+{% url 'cobrar_carrito' as url_cobrar %}
 
 {# Fuente de esta pantalla. Si más adelante quieres usarla en todo el sitio, mueve estas tres líneas al <head> de base.html #}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -581,12 +583,205 @@
     .cat-pag__nums svg { width: 1rem; height: 1rem; }
     @media (max-width: 559px) { .cat-pag { justify-content: center; } .cat-pag__info { width: 100%; text-align: center; } }
 
+
+    /* ---------- Carrito (vender varios productos y cobrar en efectivo, transferencia o las dos) ---------- */
+    .cat-carro { border: 0; font-family: inherit; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .cat-carro:hover .cat-new__mas { transform: none; }
+    .cat-carro__n {
+        display: grid; place-items: center; min-width: 1.6rem; height: 1.6rem; padding: 0 .45rem; margin-right: -.6rem;
+        border-radius: 999px; font-size: .8125rem; font-weight: 800; color: #fff; background: var(--red);
+        transition: color .15s, background-color .15s;
+    }
+    .cat-carro__n[hidden] { display: none; }
+    .cat-carro:hover .cat-carro__n { color: #450a0a; background: #fff; }
+    .cat-carro.salto .cat-carro__n, .cat-barra.salto .cat-barra__ic b { animation: cat-salto .45s cubic-bezier(.34, 1.56, .64, 1); }
+    @keyframes cat-salto { 40% { transform: scale(1.45); } }
+
+    .cat-fila__carro {
+        display: inline-flex; align-items: center; gap: .3rem; margin-left: .45rem; padding: .12rem .5rem;
+        border-radius: 999px; font-size: .72rem; font-weight: 800; color: #fff; background: var(--red); vertical-align: middle;
+    }
+    .cat-fila__carro svg { width: .8rem; height: .8rem; }
+    .cat-fila__num { display: flex; flex-wrap: wrap; align-items: center; row-gap: .2rem; }
+
+    .cat-barra {
+        position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; display: flex; justify-content: center;
+        padding: .6rem .75rem calc(.6rem + env(safe-area-inset-bottom)); pointer-events: none;
+    }
+    .cat-barra[hidden] { display: none; }
+    .cat-barra__in {
+        pointer-events: auto; width: min(34rem, 100%); display: flex; align-items: center; gap: .8rem;
+        padding: .5rem .5rem .5rem .55rem; font: inherit; color: #fff; text-align: left; cursor: pointer;
+        background: #1c1917; border: 0; border-radius: 999px; box-shadow: 0 1rem 2rem -.6rem rgba(0, 0, 0, .55);
+        animation: cat-sube .3s ease-out;
+    }
+    .dark .cat-barra__in { background: #292524; box-shadow: 0 1rem 2rem -.6rem #000, 0 0 0 1px #3a3532; }
+    .cat-barra__in:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+    .cat-barra__ic { position: relative; flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--red); }
+    .cat-barra__ic svg { width: 1.25rem; height: 1.25rem; }
+    .cat-barra__ic b {
+        position: absolute; top: -.25rem; right: -.35rem; min-width: 1.35rem; height: 1.35rem; padding: 0 .3rem;
+        display: grid; place-items: center; border-radius: 999px; font-size: .75rem; color: #7f1d1d; background: #fff;
+    }
+    .cat-barra__txt { flex: 1; min-width: 0; display: grid; line-height: 1.15; }
+    .cat-barra__txt small { font-size: .8125rem; font-weight: 600; color: #d6d3d1; }
+    .cat-barra__txt b { font-size: 1.25rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cat-barra__ir { flex: none; display: inline-flex; align-items: center; gap: .4rem; height: 2.75rem; padding: 0 1.2rem; border-radius: 999px; font-weight: 800; background: var(--red); transition: background-color .15s; }
+    .cat-barra__ir svg { width: 1rem; height: 1rem; }
+    .cat-barra__in:hover .cat-barra__ir { background: #dc2626; }
+    @keyframes cat-sube { from { transform: translateY(130%); } to { transform: none; } }
+    .cat.con-carro { padding-bottom: 5rem; }
+    .cat.con-carro .cat-toast { bottom: 5.4rem; }
+
+    /* La ventana del carrito: a la derecha en PC, desde abajo en el celular */
+    .cat-carrito {
+        width: min(29rem, 100%); max-width: 100%; height: 100%; max-height: 100%; margin: 0 0 0 auto; padding: 0;
+        color: var(--ink); background: var(--page); border: 0; box-shadow: -1.5rem 0 3rem -1.5rem rgba(0, 0, 0, .5);
+    }
+    .dark .cat-carrito { background: #151515; }
+    .cat-carrito::backdrop { background: rgba(15, 15, 15, .55); }
+    .cat-carrito[open] { animation: cat-entra-der .3s cubic-bezier(.2, .8, .2, 1); }
+    @keyframes cat-entra-der { from { transform: translateX(100%); } to { transform: none; } }
+    @media (max-width: 639px) {
+        .cat-carrito { width: 100%; height: auto; max-height: 92dvh; margin: auto 0 0; border-radius: 1.6rem 1.6rem 0 0; box-shadow: none; }
+        .cat-carrito[open] { animation-name: cat-entra-abajo; }
+        @keyframes cat-entra-abajo { from { transform: translateY(100%); } to { transform: none; } }
+    }
+    .cat-carrito__in { display: flex; flex-direction: column; height: 100%; max-height: inherit; overflow-y: auto; overscroll-behavior: contain; }
+    .cat-carrito__cab {
+        position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: .5rem;
+        padding: 1.1rem 1rem .9rem 1.25rem; background: inherit; border-bottom: 1px solid var(--tc-strong);
+    }
+    .cat-carrito__in, .cat-carrito__cab { background: var(--page); }
+    .dark .cat-carrito__in, .dark .cat-carrito__cab { background: #151515; }
+    .cat-carrito__cab > div { flex: 1; min-width: 0; }
+    .cat-carrito__cab h2 { margin: 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
+    .cat-carrito__cab p { margin: .1rem 0 0; font-size: .875rem; color: var(--muted); }
+    .cat-carrito__vaciar {
+        flex: none; height: 2.25rem; padding: 0 .9rem; font: inherit; font-size: .8125rem; font-weight: 800; color: var(--muted);
+        background: var(--tc-soft); border: 0; border-radius: 999px; cursor: pointer; transition: color .15s, background-color .15s;
+    }
+    .cat-carrito__vaciar[hidden] { display: none; }
+    .cat-carrito__vaciar:hover, .cat-carrito__vaciar.seguro { color: #fff; background: var(--red); }
+    .cat-carrito__x {
+        flex: none; width: 2.5rem; height: 2.5rem; display: grid; place-items: center; padding: 0;
+        color: var(--ink); background: var(--tc-soft); border: 0; border-radius: 50%; cursor: pointer;
+    }
+    .cat-carrito__x svg { width: 1.1rem; height: 1.1rem; }
+    .cat-carrito__x:hover { color: #fff; background: var(--red); }
+    .cat-carrito button:focus-visible, .cat-carrito input:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cat-carrito__cuerpo { flex: 1 0 auto; padding: .25rem 1.25rem .5rem; }
+
+    .cat-items { list-style: none; margin: 0; padding: 0; }
+    .cat-items[hidden] { display: none; }
+    .cat-item {
+        display: grid; grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+        grid-template-areas: "foto nom x" "foto paso sub"; gap: .35rem .75rem; align-items: center; padding: .85rem 0;
+    }
+    .cat-item + .cat-item { border-top: 1px dashed var(--tc-strong); }
+    .cat-item__foto {
+        grid-area: foto; width: 2.75rem; height: 2.75rem; display: grid; place-items: center; overflow: hidden;
+        border-radius: 50%; font-weight: 800; color: var(--price); background: var(--tc-soft);
+    }
+    .cat-item__foto img { width: 82%; height: 82%; object-fit: contain; }
+    .cat-item__nom { grid-area: nom; margin: 0; font-size: .9375rem; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+    .cat-item__nom small { display: block; margin-top: .1rem; font-size: .8125rem; font-weight: 600; color: var(--muted); }
+    .cat-item__x {
+        grid-area: x; justify-self: end; width: 2rem; height: 2rem; display: grid; place-items: center; padding: 0;
+        color: var(--muted); background: transparent; border: 0; border-radius: 50%; cursor: pointer;
+    }
+    .cat-item__x svg { width: 1rem; height: 1rem; }
+    .cat-item__x:hover { color: #fff; background: var(--red); }
+    .cat-paso { grid-area: paso; justify-self: start; display: inline-flex; align-items: center; border-radius: 999px; box-shadow: inset 0 0 0 2px var(--tc-strong); }
+    .cat-paso button {
+        width: 2.2rem; height: 2.2rem; display: grid; place-items: center; padding: 0;
+        font: inherit; font-size: 1.15rem; font-weight: 800; color: var(--ink); background: transparent; border: 0; border-radius: 50%; cursor: pointer;
+    }
+    .cat-paso button:hover:not(:disabled) { color: #fff; background: var(--red); }
+    .cat-paso button:disabled { opacity: .3; cursor: not-allowed; }
+    .cat-paso b { min-width: 2rem; text-align: center; font-size: .9375rem; font-variant-numeric: tabular-nums; }
+    .cat-item__sub { grid-area: sub; font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    .cat-carrito__vacio { display: grid; justify-items: center; gap: .75rem; padding: 2.75rem 1rem; text-align: center; color: var(--muted); }
+    .cat-carrito__vacio[hidden] { display: none; }
+    .cat-carrito__vacio svg { width: 3.25rem; height: 3.25rem; color: var(--tc-strong); }
+    .cat-carrito__vacio p { margin: 0; line-height: 1.5; }
+    .cat-carrito__vacio b { color: var(--ink); }
+
+    .cat-pago {
+        flex: none; display: grid; gap: .9rem; padding: 1rem 1.25rem calc(1.15rem + env(safe-area-inset-bottom));
+        background: var(--board); border-top: 1px solid var(--tc-strong);
+    }
+    .cat-pago[hidden] { display: none; }
+    .cat-pago__total { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+    .cat-pago__total span { font-size: .9375rem; font-weight: 700; color: var(--muted); }
+    .cat-pago__total b { font-size: 2.1rem; font-weight: 800; font-stretch: 85%; line-height: 1; font-variant-numeric: tabular-nums; }
+    .cat-metodos { min-width: 0; margin: 0; padding: 0; border: 0; }
+    .cat-metodos legend { padding: 0; margin: 0 0 .45rem; font-size: .875rem; font-weight: 800; }
+    .cat-metodos__g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; }
+    .cat-metodo { position: relative; }
+    .cat-metodo input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+    .cat-metodo span {
+        display: grid; justify-items: center; gap: .3rem; padding: .7rem .3rem; text-align: center;
+        font-size: .8125rem; font-weight: 800; background: var(--page); border-radius: 1rem;
+        box-shadow: inset 0 0 0 2px var(--tc-strong); transition: color .15s, background-color .15s, box-shadow .15s;
+    }
+    .cat-metodo svg { width: 1.35rem; height: 1.35rem; }
+    .cat-metodo:hover span { box-shadow: inset 0 0 0 2px var(--red); }
+    .cat-metodo input:checked + span { color: #fff; background: var(--red); box-shadow: none; }
+    .cat-metodo input:focus-visible + span { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cat-pago__parte[hidden] { display: none; }
+    .cat-pago__lab { display: block; margin-bottom: .4rem; font-size: .875rem; font-weight: 800; }
+    .cat-pago__lab span { font-weight: 600; color: var(--muted); }
+    .cat-plata { display: flex; align-items: center; gap: .35rem; height: 3.25rem; padding: 0 1rem; background: var(--page); border-radius: 1rem; box-shadow: inset 0 0 0 2px var(--tc-strong); transition: box-shadow .15s; }
+    .cat-plata:focus-within { box-shadow: inset 0 0 0 2px var(--red); }
+    .cat-plata b { font-size: 1.25rem; font-weight: 800; color: var(--muted); }
+    .cat-plata input {
+        flex: 1; width: 100%; min-width: 0; padding: 0; font: inherit; font-size: 1.375rem; font-weight: 800;
+        color: var(--ink); background: transparent; border: 0; outline: 0; font-variant-numeric: tabular-nums;
+    }
+    .cat-carrito .cat-plata input:focus-visible { outline: 0; }
+    .cat-plata input::placeholder { color: var(--muted); font-weight: 600; }
+    .cat-billetes { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+    .cat-billete {
+        height: 2.15rem; padding: 0 .85rem; font: inherit; font-size: .8125rem; font-weight: 800; color: var(--ink);
+        background: var(--page); border: 0; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--tc-strong); cursor: pointer;
+        transition: color .15s, background-color .15s;
+    }
+    .cat-billete:hover { box-shadow: inset 0 0 0 2px var(--red); }
+    .cat-billete[aria-pressed="true"] { color: #fff; background: var(--red); box-shadow: none; }
+    .cat-pago__res {
+        display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin: .55rem 0 0; padding: .65rem .9rem;
+        border-radius: .9rem; font-size: .9375rem; font-weight: 700; color: #14532d; background: #e4f4e8;
+    }
+    .cat-pago__res[hidden] { display: none; }
+    .cat-pago__res b { font-size: 1.125rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cat-pago__res.is-mal { color: var(--price); background: var(--ta-soft); }
+    .cat-pago__res.is-transf { color: #1e3a8a; background: #dbeafe; }
+    .dark .cat-pago__res { color: #bbf7d0; background: #14281b; }
+    .dark .cat-pago__res.is-mal { color: #fca5a5; background: var(--ta-soft); }
+    .dark .cat-pago__res.is-transf { color: #bfdbfe; background: #172554; }
+    .cat-pago__nota { margin: 0; padding: .7rem .9rem; border-radius: .9rem; font-size: .875rem; line-height: 1.45; color: #1e3a8a; background: #dbeafe; }
+    .dark .cat-pago__nota { color: #bfdbfe; background: #172554; }
+    .cat-pago__err { margin: 0; padding: .7rem .9rem; border-radius: .9rem; font-size: .875rem; font-weight: 700; line-height: 1.4; color: var(--price); background: var(--ta-soft); }
+    .cat-pago__err[hidden] { display: none; }
+    .cat-cobrar {
+        display: inline-flex; align-items: center; justify-content: center; gap: .55rem; height: 3.5rem; padding: 0 1.25rem;
+        font: inherit; font-size: 1.0625rem; font-weight: 800; color: #fff; background: var(--red);
+        border: 0; border-radius: 999px; cursor: pointer; transition: background-color .15s, transform .15s;
+    }
+    .cat-cobrar svg { width: 1.15rem; height: 1.15rem; }
+    .cat-cobrar:hover:not(:disabled) { background: #7f1d1d; }
+    .cat-cobrar:active:not(:disabled) { transform: scale(.98); }
+    .cat-cobrar:disabled { opacity: .45; cursor: not-allowed; }
+    .cat-cobrar.cargando { cursor: progress; }
+
     @media (prefers-reduced-motion: reduce) {
         .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
     }
 </style>
 
-<div class="cat">
+<div class="cat"{% if user.is_superuser and url_cobrar %} data-cobrar="{{ url_cobrar }}"{% endif %}>
     {% if user.is_superuser %}
         <script>
             /* Los botones de editar y eliminar empiezan ocultos. Si ya los activó en esta pestaña, se dejan a la vista. */
@@ -622,6 +817,16 @@
                             </span>
                             <span class="cat-tog__t">Editar</span>
                         </button>
+
+                        {% if url_cobrar %}
+                            <button type="button" class="cat-new cat-carro" id="abrir-carrito" aria-haspopup="dialog" aria-controls="carrito">
+                                <span class="cat-new__mas" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5h3l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 7.5H6.3"></path></svg>
+                                </span>
+                                Carrito
+                                <span class="cat-carro__n" id="carrito-n" hidden>0</span>
+                            </button>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -699,6 +904,7 @@
                             data-tono="{{ producto.categoria_id|default:0 }}"
                             data-stock="{{ producto.existencias }}"
                             data-id="{{ producto.id }}"
+                            data-precio="{{ producto.precio_unitario|stringformat:'d' }}"
                             style="--i: {{ forloop.counter0 }}"
                         >
 
@@ -736,11 +942,11 @@
                                             enterkeyhint="done"
                                             placeholder="Cant."
                                             autocomplete="off"
-                                            aria-label="Unidades vendidas de {{ producto.nombre }}"
+                                            aria-label="{% if url_cobrar %}Unidades para el carrito de{% else %}Unidades vendidas de{% endif %} {{ producto.nombre }}"
                                             {% if producto.existencias <= 0 %}disabled{% endif %}
                                         >
                                         <button type="submit" class="cat-guardar" {% if producto.existencias <= 0 %}disabled{% endif %}>
-                                            Guardar<span class="cat-act__t"> venta de {{ producto.nombre }}</span>
+                                            {% if url_cobrar %}Agregar<span class="cat-act__t"> {{ producto.nombre }} al carrito</span>{% else %}Guardar<span class="cat-act__t"> venta de {{ producto.nombre }}</span>{% endif %}
                                         </button>
                                     </form>
                                     {% endif %}
@@ -835,6 +1041,78 @@
             <span class="cat-toast__t" id="aviso-txt"></span>
         </div>
         <p class="cat-sr" id="aviso-sr" role="status" aria-live="polite"></p>
+
+        {% if url_cobrar %}
+            {# Barra que aparece abajo cuando hay algo en el carrito #}
+            <div class="cat-barra" id="carrito-barra" hidden>
+                <button type="button" class="cat-barra__in" id="carrito-barra-btn" aria-controls="carrito">
+                    <span class="cat-barra__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5h3l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 7.5H6.3"></path></svg><b id="carrito-barra-n">0</b></span>
+                    <span class="cat-barra__txt"><small id="carrito-barra-u">0 productos</small><b id="carrito-barra-total">$0</b></span>
+                    <span class="cat-barra__ir">Cobrar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+                </button>
+            </div>
+
+            {# Ventana del carrito: lo que se lleva, el total y cómo paga #}
+            <dialog class="cat-carrito" id="carrito" aria-labelledby="carrito-titulo">
+                <div class="cat-carrito__in">
+                    <header class="cat-carrito__cab">
+                        <div>
+                            <h2 id="carrito-titulo">Carrito</h2>
+                            <p id="carrito-resumen">Vacío</p>
+                        </div>
+                        <button type="button" class="cat-carrito__vaciar" id="carrito-vaciar" hidden>Vaciar</button>
+                        <button type="button" class="cat-carrito__x" id="carrito-cerrar" aria-label="Cerrar el carrito">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                        </button>
+                    </header>
+
+                    <div class="cat-carrito__cuerpo">
+                        <ul class="cat-items" id="carrito-items"></ul>
+                        <div class="cat-carrito__vacio" id="carrito-vacio">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5h3l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 7.5H6.3"></path></svg>
+                            <p><b>El carrito está vacío.</b><br>Escribe la cantidad en un producto y toca «Agregar».</p>
+                        </div>
+                    </div>
+
+                    <form class="cat-pago" id="carrito-pago" novalidate hidden>
+                        <div class="cat-pago__total"><span>Total</span><b id="carrito-total">$0</b></div>
+
+                        <fieldset class="cat-metodos">
+                            <legend>¿Cómo paga?</legend>
+                            <div class="cat-metodos__g">
+                            <label class="cat-metodo"><input type="radio" name="metodo" value="efectivo" checked><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>Efectivo</span></label>
+                            <label class="cat-metodo"><input type="radio" name="metodo" value="transferencia"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18h2"></path></svg>Transferencia</span></label>
+                            <label class="cat-metodo"><input type="radio" name="metodo" value="mixto"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M17 4v16M3 8h8M13 16h8"></path></svg>Las dos</span></label>
+                            </div>
+                        </fieldset>
+
+                        <div class="cat-pago__parte" data-para="efectivo">
+                            <label class="cat-pago__lab" for="carrito-recibido">¿Con cuánto paga? <span>(para saber el vuelto)</span></label>
+                            <div class="cat-plata"><b aria-hidden="true">$</b><input type="text" id="carrito-recibido" inputmode="numeric" autocomplete="off" placeholder="Justo"></div>
+                            <div class="cat-billetes" id="carrito-billetes"></div>
+                            <p class="cat-pago__res" id="carrito-vuelto" hidden></p>
+                        </div>
+
+                        <div class="cat-pago__parte" data-para="transferencia" hidden>
+                            <p class="cat-pago__nota">Revisa en el celular que la transferencia sí llegó antes de cobrar.</p>
+                        </div>
+
+                        <div class="cat-pago__parte" data-para="mixto" hidden>
+                            <label class="cat-pago__lab" for="carrito-efectivo">¿Cuánto paga en efectivo?</label>
+                            <div class="cat-plata"><b aria-hidden="true">$</b><input type="text" id="carrito-efectivo" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+                            <p class="cat-pago__res" id="carrito-resto" hidden></p>
+                        </div>
+
+                        <p class="cat-pago__err" id="carrito-error" role="alert" hidden></p>
+
+                        <button type="submit" class="cat-cobrar" id="carrito-cobrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                            <span id="carrito-cobrar-t">Cobrar</span>
+                        </button>
+                    </form>
+                </div>
+            </dialog>
+        {% endif %}
 
         <div id="modalEliminar" class="cat-modal" role="dialog" aria-modal="true" aria-labelledby="modalEliminarTitulo" onclick="if (event.target === this) cerrarModalEliminar()">
             <div class="cat-dialog">
@@ -1071,11 +1349,14 @@
             });
         })();
 
-        /* Registrar una venta: escribes cuántas (solo números) y pulsas «Guardar» o Enter. Se guarda en la base de datos y el stock se actualiza aquí mismo. */
+        /* Vender. Con la app de caja instalada, «Agregar» mete el producto al CARRITO y desde ahí se cobra todo junto
+           (efectivo, transferencia o las dos). Sin la app de caja, «Guardar» registra la venta al momento como antes. */
         (function () {
+            var raiz = document.querySelector('.cat');
             var ul = document.getElementById('filas');
             var aviso = document.getElementById('aviso');
-            if (!ul || !aviso) return;
+            if (!raiz || !ul || !aviso) return;
+            var urlCobrar = raiz.getAttribute('data-cobrar');
             var txt = document.getElementById('aviso-txt');
             var sr = document.getElementById('aviso-sr');
             var tiempo = null;
@@ -1096,15 +1377,18 @@
                 var t = document.querySelector('input[name="csrfmiddlewaretoken"]');
                 return t ? t.value : '';
             }
-            function enviar(url, cuerpo) {
-                return fetch(url, {
-                    method: 'POST', credentials: 'same-origin', body: cuerpo,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': token() }
-                }).then(function (r) {
-                    if ((r.headers.get('content-type') || '').indexOf('application/json') < 0) throw new Error('sin sesión');
-                    return r.json();
-                });
+            function enviar(url, cuerpo, esJson) {
+                var cabeceras = { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': token() };
+                if (esJson) cabeceras['Content-Type'] = 'application/json';
+                return fetch(url, { method: 'POST', credentials: 'same-origin', body: cuerpo, headers: cabeceras })
+                    .then(function (r) {
+                        if ((r.headers.get('content-type') || '').indexOf('application/json') < 0) throw new Error('sin sesión');
+                        return r.json();
+                    });
             }
+            function miles(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+            function pesos(n) { return '$' + miles(n); }
+            function digitos(v) { return parseInt(String(v || '').replace(/\D/g, ''), 10) || 0; }
 
             /* Pone en la fila las existencias nuevas (mismas reglas que la plantilla) */
             function actualizarFila(li, n) {
@@ -1117,9 +1401,9 @@
                 if (campo) { campo.maxLength = String(Math.max(n, 0)).length; campo.disabled = n <= 0; }
                 if (boton) boton.disabled = n <= 0;
             }
+            function filasDe(id) { return ul.querySelectorAll('li[data-id="' + id + '"]'); }
 
-            /* Solo números en el campo de venta: lo que no sea un dígito (letras, signos, espacios, «e», comas…) no entra,
-               ni escribiéndolo ni pegándolo ni arrastrándolo. Tampoco entran ceros a la izquierda. */
+            /* Solo números en el campo de cantidad: lo que no sea un dígito no entra (ni escribiéndolo ni pegándolo). */
             function limpiar(campo) {
                 var v = campo.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
                 if (v !== campo.value) campo.value = v;
@@ -1135,6 +1419,322 @@
                 campo.classList.remove('is-mal');
                 limpiar(campo);
             });
+            function sacudir(campo) {
+                campo.classList.remove('is-mal'); void campo.offsetWidth; campo.classList.add('is-mal');
+                campo.focus(); campo.select();
+            }
+
+            /* =================== CARRITO =================== */
+            var carrito = null;
+            if (urlCobrar) carrito = (function () {
+                var CLAVE = 'carrito-tienda';
+                var dialogo = document.getElementById('carrito');
+                var lista = document.getElementById('carrito-items');
+                var vacio = document.getElementById('carrito-vacio');
+                var pago = document.getElementById('carrito-pago');
+                var resumen = document.getElementById('carrito-resumen');
+                var vaciar = document.getElementById('carrito-vaciar');
+                var totalEl = document.getElementById('carrito-total');
+                var recibido = document.getElementById('carrito-recibido');
+                var billetes = document.getElementById('carrito-billetes');
+                var vueltoEl = document.getElementById('carrito-vuelto');
+                var efectivo = document.getElementById('carrito-efectivo');
+                var restoEl = document.getElementById('carrito-resto');
+                var errorEl = document.getElementById('carrito-error');
+                var cobrarBtn = document.getElementById('carrito-cobrar');
+                var cobrarTxt = document.getElementById('carrito-cobrar-t');
+                var abrirBtn = document.getElementById('abrir-carrito');
+                var contador = document.getElementById('carrito-n');
+                var barra = document.getElementById('carrito-barra');
+                var items = [];        /* [{id, nombre, precio, cantidad, stock, foto}] */
+                var enviando = false;
+
+                /* El carrito se guarda en esta pestaña: no se pierde al cambiar de página de la lista */
+                try { items = JSON.parse(sessionStorage.getItem(CLAVE) || '[]'); } catch (e) { items = []; }
+                if (!Array.isArray(items)) items = [];
+                function guardar() { try { sessionStorage.setItem(CLAVE, JSON.stringify(items)); } catch (e) {} }
+
+                function buscar(id) { for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i]; return null; }
+                function unidades() { return items.reduce(function (a, it) { return a + it.cantidad; }, 0); }
+                function total() { return items.reduce(function (a, it) { return a + it.precio * it.cantidad; }, 0); }
+                function metodo() { var r = pago.querySelector('input[name="metodo"]:checked'); return r ? r.value : 'efectivo'; }
+
+                /* Lo que dicen las filas de esta página manda (stock y precio al día) */
+                function sincronizar() {
+                    items.forEach(function (it) {
+                        var li = filasDe(it.id)[0];
+                        if (!li) return;
+                        it.stock = parseInt(li.getAttribute('data-stock'), 10) || 0;
+                        it.precio = parseInt(li.getAttribute('data-precio'), 10) || 0;
+                    });
+                }
+
+                function agregar(li, n) {
+                    var id = parseInt(li.getAttribute('data-id'), 10);
+                    var it = buscar(id);
+                    var foto = li.querySelector('.cat-fila__foto img');
+                    if (!it) {
+                        it = { id: id, nombre: li.querySelector('.cat-fila__name').textContent.trim(), cantidad: 0,
+                               precio: 0, stock: 0, foto: foto ? foto.getAttribute('src') : '' };
+                        items.push(it);
+                    }
+                    it.precio = parseInt(li.getAttribute('data-precio'), 10) || 0;
+                    it.stock = parseInt(li.getAttribute('data-stock'), 10) || 0;
+                    it.cantidad += n;
+                    guardar();
+                    pintar(true);
+                }
+                function cuantosLleva(id) { var it = buscar(id); return it ? it.cantidad : 0; }
+
+                /* Marca en cada fila cuántas unidades van en el carrito */
+                function pintarFilas() {
+                    Array.prototype.forEach.call(ul.querySelectorAll('li[data-id]'), function (li) {
+                        var n = cuantosLleva(parseInt(li.getAttribute('data-id'), 10));
+                        var chip = li.querySelector('.cat-fila__carro');
+                        if (!n) { if (chip) chip.remove(); return; }
+                        if (!chip) {
+                            chip = document.createElement('span');
+                            chip.className = 'cat-fila__carro';
+                            li.querySelector('.cat-fila__num').appendChild(chip);
+                        }
+                        chip.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M2.5 3.5h3l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 7.5H6.3"></path></svg>' + n + ' en el carrito';
+                    });
+                }
+
+                function pintarItems() {
+                    lista.textContent = '';
+                    items.forEach(function (it) {
+                        var li = document.createElement('li');
+                        li.className = 'cat-item';
+                        li.setAttribute('data-id', it.id);
+                        var foto = document.createElement('span');
+                        foto.className = 'cat-item__foto';
+                        if (it.foto) { var img = document.createElement('img'); img.src = it.foto; img.alt = ''; foto.appendChild(img); }
+                        else foto.textContent = it.nombre.charAt(0).toUpperCase();
+                        var nom = document.createElement('p');
+                        nom.className = 'cat-item__nom';
+                        nom.textContent = it.nombre;
+                        var det = document.createElement('small');
+                        det.textContent = pesos(it.precio) + ' c/u' + (it.cantidad >= it.stock ? ' · no hay más' : '');
+                        nom.appendChild(det);
+                        var x = document.createElement('button');
+                        x.type = 'button'; x.className = 'cat-item__x'; x.setAttribute('data-quitar', it.id);
+                        x.setAttribute('aria-label', 'Quitar ' + it.nombre + ' del carrito');
+                        x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>';
+                        var paso = document.createElement('div');
+                        paso.className = 'cat-paso';
+                        paso.innerHTML = '<button type="button" data-menos="' + it.id + '" aria-label="Uno menos">−</button><b aria-live="polite"></b><button type="button" data-mas="' + it.id + '" aria-label="Uno más">+</button>';
+                        paso.querySelector('b').textContent = it.cantidad;
+                        paso.querySelector('[data-menos]').disabled = it.cantidad <= 1;
+                        paso.querySelector('[data-mas]').disabled = it.cantidad >= it.stock;
+                        var sub = document.createElement('span');
+                        sub.className = 'cat-item__sub';
+                        sub.textContent = pesos(it.precio * it.cantidad);
+                        li.appendChild(foto); li.appendChild(nom); li.appendChild(x); li.appendChild(paso); li.appendChild(sub);
+                        lista.appendChild(li);
+                    });
+                }
+
+                /* Billetes sugeridos para «¿Con cuánto paga?» */
+                function pintarBilletes(t) {
+                    billetes.textContent = '';
+                    if (t <= 0) return;
+                    var opciones = [];
+                    [1000, 2000, 5000, 10000, 20000, 50000, 100000].forEach(function (b) {
+                        var v = Math.ceil(t / b) * b;
+                        if (v > t && opciones.indexOf(v) < 0) opciones.push(v);
+                    });
+                    opciones.sort(function (a, b) { return a - b; });
+                    [t].concat(opciones.slice(0, 4)).forEach(function (v, i) {
+                        var b = document.createElement('button');
+                        b.type = 'button'; b.className = 'cat-billete'; b.setAttribute('data-valor', v);
+                        b.textContent = i === 0 ? 'Justo' : pesos(v);
+                        b.setAttribute('aria-pressed', 'false');
+                        billetes.appendChild(b);
+                    });
+                }
+
+                /* Revisa el pago y dice si se puede cobrar */
+                function revisarPago() {
+                    var t = total(), m = metodo(), ok = items.length > 0;
+                    pago.querySelectorAll('[data-para]').forEach(function (d) { d.hidden = d.getAttribute('data-para') !== m; });
+                    vueltoEl.hidden = true; restoEl.hidden = true;
+                    var elegido = recibido.value ? digitos(recibido.value) : -1;
+                    Array.prototype.forEach.call(billetes.children, function (b) {
+                        b.setAttribute('aria-pressed', String(parseInt(b.getAttribute('data-valor'), 10) === elegido));
+                    });
+                    if (m === 'efectivo' && recibido.value) {
+                        var r = digitos(recibido.value);
+                        vueltoEl.hidden = false;
+                        vueltoEl.classList.toggle('is-mal', r < t);
+                        vueltoEl.innerHTML = r < t ? '<span>Faltan</span><b></b>' : '<span>Vuelto</span><b></b>';
+                        vueltoEl.querySelector('b').textContent = pesos(Math.abs(r - t));
+                        if (r < t) ok = false;
+                    }
+                    if (m === 'mixto') {
+                        var e = digitos(efectivo.value);
+                        if (!efectivo.value) ok = false;
+                        else {
+                            restoEl.hidden = false;
+                            var mal = e <= 0 || e >= t;
+                            restoEl.classList.toggle('is-mal', mal);
+                            restoEl.classList.toggle('is-transf', !mal);
+                            restoEl.innerHTML = mal ? '<span></span>' : '<span>Por transferencia</span><b></b>';
+                            if (mal) { restoEl.querySelector('span').textContent = e >= t ? 'Eso cubre todo: elige «Efectivo».' : 'Escribe cuánto da en efectivo.'; ok = false; }
+                            else restoEl.querySelector('b').textContent = pesos(t - e);
+                        }
+                    }
+                    cobrarBtn.disabled = !ok || enviando;
+                    cobrarTxt.textContent = 'Cobrar ' + pesos(t);
+                }
+
+                function pintar(salto) {
+                    sincronizar();
+                    var u = unidades(), t = total();
+                    contador.hidden = u === 0;
+                    contador.textContent = u;
+                    abrirBtn.setAttribute('aria-label', 'Carrito: ' + (u ? u + ' unidad' + (u === 1 ? '' : 'es') + ', ' + pesos(t) : 'vacío'));
+                    barra.hidden = u === 0;
+                    raiz.classList.toggle('con-carro', u > 0);
+                    document.getElementById('carrito-barra-n').textContent = u;
+                    document.getElementById('carrito-barra-u').textContent = items.length + ' producto' + (items.length === 1 ? '' : 's') + ' · ' + u + ' unidad' + (u === 1 ? '' : 'es');
+                    document.getElementById('carrito-barra-total').textContent = pesos(t);
+                    resumen.textContent = u ? items.length + ' producto' + (items.length === 1 ? '' : 's') + ' · ' + u + ' unidad' + (u === 1 ? '' : 'es') : 'Vacío';
+                    vaciar.hidden = u === 0;
+                    lista.hidden = u === 0;
+                    vacio.hidden = u > 0;
+                    pago.hidden = u === 0;
+                    totalEl.textContent = pesos(t);
+                    pintarItems();
+                    pintarBilletes(t);
+                    pintarFilas();
+                    revisarPago();
+                    if (salto) {
+                        [abrirBtn, barra].forEach(function (el) { el.classList.remove('salto'); void el.offsetWidth; el.classList.add('salto'); });
+                    }
+                }
+
+                function abrir() {
+                    errorEl.hidden = true;
+                    pintar(false);
+                    if (!dialogo.open) dialogo.showModal();
+                }
+                abrirBtn.addEventListener('click', abrir);
+                document.getElementById('carrito-barra-btn').addEventListener('click', abrir);
+                document.getElementById('carrito-cerrar').addEventListener('click', function () { dialogo.close(); });
+                dialogo.addEventListener('click', function (e) { if (e.target === dialogo) dialogo.close(); });   /* tocar fuera cierra */
+
+                /* + / − / quitar */
+                lista.addEventListener('click', function (e) {
+                    var b = e.target.closest('button');
+                    if (!b) return;
+                    var id = parseInt(b.getAttribute('data-mas') || b.getAttribute('data-menos') || b.getAttribute('data-quitar'), 10);
+                    var it = buscar(id);
+                    if (!it) return;
+                    if (b.hasAttribute('data-mas') && it.cantidad < it.stock) it.cantidad++;
+                    else if (b.hasAttribute('data-menos') && it.cantidad > 1) it.cantidad--;
+                    else if (b.hasAttribute('data-quitar')) items = items.filter(function (x) { return x.id !== id; });
+                    guardar();
+                    pintar(false);
+                    var igual = lista.querySelector('[data-' + (b.hasAttribute('data-mas') ? 'mas' : 'menos') + '="' + id + '"]');
+                    if (igual && !b.hasAttribute('data-quitar')) igual.focus();
+                });
+
+                /* Vaciar: hay que tocarlo dos veces para no borrar el carrito sin querer */
+                var vaciarTiempo = null;
+                vaciar.addEventListener('click', function () {
+                    if (!vaciar.classList.contains('seguro')) {
+                        vaciar.classList.add('seguro');
+                        vaciar.textContent = '¿Seguro? Toca otra vez';
+                        vaciarTiempo = setTimeout(function () { vaciar.classList.remove('seguro'); vaciar.textContent = 'Vaciar'; }, 3000);
+                        return;
+                    }
+                    clearTimeout(vaciarTiempo);
+                    vaciar.classList.remove('seguro'); vaciar.textContent = 'Vaciar';
+                    items = []; guardar(); pintar(false);
+                });
+
+                /* Campos de plata: solo números y con punto de miles */
+                [recibido, efectivo].forEach(function (input) {
+                    input.addEventListener('input', function () {
+                        var d = String(input.value).replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 10);
+                        input.value = d ? miles(parseInt(d, 10)) : '';
+                        errorEl.hidden = true;
+                        revisarPago();
+                    });
+                });
+                billetes.addEventListener('click', function (e) {
+                    var b = e.target.closest('[data-valor]');
+                    if (!b) return;
+                    recibido.value = miles(parseInt(b.getAttribute('data-valor'), 10));
+                    revisarPago();
+                });
+                pago.addEventListener('change', function (e) {
+                    if (e.target.name !== 'metodo') return;
+                    errorEl.hidden = true;
+                    revisarPago();
+                    var campo = metodo() === 'efectivo' ? recibido : metodo() === 'mixto' ? efectivo : null;
+                    if (campo && !window.matchMedia('(pointer: coarse)').matches) campo.focus();
+                });
+
+                /* COBRAR: se manda todo junto; el servidor revisa stock y precios y guarda o no guarda nada */
+                pago.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    revisarPago();
+                    if (cobrarBtn.disabled) return;
+                    var m = metodo();
+                    var cuerpo = {
+                        items: items.map(function (it) { return { id: it.id, cantidad: it.cantidad }; }),
+                        metodo: m,
+                        efectivo: m === 'mixto' ? digitos(efectivo.value) : null,
+                        recibido: m === 'efectivo' && recibido.value ? digitos(recibido.value) : null
+                    };
+                    enviando = true;
+                    cobrarBtn.disabled = true;
+                    cobrarBtn.classList.add('cargando');
+                    cobrarTxt.textContent = 'Cobrando…';
+                    errorEl.hidden = true;
+                    enviar(urlCobrar, JSON.stringify(cuerpo), true)
+                        .then(function (d) {
+                            var ex = d.existencias || {};
+                            Object.keys(ex).forEach(function (id) {
+                                Array.prototype.forEach.call(filasDe(id), function (li) { actualizarFila(li, ex[id]); });
+                                var it = buscar(parseInt(id, 10));
+                                if (it) it.stock = ex[id];
+                            });
+                            if (d.ok) {
+                                items = [];
+                                recibido.value = ''; efectivo.value = '';
+                                pago.querySelector('input[value="efectivo"]').checked = true;
+                                guardar();
+                                dialogo.close();
+                                mostrar(d.mensaje, 'ok');
+                            } else {
+                                /* Si algo ya no alcanza, el carrito se ajusta a lo que queda */
+                                (d.no_existen || []).forEach(function (id) { items = items.filter(function (x) { return x.id !== id; }); });
+                                items.forEach(function (it) { if (it.cantidad > it.stock) it.cantidad = it.stock; });
+                                items = items.filter(function (it) { return it.cantidad > 0; });
+                                guardar();
+                                errorEl.textContent = d.mensaje + (Object.keys(ex).length ? ' Ajusté el carrito a lo que hay.' : '');
+                                errorEl.hidden = false;
+                            }
+                        })
+                        .catch(function () {
+                            errorEl.textContent = 'No se pudo cobrar. Revisa la conexión o vuelve a iniciar sesión.';
+                            errorEl.hidden = false;
+                        })
+                        .then(function () {
+                            enviando = false;
+                            cobrarBtn.classList.remove('cargando');
+                            pintar(false);
+                        });
+                });
+
+                /* Si el filtro en vivo cambia las filas, se vuelven a marcar las que van en el carrito */
+                new MutationObserver(function () { pintarFilas(); }).observe(ul, { childList: true });
+                pintar(false);
+                return { agregar: agregar, cuantosLleva: cuantosLleva };
+            })();
 
             /* Un solo oyente en la lista: así también funciona con las filas que trae el filtro en vivo */
             ul.addEventListener('submit', function (e) {
@@ -1144,21 +1744,32 @@
                 var li = form.closest('li'), campo = form.querySelector('.cat-venta__n'), boton = form.querySelector('.cat-guardar');
                 if (boton.disabled) return;
 
-                /* Revisión antes de enviar: un número de 1 en adelante y que alcance con lo que queda */
+                /* Revisión antes de seguir: un número de 1 en adelante y que alcance con lo que queda */
                 limpiar(campo);
                 var n = parseInt(campo.value, 10) || 0;
                 var quedan = parseInt(li.getAttribute('data-stock'), 10) || 0;
                 var nombre = li.querySelector('.cat-fila__name').textContent.trim();
-                if (n < 1 || n > quedan) {
-                    mostrar(n < 1 ? 'Escribe cuántas unidades vendiste (solo números, desde 1).'
-                                  : 'No alcanza: de ' + nombre + ' solo quedan ' + quedan + '.', 'error');
-                    campo.classList.remove('is-mal'); void campo.offsetWidth; campo.classList.add('is-mal');
-                    campo.focus(); campo.select();
+                var lleva = carrito ? carrito.cuantosLleva(parseInt(li.getAttribute('data-id'), 10)) : 0;
+                if (n < 1 || n + lleva > quedan) {
+                    var mensaje = n < 1 ? 'Escribe cuántas unidades (solo números, desde 1).'
+                        : lleva ? 'No alcanza: de ' + nombre + ' quedan ' + quedan + ' y ya llevas ' + lleva + ' en el carrito.'
+                        : 'No alcanza: de ' + nombre + ' solo quedan ' + quedan + '.';
+                    mostrar(mensaje, 'error');
+                    sacudir(campo);
                     return;
                 }
 
+                if (carrito) {
+                    carrito.agregar(li, n);
+                    campo.value = '';
+                    if (window.matchMedia('(pointer: coarse)').matches) campo.blur();
+                    mostrar('Agregaste ' + n + ' × ' + nombre + ' al carrito.', 'ok');
+                    return;
+                }
+
+                /* Sin carrito: la venta se registra de una */
                 boton.disabled = true;
-                enviar(form.action, new FormData(form))
+                enviar(form.action, new FormData(form), false)
                     .then(function (d) {
                         if (typeof d.existencias === 'number') actualizarFila(li, d.existencias);
                         if (d.ok) {

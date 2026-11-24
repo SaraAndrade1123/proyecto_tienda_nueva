@@ -1,0 +1,411 @@
+{% extends 'layouts/base.html' %}
+{% load pesos caja_extras %}
+
+{% block title %}Cierre del {{ caja.fecha|date:"d/m/Y" }} - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .cj, .cj * { box-sizing: border-box; }
+    .cj {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c;
+        --ok: #15803d; --ok-soft: #dcf3e3; --ok-ink: #14532d;
+        --warn: #a16207; --warn-soft: #fdf1cf; --warn-ink: #713f12;
+        --bad: #b91c1c; --bad-soft: #fde4e1; --bad-ink: #7f1d1d;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .cj {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --red: #ef4444; --link: #f87171;
+        --ok: #4ade80; --ok-soft: #13281a; --ok-ink: #bbf7d0;
+        --warn: #facc15; --warn-soft: #2a2410; --warn-ink: #fde68a;
+        --bad: #f87171; --bad-soft: #2b1614; --bad-ink: #fecaca;
+    }
+
+    /* ---------- Banner rojo ---------- */
+    .cj-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.25rem 1.25rem 4.5rem; }
+    .cj-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 84% 28%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at 98% -15%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 92% 92%, rgba(69, 10, 10, .28) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 10rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 900px) { .cj-hero { padding: 1.75rem 2.5rem 5rem; } }
+    .cj-hero__in { position: relative; max-width: 72rem; margin: 0 auto; }
+    .cj-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+    .cj-volver, .cj-pill {
+        display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 1.1rem 0 .4rem;
+        font: inherit; font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none; cursor: pointer;
+        background: rgba(69, 10, 10, .3); border: 2px solid rgba(255, 255, 255, .3); border-radius: 999px;
+        transition: background-color .15s, border-color .15s;
+    }
+    .cj-volver span, .cj-pill span { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #b91c1c; background: #fff; transition: transform .2s; }
+    .cj-volver svg, .cj-pill svg { width: .9rem; height: .9rem; }
+    .cj-volver:hover, .cj-pill:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+    .cj-volver:hover span { transform: translateX(-.15rem); }
+    .cj-volver:focus-visible, .cj-pill:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    .cj-cab { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
+    @media (min-width: 760px) { .cj-cab { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+    .cj-eti { margin: 0 0 .35rem; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+    .cj-hero h1 { margin: 0; font-size: clamp(2rem, 1.3rem + 3vw, 3.4rem); font-weight: 800; font-stretch: 108%; line-height: 1; letter-spacing: -.03em; }
+    .cj-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .8rem; }
+    .cj-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .75rem; border-radius: 999px; font-size: .8125rem; font-weight: 800; background: rgba(69, 10, 10, .32); }
+    .cj-chip svg { width: .85rem; height: .85rem; }
+    .cj-chip--cuadra { color: #14532d; background: #bbf7d0; }
+    .cj-chip--sobrante { color: #713f12; background: #fde68a; }
+    .cj-chip--faltante { color: #7f1d1d; background: #fff; }
+    .cj-cifra { display: grid; justify-items: end; text-align: right; }
+    .cj-cifra__t { font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+    .cj-cifra__n { font-size: clamp(2.5rem, 2rem + 2.4vw, 4rem); font-weight: 800; font-stretch: 80%; line-height: .95; font-variant-numeric: tabular-nums; }
+    .cj-cifra__v { margin-top: .4rem; padding-top: .45rem; border-top: 2px dashed rgba(255, 255, 255, .35); justify-self: stretch; font-size: .9375rem; font-weight: 600; }
+    @media (max-width: 759px) {
+        .cj-cifra { display: flex; align-items: center; justify-content: space-between; gap: .75rem; text-align: left; padding: .75rem 1rem; border-radius: 1.1rem; background: rgba(69, 10, 10, .3); }
+        .cj-cifra__n { font-size: 2.1rem; }
+        .cj-cifra__v { margin: 0; padding: 0; border: 0; text-align: right; font-size: .8125rem; line-height: 1.25; max-width: 9rem; }
+    }
+
+    /* ---------- Tablero ---------- */
+    .cj-wrap { position: relative; max-width: 72rem; margin: -2.75rem auto 0; padding: 0 .75rem 3rem; }
+    @media (min-width: 640px) { .cj-wrap { padding: 0 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .cj-wrap { padding: 0 2.5rem 4rem; } }
+    .cj-board { padding: 1rem; background: var(--board); border-radius: 1.75rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 640px) { .cj-board { padding: 1.5rem; border-radius: 2.25rem; } }
+    .cj-msgs { display: grid; gap: .5rem; }
+    .cj-msg { padding: .8rem 1rem; border-radius: 1rem; font-size: .9375rem; font-weight: 600; color: var(--bad-ink); background: var(--bad-soft); }
+    .cj-msg.is-success { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-msg.is-info { color: var(--ink); background: var(--card); }
+    .cj-aviso { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem 1.15rem; border-radius: 1.25rem; color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-aviso svg { flex: none; width: 1.4rem; height: 1.4rem; }
+    .cj-aviso p { margin: 0; font-size: .9375rem; line-height: 1.45; }
+
+    .cj-grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 860px) { .cj-grid2 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; } }
+    .cj-col { display: grid; gap: 1rem; min-width: 0; align-content: start; }
+    .cj-card { padding: 1.15rem 1.25rem 1.3rem; background: var(--card); border-radius: 1.4rem; min-width: 0; }
+    .cj-card h2 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .85rem; font-size: 1.0625rem; font-weight: 800; }
+    .cj-card h2 > span { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .7rem; color: var(--link); background: var(--board); }
+    .cj-card h2 svg { width: 1rem; height: 1rem; }
+    .cj-card h2 small { margin-left: auto; font-size: .875rem; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* La cuenta */
+    .cj-cuenta { margin: 0; display: grid; }
+    .cj-cuenta div { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; padding: .62rem 0; }
+    .cj-cuenta div + div { border-top: 1px dashed var(--line); }
+    .cj-cuenta i { font-style: normal; font-weight: 800; color: var(--muted); text-align: center; }
+    .cj-cuenta dt { font-size: .9375rem; }
+    .cj-cuenta dt small { display: block; font-size: .8125rem; color: var(--muted); }
+    .cj-cuenta dd { margin: 0; font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+    .cj-cuenta .cj-total { margin-top: .35rem; padding: .8rem .9rem; border: 0; border-radius: 1rem; background: var(--board); }
+    .cj-cuenta .cj-total + div { border-top: 0; }
+    .cj-cuenta .cj-total dt { font-weight: 800; }
+    .cj-cuenta .cj-total dd { font-size: 1.25rem; }
+    .cj-cuenta .cj-dif { margin-top: .35rem; padding: .8rem .9rem; border: 0; border-radius: 1rem; }
+    .cj-dif--cuadra { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-dif--sobrante { color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-dif--faltante { color: var(--bad-ink); background: var(--bad-soft); }
+    .cj-cuenta .cj-dif i, .cj-cuenta .cj-dif dt small { color: inherit; opacity: .8; }
+    .cj-cuenta .cj-dif dt { font-weight: 800; }
+    .cj-cuenta .cj-dif dd { font-size: 1.25rem; }
+
+    .cj-obs { margin: 0; padding: .85rem 1rem; border-left: 4px solid var(--red); border-radius: .5rem 1rem 1rem .5rem; background: var(--board); font-size: .9375rem; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+
+    /* Tablas sencillas */
+    .cj-tabla { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+    .cj-tabla th { padding: 0 0 .5rem; font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: left; }
+    .cj-tabla td { padding: .6rem 0; border-top: 1px dashed var(--line); vertical-align: baseline; }
+    .cj-tabla .num { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: .75rem; }
+    .cj-tabla td:first-child { overflow-wrap: anywhere; }
+    .cj-barra { display: block; width: 100%; height: .3rem; margin-top: .35rem; }
+    .cj-barra rect { fill: #fca5a5; }
+    .dark .cj-barra rect { fill: #7f1d1d; }
+    .cj-mas { margin: .6rem 0 0; font-size: .875rem; color: var(--muted); }
+    .cj-vacio { margin: 0; padding: 1rem; text-align: center; font-size: .9375rem; color: var(--muted); border: 2px dashed var(--line); border-radius: 1rem; }
+
+    .cj-ventas { margin-top: .9rem; }
+    .cj-ventas summary {
+        display: inline-flex; align-items: center; gap: .4rem; min-height: 2.4rem; padding: 0 1rem; border-radius: 999px; cursor: pointer;
+        font-size: .875rem; font-weight: 800; color: var(--ink); background: var(--board); list-style: none;
+    }
+    .cj-ventas summary::-webkit-details-marker { display: none; }
+    .cj-ventas summary svg { width: .9rem; height: .9rem; transition: transform .2s; }
+    .cj-ventas[open] summary svg { transform: rotate(180deg); }
+    .cj-ventas .cj-tabla { margin-top: .75rem; }
+    .cj-hora { color: var(--muted); white-space: nowrap; padding-right: .6rem; }
+
+    .cj-metodo { display: inline-block; margin-left: .3rem; padding: .05rem .45rem; border-radius: 999px; font-size: .72rem; font-weight: 800; color: var(--ok-ink); background: var(--ok-soft); vertical-align: .1em; }
+    .cj-metodo--transferencia { color: #1e3a8a; background: #dbeafe; }
+    .dark .cj-metodo--transferencia { color: #bfdbfe; background: #172554; }
+    .cj-metodo--mixto { color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-tag { display: inline-block; margin-left: .35rem; padding: .1rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 800; vertical-align: .1em; }
+    .cj-tag--si { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-tag--no { color: var(--bad-ink); background: var(--bad-soft); }
+
+    .cj-datos { margin: 0; display: grid; }
+    .cj-datos div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .6rem 0; }
+    .cj-datos div + div { border-top: 1px dashed var(--line); }
+    .cj-datos dt { font-size: .9rem; color: var(--muted); }
+    .cj-datos dd { margin: 0; font-size: .9375rem; font-weight: 800; text-align: right; overflow-wrap: anywhere; }
+
+    .cj-nav { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+    .cj-nav a, .cj-nav span {
+        display: grid; gap: .1rem; padding: .8rem 1rem; border-radius: 1.1rem; text-decoration: none; color: var(--ink); background: var(--card);
+        transition: background-color .15s, color .15s;
+    }
+    .cj-nav a:hover { color: #fff; background: #b91c1c; }
+    .cj-nav small { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+    .cj-nav b { font-size: .9375rem; font-weight: 800; }
+    .cj-nav span { opacity: .45; }
+    .cj-nav .sig { text-align: right; }
+    .cj a:focus-visible, .cj button:focus-visible, .cj summary:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+
+
+    /* Modo de pruebas (CAJA_MODO_PRUEBAS = True): borrar la caja para volver a probar */
+    .cj-prueba { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; padding: .9rem 1.1rem; border: 2px dashed #d97706; border-radius: 1.25rem; color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-prueba__t { flex: 1 1 16rem; margin: 0; font-size: .875rem; line-height: 1.45; }
+    .cj-prueba__t b { display: block; font-size: .9375rem; font-weight: 800; }
+    .cj-prueba details { max-width: 100%; }
+    .cj-prueba summary {
+        list-style: none; display: inline-flex; align-items: center; gap: .45rem; min-height: 2.5rem; padding: 0 1.1rem; cursor: pointer;
+        font-size: .875rem; font-weight: 800; color: #fff; background: #92400e; border-radius: 999px;
+    }
+    .cj-prueba summary::-webkit-details-marker { display: none; }
+    .cj-prueba summary svg { width: 1rem; height: 1rem; }
+    .cj-prueba summary:hover, .cj-prueba details[open] summary { background: #78350f; }
+    .cj-prueba summary:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cj-prueba form { display: grid; gap: .6rem; width: min(18rem, 100%); margin-top: .6rem; padding: .9rem; color: var(--ink); background: var(--card); border-radius: 1rem; box-shadow: 0 0 0 1px var(--line); }
+    .cj-prueba form p { margin: 0; font-size: .875rem; font-weight: 600; line-height: 1.4; }
+    .cj-prueba form button { min-height: 2.5rem; padding: 0 1rem; font: inherit; font-size: .875rem; font-weight: 800; color: #fff; background: #b91c1c; border: 0; border-radius: 999px; cursor: pointer; }
+    .cj-prueba form button:hover { background: #7f1d1d; }
+    /* ---------- Imprimir: solo el cierre, sin el menú de la página ---------- */
+    .cj-solo-print { display: none; }
+    @media print {
+        @page { margin: 12mm; }
+        body * { visibility: hidden !important; }
+        .cj, .cj * { visibility: visible !important; }
+        .cj { position: absolute; left: 0; top: 0; width: 100%; color: #000; --card: #fff; --board: #fff; --line: #bbb; --muted: #444; --ink: #000; }
+        .cj-no-print { display: none !important; }
+        .cj-solo-print { display: block; margin: 0 0 .5rem; font-size: 1.1rem; font-weight: 800; }
+        .cj-hero { padding: 0 0 1rem; color: #000; background: none; }
+        .cj-hero::before { display: none; }
+        .cj-chip { border: 1px solid #999; background: none !important; color: #000 !important; }
+        .cj-cifra { background: none; padding: 0; }
+        .cj-cifra__v { border-color: #999; }
+        .cj-wrap { margin: 0; padding: 0; max-width: none; }
+        .cj-board { padding: 0; background: none; }
+        .cj-grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 0 1.5rem; }
+        .cj-col { gap: .4rem; }
+        .cj-card { padding: .6rem 0; border-top: 1px solid #999; border-radius: 0; break-inside: avoid; }
+        .cj-ventas summary { display: none; }
+    }
+</style>
+
+<div class="cj">
+    <header class="cj-hero">
+        <div class="cj-hero__in">
+            <p class="cj-solo-print">Tienda Nueva · Cierre de caja</p>
+            <div class="cj-top cj-no-print">
+                <a class="cj-volver" href="{% url 'historial_cajas' %}">
+                    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg></span>
+                    Historial de cierres
+                </a>
+                <button class="cj-pill" type="button" onclick="window.print()">
+                    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"></path><rect x="6" y="14" width="12" height="8"></rect><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path></svg></span>
+                    Imprimir o guardar PDF
+                </button>
+            </div>
+
+            <div class="cj-cab">
+                <div>
+                    <p class="cj-eti">Cierre · {{ caja.fecha|date:"l j \d\e F \d\e Y" }}</p>
+                    <h1>{% if caja.resultado == 'cuadra' %}La caja cuadró{% elif caja.resultado == 'sobrante' %}Sobraron ${{ caja.diferencia_abs|pesos }}{% else %}Faltaron ${{ caja.diferencia_abs|pesos }}{% endif %}</h1>
+                    <div class="cj-chips">
+                        <span class="cj-chip cj-chip--{{ caja.resultado }}">{{ caja.get_resultado_display }}</span>
+                        <span class="cj-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>Cerró {{ caja.cerrada_por_nombre|default:"—" }} · {{ caja.cerrada_en|time:"g:i a" }}</span>
+                    </div>
+                </div>
+                <div class="cj-cifra">
+                    <span><span class="cj-cifra__t">Se contó</span><br><span class="cj-cifra__n">${{ caja.contado|pesos }}</span></span>
+                    <span class="cj-cifra__v">debería haber {{ caja.esperado|plata }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="cj-wrap">
+        <section class="cj-board">
+            {% if messages %}
+                <div class="cj-msgs cj-no-print" role="status">{% for m in messages %}<div class="cj-msg{% if m.tags == 'success' %} is-success{% elif m.tags == 'info' %} is-info{% endif %}">{{ m }}</div>{% endfor %}</div>
+            {% endif %}
+
+            {% if despues %}
+                <div class="cj-aviso" role="status">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+                    <p>Ojo: con la fecha de este día se registró algo <strong>después del cierre</strong>{% if despues.ventas %}: {{ despues.ventas }} venta{{ despues.ventas|pluralize }} por ${{ despues.ventas_total|pesos }}{% endif %}{% if despues.consumos %} · {{ despues.consumos }} consumo{{ despues.consumos|pluralize }}{% endif %}{% if despues.salidas %} · {{ despues.salidas }} salida{{ despues.salidas|pluralize }}{% endif %}. Eso no está en este cierre.</p>
+                </div>
+            {% endif %}
+
+            <div class="cj-grid2">
+                <div class="cj-col">
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"></rect><path d="M8 6h8M8 10h8M8 14h2M14 14h2M8 18h2M14 18h2"></path></svg></span>La cuenta</h2>
+                        <dl class="cj-cuenta">
+                            <div><i></i><dt>Base al abrir</dt><dd>${{ caja.base_inicial|pesos }}</dd></div>
+                            <div><i>+</i><dt>Ventas<small>{{ caja.ventas_cantidad }} venta{{ caja.ventas_cantidad|pluralize }} · {{ caja.ventas_unidades }} unidad{{ caja.ventas_unidades|pluralize:"es" }}</small></dt><dd>${{ caja.ventas_total|pesos }}</dd></div>
+                            <div><i>−</i><dt>Entró por transferencia{% if cobros.n %}<small>{{ cobros.n }} cobro{{ cobros.n|pluralize }} con el carrito: ${{ cobros.transferencia|default:0|pesos }} por transferencia</small>{% endif %}</dt><dd>${{ caja.transferencias|pesos }}</dd></div>
+                            <div><i>−</i><dt>Pagos a proveedores<small>{{ caja.pagos_proveedor_cantidad }} pago{{ caja.pagos_proveedor_cantidad|pluralize }}</small></dt><dd>${{ caja.pagos_proveedor_total|pesos }}</dd></div>
+                            <div class="cj-total"><i>=</i><dt>Debería haber</dt><dd>{{ caja.esperado|plata }}</dd></div>
+                            <div><i></i><dt>Se contó</dt><dd>${{ caja.contado|pesos }}</dd></div>
+                            <div class="cj-dif cj-dif--{{ caja.resultado }}"><i>{% if caja.diferencia > 0 %}+{% elif caja.diferencia < 0 %}−{% else %}={% endif %}</i><dt>Diferencia<small>{{ caja.get_resultado_display }}</small></dt><dd>${{ caja.diferencia_abs|pesos }}</dd></div>
+                        </dl>
+                    </article>
+
+                    {% if caja.observacion %}
+                        <article class="cj-card">
+                            <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>Observación</h2>
+                            <p class="cj-obs">{{ caja.observacion }}</p>
+                        </article>
+                    {% endif %}
+
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><path d="M3 6h18M16 10a4 4 0 0 1-8 0"></path></svg></span>Lo que más se vendió<small>${{ caja.ventas_total|pesos }}</small></h2>
+                        {% if top %}
+                            <table class="cj-tabla">
+                                <thead><tr><th>Producto</th><th class="num">Unid.</th><th class="num">Total</th></tr></thead>
+                                <tbody>
+                                    {% for t in top %}
+                                        <tr>
+                                            <td>{{ t.nom_producto }}<svg class="cj-barra" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true"><rect width="{{ t.pct }}" height="4" rx="2"></rect></svg></td>
+                                            <td class="num">{{ t.unidades }}</td>
+                                            <td class="num">${{ t.total|pesos }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% if top_resto %}<p class="cj-mas">y {{ top_resto }} producto{{ top_resto|pluralize }} más.</p>{% endif %}
+
+                            <details class="cj-ventas">
+                                <summary>Ver las {{ ventas|length }} venta{{ ventas|length|pluralize }} una por una <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></summary>
+                                <table class="cj-tabla">
+                                    <thead><tr><th>Hora</th><th>Producto</th><th class="num">Total</th></tr></thead>
+                                    <tbody>
+                                        {% for v in ventas %}
+                                            <tr>
+                                                <td class="cj-hora">{{ v.fecha_hora|time:"g:i a" }}</td>
+                                                <td>{{ v.cantidad }} × {{ v.nom_producto }}{% if v.cobro_item %} <span class="cj-metodo cj-metodo--{{ v.cobro_item.cobro.metodo }}">{{ v.cobro_item.cobro.get_metodo_display }}</span>{% endif %}</td>
+                                                <td class="num">${{ v.total|pesos }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </details>
+                        {% else %}
+                            <p class="cj-vacio">Ese día no hubo ventas.</p>
+                        {% endif %}
+                    </article>
+                </div>
+
+                <div class="cj-col">
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><path d="M16 8h4l3 3v5h-7z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>Pagos a proveedores<small>${{ caja.pagos_proveedor_total|pesos }}</small></h2>
+                        {% if pagos %}
+                            <table class="cj-tabla">
+                                <tbody>
+                                    {% for p in pagos %}
+                                        <tr>
+                                            <td><b>{{ p.proveedor_nombre }}</b>{% if p.concepto %}<br><span style="color:var(--muted);font-size:.875rem">{{ p.concepto }}</span>{% endif %}</td>
+                                            <td class="num">${{ p.valor|pesos }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="cj-vacio">Ese día no se le pagó a ningún proveedor.</p>
+                        {% endif %}
+                    </article>
+
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path><path d="M9 21v-7h6v7"></path></svg></span>Consumos personales<small>${{ caja.consumos_total|pesos }}</small></h2>
+                        {% if consumos %}
+                            <table class="cj-tabla">
+                                <tbody>
+                                    {% for c in consumos %}
+                                        <tr><td>{{ c.persona }} <span style="color:var(--muted);font-size:.875rem">· {{ c.n }} registro{{ c.n|pluralize }}</span></td><td class="num">${{ c.total|pesos }}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="cj-vacio">Ese día no hubo consumos.</p>
+                        {% endif %}
+                    </article>
+
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M12 13v8M3 8l9 5 9-5"></path></svg></span>Salidas de inventario</h2>
+                        {% if salidas %}
+                            <table class="cj-tabla">
+                                <tbody>
+                                    {% for s in salidas %}
+                                        <tr>
+                                            <td>{{ s.motivo_nombre }}{% if s.aplica_cambio %}<span class="cj-tag cj-tag--si">con cambio</span>{% else %}<span class="cj-tag cj-tag--no">pérdida</span>{% endif %}<br><span style="color:var(--muted);font-size:.875rem">{{ s.unidades }} unidad{{ s.unidades|pluralize:"es" }}</span></td>
+                                            <td class="num">${{ s.valor|pesos }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="cj-vacio">Ese día no hubo salidas.</p>
+                        {% endif %}
+                        <dl class="cj-datos" style="margin-top:.6rem">
+                            <div><dt>Pérdida (sin cambio)</dt><dd>${{ caja.salidas_perdida_total|pesos }}</dd></div>
+                            <div><dt>Con cambio del proveedor</dt><dd>${{ caja.salidas_cambio_total|pesos }}</dd></div>
+                        </dl>
+                    </article>
+
+                    <article class="cj-card">
+                        <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg></span>Quién y cuándo</h2>
+                        <dl class="cj-datos">
+                            <div><dt>Abrió</dt><dd>{{ caja.abierta_por_nombre|default:"—" }} · {{ caja.abierta_en|date:"d/m/Y, g:i a" }}</dd></div>
+                            <div><dt>Cerró</dt><dd>{{ caja.cerrada_por_nombre|default:"—" }} · {{ caja.cerrada_en|date:"d/m/Y, g:i a" }}</dd></div>
+                        </dl>
+                    </article>
+                </div>
+            </div>
+
+            {% if modo_pruebas and caja %}
+                <div class="cj-prueba cj-no-print">
+                    <p class="cj-prueba__t"><b>Modo de pruebas</b>Puedes borrar esta caja y volver a abrirla y cerrarla. Las ventas y los cobros del día no se borran.</p>
+                    <details>
+                        <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>Borrar este cierre</summary>
+                        <form method="post" action="{% url 'borrar_caja_prueba' caja.id %}">
+                            {% csrf_token %}
+                            <p>¿Seguro? Se borra este cierre (y sus pagos a proveedores) para poder hacerlo otra vez.</p>
+                            <button type="submit">Sí, borrar para probar</button>
+                        </form>
+                    </details>
+                </div>
+            {% endif %}
+
+            <nav class="cj-nav cj-no-print" aria-label="Otros cierres">
+                {% if anterior %}<a href="{% url 'detalle_caja' anterior.id %}"><small>← Anterior</small><b>{{ anterior.fecha|date:"D j M" }}</b></a>{% else %}<span><small>← Anterior</small><b>No hay</b></span>{% endif %}
+                {% if siguiente %}<a class="sig" href="{% url 'detalle_caja' siguiente.id %}"><small>Siguiente →</small><b>{{ siguiente.fecha|date:"D j M" }}</b></a>{% else %}<span class="sig"><small>Siguiente →</small><b>No hay</b></span>{% endif %}
+            </nav>
+        </section>
+    </div>
+</div>
+
+<script>
+// Al imprimir se abre la lista de ventas para que salga completa en el papel
+(function () {
+    var lista = document.querySelector('.cj-ventas');
+    if (!lista) return;
+    var estaba;
+    window.addEventListener('beforeprint', function () { estaba = lista.open; lista.open = true; });
+    window.addEventListener('afterprint', function () { lista.open = estaba; });
+})();
+</script>
+{% endblock %}

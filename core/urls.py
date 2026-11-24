@@ -20,6 +20,8 @@ urlpatterns = [
     path('', lambda request: redirect('informacion_tienda')),
     
     path('salidas/', include('salidas.urls')),
+    
+    path('caja/', include('caja.urls')),
 ]
 
 

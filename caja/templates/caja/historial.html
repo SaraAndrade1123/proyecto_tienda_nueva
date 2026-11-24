@@ -1,0 +1,384 @@
+{% extends 'layouts/base.html' %}
+{% load pesos caja_extras %}
+
+{% block title %}Historial de cierres - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .cj, .cj * { box-sizing: border-box; }
+    .cj {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1;
+        --red: #b91c1c; --link: #b91c1c;
+        --ok: #15803d; --ok-soft: #dcf3e3; --ok-ink: #14532d;
+        --warn: #a16207; --warn-soft: #fdf1cf; --warn-ink: #713f12;
+        --bad: #b91c1c; --bad-soft: #fde4e1; --bad-ink: #7f1d1d;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .cj {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29;
+        --red: #ef4444; --link: #f87171;
+        --ok: #4ade80; --ok-soft: #13281a; --ok-ink: #bbf7d0;
+        --warn: #facc15; --warn-soft: #2a2410; --warn-ink: #fde68a;
+        --bad: #f87171; --bad-soft: #2b1614; --bad-ink: #fecaca;
+    }
+    .cj-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .cj [hidden] { display: none !important; }
+
+    /* ---------- Banner rojo ---------- */
+    .cj-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.25rem 1.25rem 5.25rem; }
+    .cj-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 84% 28%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at 98% -15%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 92% 92%, rgba(69, 10, 10, .28) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 10rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 900px) { .cj-hero { padding: 1.75rem 2.5rem 5.5rem; } }
+    .cj-hero__in { position: relative; max-width: 72rem; margin: 0 auto; }
+    .cj-volver {
+        display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 1.1rem 0 .4rem;
+        font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none;
+        background: rgba(69, 10, 10, .3); border: 2px solid rgba(255, 255, 255, .3); border-radius: 999px;
+        transition: background-color .15s, border-color .15s;
+    }
+    .cj-volver span { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; color: #b91c1c; background: #fff; transition: transform .2s; }
+    .cj-volver svg { width: .9rem; height: .9rem; }
+    .cj-volver:hover { background: rgba(255, 255, 255, .14); border-color: #fff; }
+    .cj-volver:hover span { transform: translateX(-.15rem); }
+    .cj-volver:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .cj-cab { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
+    @media (min-width: 760px) { .cj-cab { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+    .cj-eti { margin: 0 0 .35rem; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+    .cj-hero h1 { margin: 0; font-size: clamp(2rem, 1.3rem + 3vw, 3.4rem); font-weight: 800; font-stretch: 108%; line-height: 1; letter-spacing: -.03em; }
+    .cj-cifra { display: grid; justify-items: end; text-align: right; }
+    .cj-cifra__t { font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+    .cj-cifra__n { font-size: clamp(2.5rem, 2rem + 2.4vw, 4rem); font-weight: 800; font-stretch: 80%; line-height: .95; font-variant-numeric: tabular-nums; }
+    @media (max-width: 759px) {
+        .cj-cifra { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding: .65rem 1rem; border-radius: 1.1rem; background: rgba(69, 10, 10, .3); }
+        .cj-cifra__n { font-size: 2rem; }
+    }
+
+    /* ---------- Filtros (encima del borde del banner) ---------- */
+    .cj-filtro { position: relative; z-index: 6; max-width: 72rem; margin: -3.4rem auto 0; padding: 0 .75rem; }
+    @media (min-width: 640px) { .cj-filtro { padding: 0 1.5rem; } }
+    @media (min-width: 900px) { .cj-filtro { padding: 0 2.5rem; } }
+    .cj-filtro__in {
+        display: grid; gap: .6rem; padding: .6rem; background: var(--card); border-radius: 1.6rem;
+        box-shadow: 0 1.1rem 2.2rem -1.3rem rgba(28, 25, 23, .5);
+    }
+    .cj-filtro__in { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: center; border-radius: 999px; gap: .45rem; padding: .45rem; }
+    .cj-bajar {
+        display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 2.9rem; padding: 0 1.1rem;
+        font-size: .9rem; font-weight: 800; color: #fff; text-decoration: none; background: #b91c1c; border-radius: 999px; transition: background-color .15s;
+    }
+    .cj-bajar:hover { background: #7f1d1d; }
+    .cj-bajar svg { width: 1rem; height: 1rem; }
+    @media (max-width: 559px) {                     /* celular: mes y descargar arriba, el día abajo */
+        .cj-filtro__in { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "mes csv" "dia dia"; border-radius: 1.6rem; }
+        .cj-drop--mes { grid-area: mes; }
+        .cj-drop--dia { grid-area: dia; }
+        .cj-bajar { grid-area: csv; width: 2.9rem; padding: 0; }
+        .cj-bajar__t { display: none; }
+    }
+
+    /* Lista desplegable de meses (propia, no la del navegador) */
+    .cj-drop { position: relative; }
+    .cj-drop__btn {
+        display: flex; align-items: center; gap: .5rem; width: 100%; min-height: 2.9rem; padding: 0 .9rem;
+        font: inherit; font-size: .9375rem; font-weight: 800; text-align: left; color: var(--ink); cursor: pointer;
+        background: var(--board); border: 0; border-radius: 999px;
+    }
+    .cj-drop__btn .ic { flex: none; width: 1.05rem; height: 1.05rem; color: var(--link); }
+    .cj-drop__btn span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cj-drop__btn .flecha { flex: none; width: 1rem; height: 1rem; color: var(--muted); transition: transform .2s; }
+    .cj-drop__btn[aria-expanded="true"] .flecha { transform: rotate(180deg); }
+    .cj-drop__btn:disabled { cursor: not-allowed; color: var(--muted); }
+    .cj-drop__btn:disabled .ic { color: var(--muted); }
+    .cj-drop.is-elegido .cj-drop__btn { color: #fff; background: #1c1917; }
+    .dark .cj-drop.is-elegido .cj-drop__btn { background: #44403c; }
+    .cj-drop.is-elegido .cj-drop__btn .ic, .cj-drop.is-elegido .cj-drop__btn .flecha { color: #fca5a5; }
+    @media (max-width: 559px) { .cj-drop__btn { font-size: .875rem; } }
+    .cj-drop__list {
+        position: absolute; left: 0; right: 0; top: calc(100% + .4rem); z-index: 30; max-height: 16rem; overflow-y: auto;
+        margin: 0; padding: .35rem; list-style: none; background: var(--card); border-radius: 1.1rem;
+        box-shadow: 0 1rem 2rem -.9rem rgba(0, 0, 0, .45), 0 0 0 1px var(--line);
+    }
+    .cj-drop__list li { padding: .65rem .85rem; border-radius: .75rem; font-size: .9375rem; cursor: pointer; }
+    .cj-drop__list li:first-letter { text-transform: uppercase; }
+    .cj-drop__list li[aria-selected="true"] { font-weight: 800; color: var(--link); }
+    .cj-drop__list li.is-activa { background: var(--board); }
+    .cj-drop select { width: 100%; min-height: 2.9rem; padding: 0 1rem; font: inherit; font-weight: 700; color: var(--ink); background: var(--board); border: 0; border-radius: 999px; }
+
+    /* ---------- Tablero ---------- */
+    .cj-wrap { position: relative; max-width: 72rem; margin: 1rem auto 0; padding: 0 .75rem 3rem; }
+    @media (min-width: 640px) { .cj-wrap { padding: 0 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .cj-wrap { padding: 0 2.5rem 4rem; } }
+    .cj-board { padding: 1rem; background: var(--board); border-radius: 1.75rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.1rem; }
+    @media (min-width: 640px) { .cj-board { padding: 1.5rem; border-radius: 2.25rem; } }
+
+    /* Encabezado de la lista */
+    .cj-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; }
+    .cj-head h2 { margin: 0; font-size: 1.125rem; font-weight: 800; }
+    /* Filas de cierres */
+    .cj-lista { margin: 0; padding: 0; list-style: none; display: grid; gap: .55rem; }
+    .cj-fila {
+        position: relative; display: grid; grid-template-columns: 3.75rem minmax(0, 1fr) auto; gap: .35rem .9rem; align-items: center;
+        padding: .75rem 1rem .75rem .75rem; background: var(--card); border-radius: 1.3rem; color: inherit; text-decoration: none;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .cj-fila:hover { transform: translateY(-2px); box-shadow: 0 .7rem 1.5rem -1.1rem rgba(28, 25, 23, .5); }
+    .cj-fila:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cj-dia { grid-row: 1 / span 2; display: grid; place-items: center; align-content: center; width: 3.75rem; height: 3.75rem; border-radius: 1rem; color: #fff; background: #b91c1c; line-height: 1; }
+    .cj-fila--sobrante .cj-dia { background: #a16207; }
+    .cj-fila--cuadra .cj-dia { background: #166534; }
+    .cj-dia b { font-size: 1.45rem; font-weight: 800; font-stretch: 85%; }
+    .cj-dia small { margin-top: .15rem; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .9; }
+    .cj-fila__q { min-width: 0; }
+    .cj-fila__d { margin: 0; font-size: .8125rem; font-weight: 700; color: var(--muted); }
+    .cj-fila__d::first-letter { text-transform: uppercase; }
+    .cj-fila__v { margin: .1rem 0 0; font-size: 1.0625rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cj-fila__v span { font-size: .8125rem; font-weight: 600; color: var(--muted); }
+    .cj-fila__p { grid-column: 2; margin: 0; font-size: .8125rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cj-fila__r { grid-column: 3; grid-row: 1 / span 2; display: grid; justify-items: end; gap: .3rem; text-align: right; }
+    .cj-fila__c { font-size: .8125rem; color: var(--muted); white-space: nowrap; }
+    .cj-fila__c b { color: var(--ink); font-variant-numeric: tabular-nums; }
+    .cj-res { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .75rem; border-radius: 999px; font-size: .8125rem; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .cj-res--cuadra { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-res--sobrante { color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-res--faltante { color: var(--bad-ink); background: var(--bad-soft); }
+    .cj-obs-ic { display: inline-block; width: .9rem; height: .9rem; vertical-align: -.15em; color: var(--muted); }
+    @media (max-width: 559px) {
+        .cj-fila { grid-template-columns: 3.25rem minmax(0, 1fr); padding: .7rem .8rem .8rem .7rem; }
+        .cj-dia { width: 3.25rem; height: 3.25rem; grid-row: 1 / span 2; }
+        .cj-fila__r { grid-column: 1 / -1; grid-row: auto; display: flex; align-items: center; justify-content: space-between; padding-top: .55rem; border-top: 1px dashed var(--line); }
+    }
+
+    /* Paginación */
+    .cj-pag { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; }
+    .cj-pag__info { margin: 0; font-size: .875rem; color: var(--muted); }
+    .cj-pag__info b { color: var(--ink); }
+    .cj-pag__nums { display: flex; flex-wrap: wrap; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+    .cj-pag__nums a, .cj-pag__nums span {
+        display: grid; place-items: center; min-width: 2.5rem; height: 2.5rem; padding: 0 .5rem; border-radius: 999px;
+        font-size: .9375rem; font-weight: 800; color: var(--ink); text-decoration: none;
+    }
+    .cj-pag__nums a { background: var(--card); box-shadow: inset 0 0 0 1px var(--line); transition: background-color .15s, color .15s; }
+    .cj-pag__nums a:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cj-pag__nums [aria-current="page"] { color: #fff; background: #b91c1c; }
+    .cj-pag__nums .gap { color: var(--muted); min-width: 1.25rem; }
+    .cj-pag__nums svg { width: 1rem; height: 1rem; }
+    .cj-pag__nums .off { opacity: .35; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); }
+    @media (max-width: 559px) { .cj-pag { justify-content: center; } .cj-pag__info { width: 100%; text-align: center; } }
+
+    .cj-vacio { display: grid; justify-items: center; gap: .6rem; padding: 2.5rem 1.25rem; text-align: center; background: var(--card); border-radius: 1.5rem; }
+    .cj-vacio svg { width: 2.75rem; height: 2.75rem; color: var(--line); }
+    .cj-vacio h3 { margin: 0; font-size: 1.125rem; font-weight: 800; }
+    .cj-vacio p { margin: 0; font-size: .9375rem; color: var(--muted); }
+    .cj-vacio a { color: var(--link); font-weight: 800; }
+    .cj a:focus-visible, .cj button:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+</style>
+
+<div class="cj">
+    <header class="cj-hero">
+        <div class="cj-hero__in">
+            <a class="cj-volver" href="{% url 'caja_hoy' %}">
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"></path></svg></span>
+                Caja de hoy
+            </a>
+            <div class="cj-cab">
+                <div>
+                    <p class="cj-eti">Caja</p>
+                    <h1>Historial de cierres</h1>
+                </div>
+                <div class="cj-cifra">
+                    <span class="cj-cifra__t">Cierres guardados</span>
+                    <span class="cj-cifra__n">{{ total_cierres }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="cj-filtro">
+        <form class="cj-filtro__in" method="get" id="filtros">
+            <div class="cj-drop cj-drop--mes{% if mes %} is-elegido{% endif %}" data-drop>
+                <label class="cj-sr" for="id_mes">Mes</label>
+                <select name="mes" id="id_mes">
+                    <option value="">Todos los meses</option>
+                    {% for m in meses %}<option value="{{ m.valor }}"{% if m.valor == mes %} selected{% endif %}>{{ m.texto|capfirst }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="cj-drop cj-drop--dia{% if dia %} is-elegido{% endif %}" data-drop>
+                <label class="cj-sr" for="id_dia">Día</label>
+                <select name="dia" id="id_dia"{% if not mes %} disabled{% endif %}>
+                    <option value="">{% if mes %}Todos los días{% else %}Elige un mes{% endif %}</option>
+                    {% for d in dias %}<option value="{{ d.valor }}"{% if d.valor == dia %} selected{% endif %}>{{ d.texto|capfirst }}</option>{% endfor %}
+                </select>
+            </div>
+            <noscript><button type="submit">Filtrar</button></noscript>
+            <a class="cj-bajar" href="?{{ csv_qs }}" download aria-label="Descargar Excel (CSV)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>
+                <span class="cj-bajar__t">Descargar CSV</span>
+            </a>
+        </form>
+    </div>
+
+    <div class="cj-wrap">
+        <section class="cj-board">
+            <div class="cj-head">
+                <h2>Cierres{% if pagina.paginator.count %} <span style="color:var(--muted);font-weight:700">· {{ pagina.paginator.count }}</span>{% endif %}</h2>
+            </div>
+
+            {% if cajas %}
+                <ul class="cj-lista">
+                    {% for c in cajas %}
+                        <li>
+                            <a class="cj-fila cj-fila--{{ c.resultado }}" href="{% url 'detalle_caja' c.id %}">
+                                <span class="cj-dia" aria-hidden="true"><b>{{ c.fecha|date:"j" }}</b><small>{{ c.fecha|date:"M" }}</small></span>
+                                <div class="cj-fila__q">
+                                    <p class="cj-fila__d">{{ c.fecha|date:"l j \d\e F Y" }}</p>
+                                    <p class="cj-fila__v">${{ c.ventas_total|pesos }} <span>vendido{% if c.ventas_cantidad %} en {{ c.ventas_cantidad }} venta{{ c.ventas_cantidad|pluralize }}{% endif %}</span></p>
+                                </div>
+                                <p class="cj-fila__p">Cerró {{ c.cerrada_por_nombre|default:"—" }} · {{ c.cerrada_en|time:"g:i a" }}{% if c.observacion %} · <svg class="cj-obs-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Tiene observación"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>{% endif %}</p>
+                                <div class="cj-fila__r">
+                                    <span class="cj-fila__c">Contado <b>${{ c.contado|pesos }}</b></span>
+                                    <span class="cj-res cj-res--{{ c.resultado }}">{% if c.resultado == 'cuadra' %}Cuadró{% elif c.resultado == 'sobrante' %}+${{ c.diferencia_abs|pesos }} sobrante{% else %}−${{ c.diferencia_abs|pesos }} faltante{% endif %}</span>
+                                </div>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                {% if pagina.paginator.num_pages > 1 %}
+                    <nav class="cj-pag" aria-label="Páginas de cierres">
+                        <p class="cj-pag__info">Del <b>{{ pagina.start_index }}</b> al <b>{{ pagina.end_index }}</b> de <b>{{ pagina.paginator.count }}</b></p>
+                        <ul class="cj-pag__nums">
+                            <li>
+                                {% if pagina.has_previous %}
+                                    <a href="?{{ base_qs }}&amp;pagina={{ pagina.previous_page_number }}" aria-label="Página anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+                                {% else %}
+                                    <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+                                {% endif %}
+                            </li>
+                            {% for n in rango_paginas %}
+                                <li>
+                                    {% if n == pagina.number %}<span aria-current="page">{{ n }}</span>
+                                    {% elif n == pagina.paginator.ELLIPSIS %}<span class="gap">…</span>
+                                    {% else %}<a href="?{{ base_qs }}&amp;pagina={{ n }}">{{ n }}</a>{% endif %}
+                                </li>
+                            {% endfor %}
+                            <li>
+                                {% if pagina.has_next %}
+                                    <a href="?{{ base_qs }}&amp;pagina={{ pagina.next_page_number }}" aria-label="Página siguiente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
+                                {% else %}
+                                    <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="cj-vacio">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>
+                    {% if hay_filtro %}
+                        <h3>No hay cierres con ese filtro</h3>
+                        <p><a href="{% url 'historial_cajas' %}">Ver todos los cierres</a></p>
+                    {% else %}
+                        <h3>Todavía no hay cierres</h3>
+                        <p>Cuando cierres la caja por primera vez, aparecerá aquí. <a href="{% url 'caja_hoy' %}">Ir a la caja de hoy</a></p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+(function () {
+    // Listas desplegables propias para el mes y el día; al elegir se filtra solo
+    var form = document.getElementById('filtros');
+    var selDia = document.getElementById('id_dia');
+    var iconos = {
+        id_mes: '<rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path>',
+        id_dia: '<rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"></path>'
+    };
+
+    document.querySelectorAll('.cj [data-drop]').forEach(function (caja) {
+        var select = caja.querySelector('select');
+        var id = select.id;
+        var boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'cj-drop__btn';
+        boton.id = id + '_btn';
+        boton.disabled = select.disabled;
+        boton.setAttribute('aria-haspopup', 'listbox');
+        boton.setAttribute('aria-expanded', 'false');
+        boton.setAttribute('aria-controls', id + '_lista');
+        boton.innerHTML = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + iconos[id] + '</svg><span></span><svg class="flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>';
+        caja.querySelector('label').setAttribute('for', boton.id);
+        var lista = document.createElement('ul');
+        lista.className = 'cj-drop__list';
+        lista.id = id + '_lista';
+        lista.setAttribute('role', 'listbox');
+        lista.hidden = true;
+        Array.prototype.forEach.call(select.options, function (op, i) {
+            var li = document.createElement('li');
+            li.setAttribute('role', 'option');
+            li.id = id + '_op' + i;
+            li.textContent = op.textContent;
+            lista.appendChild(li);
+        });
+        select.hidden = true;
+        select.tabIndex = -1;
+        caja.appendChild(boton);
+        caja.appendChild(lista);
+        var items = Array.prototype.slice.call(lista.children);
+        var activo = -1;
+
+        function pintar() {
+            boton.querySelector('span').textContent = select.options[select.selectedIndex].textContent;
+            items.forEach(function (li, i) { li.setAttribute('aria-selected', String(i === select.selectedIndex)); });
+        }
+        function marcar(i) {
+            items.forEach(function (li) { li.classList.remove('is-activa'); });
+            activo = Math.max(0, Math.min(items.length - 1, i));
+            items[activo].classList.add('is-activa');
+            items[activo].scrollIntoView({ block: 'nearest' });
+            boton.setAttribute('aria-activedescendant', items[activo].id);
+        }
+        function abrir() { lista.hidden = false; boton.setAttribute('aria-expanded', 'true'); marcar(select.selectedIndex); }
+        function cerrar() { lista.hidden = true; boton.setAttribute('aria-expanded', 'false'); boton.removeAttribute('aria-activedescendant'); }
+        function elegir(i) {
+            var cambio = i !== select.selectedIndex;
+            select.selectedIndex = i;
+            pintar();
+            cerrar();
+            if (!cambio) return;
+            if (id === 'id_mes' && selDia) selDia.disabled = true;   // otro mes: el día vuelve a «todos»
+            form.submit();
+        }
+        boton.addEventListener('click', function () { lista.hidden ? abrir() : cerrar(); });
+        boton.addEventListener('keydown', function (e) {
+            var abierto = !lista.hidden;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!abierto) { abrir(); return; }
+                marcar(activo + (e.key === 'ArrowDown' ? 1 : -1));
+            } else if (e.key === 'Home' && abierto) { e.preventDefault(); marcar(0); }
+            else if (e.key === 'End' && abierto) { e.preventDefault(); marcar(items.length - 1); }
+            else if ((e.key === 'Enter' || e.key === ' ') && abierto) { e.preventDefault(); elegir(activo); }
+            else if (e.key === 'Escape' && abierto) { e.preventDefault(); cerrar(); }
+            else if (e.key === 'Tab' && abierto) { cerrar(); }
+        });
+        lista.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        lista.addEventListener('click', function (e) { var li = e.target.closest('li'); if (li) elegir(items.indexOf(li)); });
+        lista.addEventListener('mousemove', function (e) { var li = e.target.closest('li'); if (li && items.indexOf(li) !== activo) marcar(items.indexOf(li)); });
+        document.addEventListener('click', function (e) { if (!caja.contains(e.target)) cerrar(); });
+        pintar();
+    });
+})();
+</script>
+{% endblock %}

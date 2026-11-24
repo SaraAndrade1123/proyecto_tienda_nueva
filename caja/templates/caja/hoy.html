@@ -1,0 +1,1254 @@
+{% extends 'layouts/base.html' %}
+{% load pesos caja_extras %}
+
+{% block title %}Caja de hoy - Tienda Nueva{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
+<style>
+    .cj, .cj * { box-sizing: border-box; }
+    .cj {
+        --page: #ffffff; --board: #fbf6f5; --card: #ffffff; --ink: #1c1917; --muted: #6b645e; --line: #ece4e1; --soft: #f6efed;
+        --red: #b91c1c; --link: #b91c1c;
+        --ok: #15803d; --ok-soft: #dcf3e3; --ok-ink: #14532d;
+        --warn: #a16207; --warn-soft: #fdf1cf; --warn-ink: #713f12;
+        --bad: #b91c1c; --bad-soft: #fde4e1; --bad-ink: #7f1d1d;
+        font-family: "Archivo", Verdana, Tahoma, sans-serif; color: var(--ink);
+    }
+    .dark .cj {
+        --page: #0f0f0f; --board: #151515; --card: #1d1c1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #2e2b29; --soft: #242220;
+        --red: #ef4444; --link: #f87171;
+        --ok: #4ade80; --ok-soft: #13281a; --ok-ink: #bbf7d0;
+        --warn: #facc15; --warn-soft: #2a2410; --warn-ink: #fde68a;
+        --bad: #f87171; --bad-soft: #2b1614; --bad-ink: #fecaca;
+    }
+    .cj-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .cj [hidden] { display: none !important; }
+
+    /* ---------- Banner rojo ---------- */
+    .cj-hero { position: relative; overflow: hidden; color: #fff; background: #b91c1c; padding: 1.25rem 1.25rem 4.5rem; }
+    .cj-hero::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background:
+            radial-gradient(circle 2.25rem at 84% 28%, rgba(254, 205, 205, .17) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at 98% -15%, rgba(254, 205, 205, .1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 92% 92%, rgba(69, 10, 10, .28) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 10rem at -6% 110%, rgba(127, 29, 29, .55) calc(100% - 1px), transparent 100%);
+    }
+    @media (min-width: 900px) { .cj-hero { padding: 1.75rem 2.5rem 5rem; } }
+    .cj-hero__in { position: relative; max-width: 72rem; margin: 0 auto; }
+    .cj-top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .cj-eti { min-width: 0; margin: 0; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+    .cj-pill {
+        flex: none; display: inline-flex; align-items: center; gap: .5rem; height: 2.5rem; padding: 0 1rem 0 .85rem;
+        font-size: .875rem; font-weight: 800; color: #fff; text-decoration: none;
+        background: rgba(255, 255, 255, .14); border: 0; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25);
+        transition: background-color .15s, box-shadow .15s;
+    }
+    .cj-pill span { display: grid; place-items: center; }
+    .cj-pill svg { width: 1.1rem; height: 1.1rem; }
+    .cj-pill:hover { background: rgba(255, 255, 255, .26); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
+    .cj-pill:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    .cj-cab { display: grid; gap: 1.25rem; margin-top: 1.4rem; }
+    @media (min-width: 760px) { .cj-cab { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+    .cj-hero h1 { margin: 0; font-size: clamp(2rem, 1.3rem + 3vw, 3.4rem); font-weight: 800; font-stretch: 108%; line-height: 1; letter-spacing: -.03em; }
+    .cj-sub { margin: .6rem 0 0; font-size: 1rem; font-weight: 600; opacity: .92; }
+    .cj-cifra { display: grid; justify-items: end; text-align: right; }
+    .cj-cifra__t { font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+    .cj-cifra__n { font-size: clamp(2.5rem, 2rem + 2.4vw, 4rem); font-weight: 800; font-stretch: 80%; line-height: .95; font-variant-numeric: tabular-nums; }
+    .cj-cifra__v { margin-top: .4rem; padding-top: .45rem; border-top: 2px dashed rgba(255, 255, 255, .35); justify-self: stretch; font-size: .9375rem; font-weight: 600; }
+    @media (max-width: 759px) {
+        .cj-cifra { display: flex; align-items: center; justify-content: space-between; gap: .75rem; text-align: left; padding: .75rem 1rem; border-radius: 1.1rem; background: rgba(69, 10, 10, .3); }
+        .cj-cifra__n { font-size: 2.1rem; }
+        .cj-cifra__v { margin: 0; padding: 0; border: 0; text-align: right; font-size: .8125rem; line-height: 1.25; max-width: 9rem; }
+    }
+
+    /* ---------- Tablero ---------- */
+    .cj-wrap { position: relative; max-width: 72rem; margin: -2.75rem auto 0; padding: 0 .75rem 3rem; }
+    @media (min-width: 640px) { .cj-wrap { padding: 0 1.5rem 3.5rem; } }
+    @media (min-width: 900px) { .cj-wrap { padding: 0 2.5rem 4rem; } }
+    .cj-board { padding: 1rem; background: var(--board); border-radius: 1.75rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 640px) { .cj-board { padding: 1.5rem; border-radius: 2.25rem; } }
+
+    /* Avisos: flotan arriba, debajo del encabezado, y se van solos a los 5 segundos (o al tocarlos) */
+    .cj-msgs {
+        position: fixed; z-index: 70; top: 4.75rem; left: 50%; transform: translateX(-50%);
+        display: grid; gap: .5rem; width: min(25rem, calc(100% - 1.5rem)); pointer-events: none;
+    }
+    .cj-msg {
+        --tono: #b91c1c;
+        position: relative; overflow: hidden; display: flex; align-items: center; gap: .65rem; padding: .7rem .95rem .75rem .7rem;
+        font-size: .875rem; font-weight: 700; line-height: 1.35; color: var(--ink); background: var(--card);
+        border-radius: 1rem; box-shadow: 0 0 0 1px var(--line), 0 1rem 2rem -.8rem rgba(0, 0, 0, .45);
+        pointer-events: auto; cursor: pointer; transition: opacity .3s, transform .3s;
+        animation: cj-msg-entra .35s cubic-bezier(.2, .8, .2, 1.1);
+    }
+    .cj-msg.is-success { --tono: #16a34a; }
+    .cj-msg.is-info { --tono: #57534e; }
+    .cj-msg__ic { flex: none; display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; color: #fff; background: var(--tono); }
+    .cj-msg__ic svg { width: .85rem; height: .85rem; }
+    .cj-msg__t { flex: 1; min-width: 0; }
+    .cj-msg__barra { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--tono); transform-origin: left; animation: cj-msg-barra 5s linear forwards; }
+    .cj-msg.se-va { opacity: 0; transform: translateY(-.6rem); pointer-events: none; }
+    @keyframes cj-msg-entra { from { opacity: 0; transform: translateY(-.8rem) scale(.97); } to { opacity: 1; transform: none; } }
+    @keyframes cj-msg-barra { to { transform: scaleX(0); } }
+    @media (prefers-reduced-motion: reduce) { .cj-msg { animation: none; } }
+
+    .cj-grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 860px) { .cj-grid2 { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; } }
+    .cj-col { display: grid; gap: 1rem; min-width: 0; }
+    @media (max-width: 859px) {
+        .cj-col--celu { display: contents; }
+        .cj-orden-1 { order: 1; } .cj-orden-2 { order: 2; } .cj-orden-3 { order: 3; } .cj-orden-4 { order: 4; }
+    }
+    .cj-card { padding: 1.15rem 1.25rem 1.3rem; background: var(--card); border-radius: 1.4rem; min-width: 0; }
+    .cj-card h2 { display: flex; align-items: center; gap: .55rem; margin: 0 0 .85rem; font-size: 1.0625rem; font-weight: 800; }
+    .cj-card h2 > span { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .7rem; color: var(--link); background: var(--board); }
+    .cj-card h2 svg { width: 1rem; height: 1rem; }
+    .cj-ayuda { margin: -.35rem 0 1rem; font-size: .9375rem; line-height: 1.45; color: var(--muted); }
+
+    /* Aviso amarillo */
+    .cj-aviso { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; padding: 1rem 1.15rem; border-radius: 1.25rem; color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-aviso svg { flex: none; width: 1.5rem; height: 1.5rem; }
+    .cj-aviso p { flex: 1 1 14rem; margin: 0; font-size: .9375rem; line-height: 1.45; }
+    .cj-aviso strong { font-weight: 800; }
+
+    /* ---------- Botones ---------- */
+    .cj-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: 0 1.25rem;
+        font: inherit; font-size: .9375rem; font-weight: 800; color: #fff; text-decoration: none; cursor: pointer;
+        background: #b91c1c; border: 0; border-radius: 999px; transition: background-color .15s, transform .15s;
+    }
+    .cj-btn svg { width: 1.05rem; height: 1.05rem; }
+    .cj-btn:hover { background: #7f1d1d; }
+    .cj-btn:active { transform: scale(.98); }
+    .cj-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .cj-btn--grande { width: 100%; min-height: 3.25rem; font-size: 1.0625rem; }
+    .cj-btn--linea { color: var(--ink); background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
+    .cj-btn--linea:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cj-btn--aviso { color: #fff; background: #92400e; }
+    .cj-btn--aviso:hover { background: #78350f; }
+    .cj a:focus-visible, .cj button:focus-visible, .cj input:focus-visible, .cj textarea:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cj .cj-plata input:focus-visible { outline: none; }   /* el borde rojo ya lo pone la caja de afuera */
+
+    /* ---------- Campos ---------- */
+    .cj-campo { display: grid; grid-template-columns: minmax(0, 1fr); gap: .35rem; margin-bottom: .9rem; }
+    .cj-campo > label, .cj-campo > .cj-lab { font-size: .875rem; font-weight: 800; }
+    .cj-campo > input[type="text"], .cj-campo > textarea {
+        width: 100%; min-height: 2.9rem; padding: .65rem .95rem; font: inherit; font-size: 1rem; color: var(--ink);
+        background: var(--page); border: 2px solid var(--line); border-radius: 1rem; outline: none; transition: border-color .15s;
+    }
+    .cj-campo textarea { resize: vertical; min-height: 5rem; }
+    .cj-campo > input:focus, .cj-campo > textarea:focus { border-color: var(--red); }
+    .cj-err { margin: 0; font-size: .875rem; font-weight: 700; color: var(--bad); }
+    .cj-campo.is-error > input, .cj-campo.is-error > textarea, .cj-campo.is-error .cj-plata { border-color: var(--bad); }
+
+    /* Caja grande de plata: «$ 50.000» */
+    .cj-plata {
+        display: flex; align-items: center; gap: .35rem; padding: 0 1.1rem; min-height: 4.25rem;
+        background: var(--page); border: 2px solid var(--line); border-radius: 1.25rem; transition: border-color .15s;
+    }
+    .cj-plata:focus-within { border-color: var(--red); }
+    .cj-plata b { font-size: 1.75rem; font-weight: 800; color: var(--muted); }
+    .cj-plata input {
+        flex: 1; width: 100%; min-width: 0; height: 4rem; padding: 0; font: inherit; font-size: 2rem; font-weight: 800; font-stretch: 90%;
+        font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; outline: none;
+    }
+    .cj-plata--chica { min-height: 3rem; border-radius: 1rem; }
+    .cj-plata--chica b { font-size: 1.15rem; }
+    .cj-plata--chica input { height: 2.75rem; font-size: 1.125rem; font-weight: 700; font-stretch: 100%; }
+
+
+    .cj-pill__t { font-weight: inherit; }
+    @media (max-width: 479px) {                     /* celular: el botón del historial queda solo con el ícono */
+        .cj-pill { width: 2.5rem; padding: 0; justify-content: center; }
+        .cj-pill__t { display: none; }
+    }
+
+    /* =====================================================================
+       «Abre la caja»: cabe en UNA pantalla, sin scroll, en PC y en celular.
+       Si la pantalla es bajita se van escondiendo las ayudas (el monto y el botón siempre se ven).
+       ===================================================================== */
+    body:has(.cj--pantalla) > footer { display: none; }          /* solo en esta vista */
+    .cj--pantalla { display: flex; flex-direction: column; height: calc(100dvh - 4rem); min-height: 0; }
+    .cj--pantalla .cj-hero { flex: none; padding: 1rem 1.25rem 3rem; }
+    @media (min-width: 900px) { .cj--pantalla .cj-hero { padding: 1.4rem 2.5rem 3.75rem; } }
+    .cj--pantalla .cj-cab { margin-top: .8rem; }
+    .cj--pantalla .cj-hero h1 { font-size: clamp(2rem, 1.4rem + 2.4vw, 3.1rem); }
+    .cj--pantalla .cj-sub { margin-top: .45rem; font-size: .9375rem; }
+    .cj--pantalla .cj-wrap { flex: 1 1 auto; min-height: 0; margin-top: -2.25rem; padding-bottom: 1rem; }
+    @media (min-width: 900px) { .cj--pantalla .cj-wrap { margin-top: -2.5rem; } }
+    .cj-titulo { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .cj-titulo h1 { min-width: 0; }
+    /* La parte del centro sin el «tablero» de fondo: solo las tarjetas, más angosta en PC */
+    .cj--pantalla .cj-hero__in { max-width: 58rem; }
+    @media (min-width: 900px) { .cj--pantalla .cj-wrap { max-width: 63rem; } }   /* 58rem + el margen de los lados: alineado con el título */
+    .cj--pantalla .cj-board { gap: .75rem; padding: 0; background: transparent; border-radius: 0; }
+    .cj--pantalla .cj-card { box-shadow: 0 .75rem 2rem -1.25rem rgba(28, 25, 23, .45); }
+    .dark .cj--pantalla .cj-card { box-shadow: 0 0 0 1px var(--line); }
+
+    /* Dibujo de la caja registradora en el banner (solo en pantallas grandes) */
+    .cj-registradora { display: none; }
+    @media (min-width: 900px) and (min-height: 600px) {
+        .cj-registradora {
+            display: block; position: absolute; right: 13rem; bottom: -1.75rem; width: 8.5rem; height: auto;
+            color: #fff; opacity: .2; transform: rotate(-6deg); pointer-events: none;
+        }
+    }
+
+    .cj-apertura { gap: .75rem; }
+    @media (min-width: 860px) { .cj-apertura { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1rem; } }
+
+    /* La tarjeta para abrir */
+    .cj-abrir { display: grid; gap: .75rem; padding: 1rem 1.1rem 1.1rem; }
+    .cj-abrir__cab { display: flex; align-items: center; gap: .7rem; }
+    .cj-abrir__ic { flex: none; display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: .75rem; color: #fff; background: #b91c1c; }
+    .cj-abrir__ic svg { width: 1.05rem; height: 1.05rem; }
+    .cj-abrir h2 { margin: 0; font-size: 1.0625rem; font-weight: 800; line-height: 1.2; }
+    .cj-abrir .cj-ayuda { margin: .15rem 0 0; font-size: .8125rem; line-height: 1.35; }
+
+    /* La «pantallita» de caja registradora donde se escribe el monto */
+    .cj-display {
+        display: grid; gap: 0; padding: .55rem 1rem .6rem; cursor: text;
+        color: #fff; background-color: #1c1917; border-radius: 1rem;
+        background-image: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 45%);
+        box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .35), 0 .9rem 1.6rem -1.1rem rgba(28, 25, 23, .7);
+        transition: box-shadow .2s;
+    }
+    .dark .cj-display { background-color: #0a0a0a; box-shadow: inset 0 0 0 1px #2e2b29, inset 0 -3px 0 rgba(0, 0, 0, .5); }
+    .cj-display:focus-within { box-shadow: 0 0 0 3px #ef4444, 0 .9rem 1.6rem -1.1rem rgba(185, 28, 28, .7); }
+    .cj-display.is-error { box-shadow: 0 0 0 3px #f87171; }
+    .cj-display__eti { display: flex; align-items: center; gap: .45rem; font-size: .625rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #a8a29e; }
+    .cj-display__eti i { width: .5rem; height: .5rem; border-radius: 50%; background: #57534e; transition: background-color .2s, box-shadow .2s; }
+    .cj-display.tiene i { background: #4ade80; box-shadow: 0 0 .5rem #4ade80; }      /* «lucecita» verde cuando ya hay un monto */
+    .cj-display__fila { display: flex; align-items: baseline; gap: .45rem; min-width: 0; }
+    .cj-display__fila b { font-size: 1.3rem; font-weight: 800; color: #fca5a5; }
+    .cj-display input {
+        flex: 1; width: 100%; min-width: 0; height: auto; padding: 0; font: inherit; line-height: 1.15;
+        font-size: clamp(1.8rem, 1.5rem + 1vw, 2.4rem); font-weight: 800; font-stretch: 85%; letter-spacing: .01em;
+        font-variant-numeric: tabular-nums; color: #fff; caret-color: #ef4444; background: transparent; border: 0; outline: 0;
+    }
+    .cj-display input::placeholder { color: #57534e; }
+    .cj .cj-display input:focus-visible { outline: none; }
+    .cj-display small { font-size: .75rem; font-weight: 800; letter-spacing: .1em; color: #78716c; }
+
+    /* Sugerencia: usar lo del último cierre */
+    .cj-sug {
+        display: flex; align-items: center; gap: .6rem; width: 100%; padding: .6rem .85rem;
+        font: inherit; font-size: .875rem; font-weight: 600; text-align: left; color: var(--ink); cursor: pointer;
+        background: var(--board); border: 0; border-radius: 1rem; transition: box-shadow .15s, background-color .15s;
+    }
+    .cj-sug svg { flex: none; width: 1.15rem; height: 1.15rem; color: var(--link); }
+    .cj-sug span { flex: 1; min-width: 0; }
+    .cj-sug b { flex: none; font-weight: 800; color: var(--link); font-variant-numeric: tabular-nums; }
+    .cj-sug:hover { box-shadow: inset 0 0 0 2px var(--red); }
+    .cj-sug__corto { display: none; }
+
+    .cj-abrir__btn { min-height: 2.9rem; font-size: 1rem; box-shadow: 0 .7rem 1.2rem -.9rem rgba(185, 28, 28, .9); }
+    .cj-abrir__btn .cj-candado { transform-origin: 17px 11px; transition: transform .25s ease; }
+    .cj-abrir__btn:hover .cj-candado { transform: translateY(-1.5px) rotate(12deg); }
+
+    /* Ventas que ya van hoy */
+    .cj-hoyva { display: flex; align-items: center; gap: .85rem; padding: .85rem 1.1rem; }
+    .cj-hoyva__ic { flex: none; display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: .9rem; color: #fff; background: #1c1917; }
+    .dark .cj-hoyva__ic { background: #44403c; }
+    .cj-hoyva__ic svg { width: 1.2rem; height: 1.2rem; }
+    .cj-hoyva p { margin: 0; }
+    .cj-hoyva__n { font-size: .9375rem; font-weight: 700; }
+    .cj-hoyva__n b { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cj-hoyva__n span { font-weight: 800; color: var(--link); font-variant-numeric: tabular-nums; }
+    .cj-hoyva__d { font-size: .8125rem; color: var(--muted); }
+
+    /* Así funciona el día: una línea de tiempo con el paso actual resaltado */
+    .cj-como { padding: 1rem 1.15rem 1.1rem; }
+    .cj-como h2 { margin: 0 0 .75rem; font-size: 1rem; font-weight: 800; }
+    .cj-linea { position: relative; margin: 0; padding: 0; list-style: none; display: grid; gap: .8rem; }
+    .cj-linea li { position: relative; display: grid; grid-template-columns: 2.1rem minmax(0, 1fr); gap: .75rem; align-items: start; }
+    .cj-linea li:not(:last-child)::after {                      /* la rayita que une un paso con el siguiente */
+        content: ""; position: absolute; left: calc(1.05rem - 1px); top: 2.2rem; bottom: -.75rem;
+        border-left: 2px dashed var(--line);
+    }
+    .cj-linea__n {
+        position: relative; z-index: 1; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 50%;
+        font-size: .875rem; font-weight: 800; color: var(--muted); background: var(--card); box-shadow: inset 0 0 0 2px var(--line);
+    }
+    .cj-linea li.is-ahora .cj-linea__n { color: #fff; background: #b91c1c; box-shadow: 0 0 0 4px rgba(185, 28, 28, .18); }
+    .cj-linea strong { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .3rem; font-size: .9375rem; font-weight: 800; color: var(--ink); }
+    .cj-linea strong small { padding: .1rem .5rem; border-radius: 999px; font-size: .6875rem; font-weight: 800; color: #b91c1c; background: #fde4e1; }
+    .dark .cj-linea strong small { color: #fecaca; background: #2b1614; }
+    .cj-linea em { display: block; margin-top: .15rem; font-style: normal; font-size: .8125rem; line-height: 1.4; color: var(--muted); }
+
+    /* Celular y tablet: los 3 pasos en una fila, unidos por una línea, solo con el título */
+    @media (max-width: 859px) {
+        .cj-como { padding: .85rem .75rem .8rem; }
+        .cj-como h2 { display: none; }
+        .cj-linea { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+        .cj-linea li { grid-template-columns: 1fr; justify-items: center; gap: .35rem; text-align: center; }
+        .cj-linea li:not(:last-child)::after { left: calc(50% + 1.25rem); right: calc(-50% + 1.25rem); top: 1.05rem; bottom: auto; border-left: 0; border-top: 2px dashed var(--line); }
+        .cj-linea strong { justify-content: center; margin: 0; font-size: .8125rem; line-height: 1.2; }
+        .cj-linea strong small { display: none; }
+        .cj-linea em { display: none; }
+        .cj-hoyva { padding: .6rem .85rem; gap: .7rem; }
+        .cj-hoyva__ic { width: 2.1rem; height: 2.1rem; border-radius: .75rem; }
+        .cj-hoyva__ic svg { width: 1rem; height: 1rem; }
+        .cj-hoyva__n b { font-size: 1.1rem; }
+        .cj-hoyva__d { display: none; }
+        .cj-abrir { gap: .6rem; padding: .85rem .9rem .9rem; }
+        .cj-apertura { gap: .6rem; }
+        .cj-apertura .cj-col { gap: .6rem; }
+    }
+    @media (max-width: 479px) {
+        .cj-sub__mas { display: none; }
+        .cj-abrir h2 { font-size: .9375rem; }
+        .cj-abrir__ic, .cj-abrir .cj-ayuda { display: none; }     /* celular: solo la pregunta, en una línea */
+        .cj-sug__largo { display: none; }
+        .cj-sug__corto { display: inline; }
+        .cj-display { padding: .5rem .85rem .55rem; }
+        .cj-display input { font-size: 1.75rem; }
+        .cj-sug { font-size: .8125rem; padding: .55rem .75rem; }
+    }
+
+
+    /* Pantallas bajitas: fuera las ayudas, primero lo menos importante */
+    @media (max-height: 760px) {
+        .cj--pantalla .cj-abrir .cj-ayuda { display: none; }
+    }
+    @media (max-height: 660px) {
+        .cj--pantalla .cj-linea em { display: none; }
+        .cj--pantalla .cj-linea { gap: .6rem; }
+        .cj--pantalla .cj-linea strong { margin-top: .45rem; }
+    }
+    @media (max-height: 640px) {
+        .cj--pantalla .cj-sub { display: none; }
+    }
+    @media (max-height: 600px) {
+        .cj--pantalla .cj-hoyva { display: none; }
+    }
+    @media (max-height: 560px) {
+        .cj--pantalla .cj-como { display: none; }
+        .cj--pantalla .cj-hero h1 { font-size: 1.9rem; }
+    }
+    @media (max-height: 460px) {
+        .cj--pantalla .cj-cab { margin-top: .4rem; }
+        .cj--pantalla .cj-hero { padding-top: .6rem; padding-bottom: 2.75rem; }
+        .cj--pantalla .cj-hero h1 { font-size: 1.6rem; }
+        .cj--pantalla .cj-abrir__cab { display: none; }
+        .cj--pantalla .cj-abrir { gap: .6rem; }
+        .cj--pantalla .cj-display input { font-size: 1.9rem; }
+        .cj--pantalla .cj-abrir__btn { min-height: 2.9rem; }
+    }
+    @media (max-height: 360px) {
+        .cj--pantalla .cj-hero { padding: .5rem 1.25rem 2.5rem; }
+        .cj--pantalla .cj-cab { margin-top: 0; }
+        .cj--pantalla .cj-hero h1 { font-size: 1.35rem; }
+        .cj--pantalla .cj-pill { width: 2rem; height: 2rem; }
+        .cj--pantalla .cj-wrap { padding-bottom: .25rem; }
+        .cj--pantalla .cj-abrir { padding: .75rem; }
+        .cj--pantalla .cj-display { padding: .45rem .9rem .5rem; }
+        .cj--pantalla .cj-display input { font-size: 1.6rem; }
+        .cj--pantalla .cj-sug { padding: .4rem .7rem; }
+        .cj--pantalla .cj-abrir__btn { min-height: 2.6rem; }
+    }
+    @media (max-height: 320px) {
+        .cj--pantalla .cj-sug { display: none; }
+    }
+    /* Celular acostado: el monto y el botón lado a lado */
+    @media (max-height: 460px) and (min-width: 600px) {
+        .cj--pantalla .cj-abrir { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "d b" "e e" "s s"; align-items: stretch; }
+        .cj--pantalla .cj-display { grid-area: d; }
+        .cj--pantalla .cj-abrir .cj-err { grid-area: e; }
+        .cj--pantalla .cj-sug { grid-area: s; }
+        .cj--pantalla .cj-abrir__btn { grid-area: b; min-height: 0; padding: 0 1.6rem; }
+    }
+
+    /* ---------- Cuadros de resumen ---------- */
+    .cj-estado { display: flex; align-items: center; gap: .65rem; min-width: 0; padding: .1rem .15rem; font-size: .875rem; color: var(--muted); }
+    .cj-estado b { font-weight: 800; color: var(--ink); }
+    .cj-estado__vivo {
+        flex: none; display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem .3rem .6rem; border-radius: 999px;
+        font-size: .75rem; font-weight: 800; color: var(--ok-ink); background: var(--ok-soft);
+    }
+    .cj-estado__vivo::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: #16a34a; animation: cj-late 2s ease-out infinite; }
+    @keyframes cj-late { from { box-shadow: 0 0 0 0 rgba(22, 163, 74, .55); } 70%, to { box-shadow: 0 0 0 .4rem rgba(22, 163, 74, 0); } }
+    .cj-estado__quien { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .cj-estado__base { flex: none; white-space: nowrap; }
+    @media (max-width: 419px) { .cj-estado__base { display: none; } }      /* la base ya sale arriba, en el banner */
+
+    .cj-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+    @media (min-width: 900px) { .cj-tiles { gap: .75rem; } }
+    .cj-tile {
+        position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "ic t" "ic n" "ic d";
+        column-gap: .7rem; align-items: center; padding: .7rem 1.6rem .7rem .8rem; min-width: 0;
+        color: inherit; text-decoration: none; background: var(--card); border-radius: 1rem;
+    }
+    .cj-tile__ic { grid-area: ic; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: .7rem; color: #fff; background: #292524; }
+    .dark .cj-tile__ic { background: #44403c; }
+    .cj-tile--consumos .cj-tile__ic, .dark .cj-tile--consumos .cj-tile__ic { background: #9f1239; }
+    .cj-tile--salidas .cj-tile__ic, .dark .cj-tile--salidas .cj-tile__ic { background: #b91c1c; }
+    .cj-tile__ic svg { width: 1rem; height: 1rem; }
+    .cj-tile__t { grid-area: t; font-size: .75rem; font-weight: 700; line-height: 1.2; color: var(--muted); }
+    .cj-tile__n { grid-area: n; font-size: 1.125rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .cj-tile__d { grid-area: d; font-size: .72rem; color: var(--muted); line-height: 1.3; }
+    a.cj-tile { transition: transform .15s, box-shadow .15s; }
+    a.cj-tile:hover { transform: translateY(-2px); box-shadow: 0 .6rem 1.4rem -1rem rgba(28, 25, 23, .45); }
+    a.cj-tile::after {
+        content: ""; position: absolute; top: 50%; right: .8rem; width: .4rem; height: .4rem; margin-top: -.2rem;
+        border-top: 2px solid var(--muted); border-right: 2px solid var(--muted); transform: rotate(45deg); opacity: .5;
+    }
+    @media (max-width: 599px) {                     /* celular: 3 cuadritos en una fila */
+        .cj-tile { grid-template-columns: minmax(0, 1fr); grid-template-areas: "ic" "t" "n"; row-gap: .15rem; padding: .6rem .65rem; }
+        .cj-tile__ic { width: 1.7rem; height: 1.7rem; margin-bottom: .15rem; border-radius: .55rem; }
+        .cj-tile__ic svg { width: .85rem; height: .85rem; }
+        .cj-tile__mas, .cj-tile__d { display: none; }
+        .cj-tile__n { font-size: 1rem; }
+        a.cj-tile::after { top: .9rem; margin-top: 0; right: .65rem; }
+    }
+
+    /* Botón que despliega el formulario del pago a proveedor */
+    .cj-desp { margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--board); }
+    .cj-desp > summary {
+        list-style: none; display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.75rem; padding: 0 1.1rem;
+        font-size: .9375rem; font-weight: 800; color: var(--ink); cursor: pointer; background: var(--card);
+        border-radius: 999px; box-shadow: inset 0 0 0 2px var(--line); transition: color .15s, background-color .15s, box-shadow .15s;
+    }
+    .cj-desp > summary::-webkit-details-marker { display: none; }
+    .cj-desp > summary svg { width: 1rem; height: 1rem; transition: transform .25s ease; }
+    .cj-desp > summary:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cj-desp > summary:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cj-desp[open] > summary { color: var(--muted); background: var(--board); box-shadow: none; }
+    .cj-desp[open] > summary:hover { color: var(--ink); }
+    .cj-desp[open] > summary svg { transform: rotate(45deg); }
+    .cj-desp:not([open]) .cj-desp__cerrar, .cj-desp[open] .cj-desp__abrir { display: none; }
+    @media (max-width: 379px) { .cj-desp__mas { display: none; } }
+    .cj-desp .cj-pago { margin-top: .9rem; padding-top: 0; border-top: 0; animation: cj-baja .25s ease-out; }
+    @keyframes cj-baja { from { opacity: 0; transform: translateY(-.4rem); } to { opacity: 1; transform: none; } }
+
+    .cj-nota { margin: .85rem 0 0; font-size: .875rem; line-height: 1.45; color: var(--muted); }
+
+    /* Listas (ventas y pagos) */
+    .cj-lista { margin: 0; padding: 0; list-style: none; display: grid; }
+    .cj-lista > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem .75rem; align-items: center; padding: .7rem 0; }
+    .cj-lista > li + li { border-top: 1px dashed var(--line); }
+    .cj-lista__n { font-size: .9375rem; font-weight: 800; overflow-wrap: anywhere; }
+    .cj-lista__d { grid-column: 1; font-size: .8125rem; color: var(--muted); overflow-wrap: anywhere; }
+    .cj-lista__v { grid-column: 2; grid-row: 1 / span 2; display: flex; align-items: center; gap: .35rem; font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cj-metodo { display: inline-block; padding: .05rem .45rem; border-radius: 999px; font-size: .72rem; font-weight: 800; color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-metodo--transferencia { color: #1e3a8a; background: #dbeafe; }
+    .dark .cj-metodo--transferencia { color: #bfdbfe; background: #172554; }
+    .cj-metodo--mixto { color: var(--warn-ink); background: var(--warn-soft); }
+    /* Ventas de 5 en 5 */
+    .cj-ventas { scroll-margin-top: 5rem; }                 /* que el encabezado rojo no la tape al saltar */
+    .cj-ventas[aria-busy="true"] .cj-lista { opacity: .45; transition: opacity .15s; }
+    .cj-ventas .cj-lista.entra { animation: cj-baja .25s ease-out; }
+    .cj-pag { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; margin-top: .6rem; padding-top: .9rem; border-top: 2px solid var(--board); }
+    .cj-pag__info { margin: 0; font-size: .8125rem; color: var(--muted); }
+    .cj-pag__info b { color: var(--ink); }
+    .cj-pag__nums { display: flex; align-items: center; gap: .3rem; list-style: none; margin: 0; padding: 0; }
+    .cj-pag__nums a, .cj-pag__nums span {
+        display: grid; place-items: center; min-width: 2.25rem; height: 2.25rem; padding: 0 .45rem; border-radius: 999px;
+        font-size: .875rem; font-weight: 800; color: var(--ink); text-decoration: none;
+    }
+    .cj-pag__nums a { background: var(--card); box-shadow: inset 0 0 0 2px var(--line); transition: background-color .15s, color .15s, box-shadow .15s; }
+    .cj-pag__nums a:hover { color: #fff; background: #b91c1c; box-shadow: none; }
+    .cj-pag__nums [aria-current="page"] { color: #fff; background: #b91c1c; outline: none; }
+    .cj-pag__nums .gap { min-width: 1.1rem; padding: 0; color: var(--muted); }
+    .cj-pag__nums .off { opacity: .35; box-shadow: inset 0 0 0 2px var(--line); }
+    .cj-pag__nums svg { width: .95rem; height: .95rem; }
+    .cj-pag__yo { display: none; }
+    @media (max-width: 559px) {                     /* celular: ‹ 2 de 3 › */
+        .cj-pag { justify-content: center; }
+        .cj-pag__info, .cj-pag__num { display: none; }
+        .cj-pag__nums { width: 100%; justify-content: space-between; }
+        .cj-pag__nums a, .cj-pag__nums span { min-width: 2.75rem; height: 2.75rem; }
+        .cj-pag__yo { display: block; font-size: .875rem; font-weight: 800; color: var(--muted); }
+    }
+    .cj-vacio { margin: 0; padding: 1.1rem; text-align: center; font-size: .9375rem; color: var(--muted); border: 2px dashed var(--line); border-radius: 1rem; }
+
+    /* Quitar un pago: primero el tacho, luego «¿Seguro?» */
+    .cj-quitar { position: relative; }
+    .cj-quitar summary {
+        list-style: none; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 50%; cursor: pointer;
+        color: var(--muted); transition: background-color .15s, color .15s;
+    }
+    .cj-quitar summary::-webkit-details-marker { display: none; }
+    .cj-quitar summary:hover, .cj-quitar[open] summary { color: #fff; background: #b91c1c; }
+    .cj-quitar summary svg { width: 1rem; height: 1rem; }
+    .cj-quitar form { position: absolute; right: 0; top: calc(100% + .35rem); z-index: 5; display: grid; gap: .5rem; width: 12.5rem; padding: .8rem; background: var(--card); border-radius: 1rem; box-shadow: 0 .9rem 2rem -.8rem rgba(0, 0, 0, .45), 0 0 0 1px var(--line); }
+    .cj-quitar form p { margin: 0; font-size: .875rem; font-weight: 600; }
+    .cj-quitar .cj-btn { min-height: 2.35rem; font-size: .875rem; }
+
+    /* Formulario de pago */
+    .cj-pago { margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--board); }
+    .cj-pago__t { margin: 0 0 .75rem; font-size: .9375rem; font-weight: 800; }
+    .cj-fila2 { display: grid; gap: 0 .75rem; }
+    @media (min-width: 520px) { .cj-fila2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+    /* Lista desplegable propia (en vez del select del navegador) */
+    .cj-drop { position: relative; }
+    .cj-drop__btn {
+        display: flex; align-items: center; justify-content: space-between; gap: .5rem; width: 100%; min-height: 2.9rem; padding: .5rem .95rem;
+        font: inherit; font-size: 1rem; text-align: left; color: var(--ink); cursor: pointer;
+        background: var(--page); border: 2px solid var(--line); border-radius: 1rem; transition: border-color .15s;
+    }
+    .cj-drop__btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cj-drop__btn span.is-vacio { color: var(--muted); }
+    .cj-drop__btn svg { flex: none; width: 1rem; height: 1rem; color: var(--muted); transition: transform .2s; }
+    .cj-drop__btn[aria-expanded="true"] { border-color: var(--red); }
+    .cj-drop__btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .cj-drop__list {
+        position: absolute; left: 0; right: 0; top: calc(100% + .35rem); z-index: 20; max-height: 15rem; overflow-y: auto;
+        margin: 0; padding: .35rem; list-style: none; background: var(--card); border-radius: 1rem;
+        box-shadow: 0 1rem 2rem -.9rem rgba(0, 0, 0, .45), 0 0 0 1px var(--line);
+    }
+    .cj-drop__list li { padding: .65rem .8rem; border-radius: .7rem; font-size: .9375rem; cursor: pointer; }
+    .cj-drop__list li[aria-selected="true"] { font-weight: 800; color: var(--link); }
+    .cj-drop__list li.is-activa { background: var(--board); }
+    .cj-drop__list li.is-otro { border-top: 1px dashed var(--line); border-radius: 0 0 .7rem .7rem; font-weight: 700; }
+    .cj-drop select { width: 100%; min-height: 2.9rem; padding: .5rem .8rem; font: inherit; border: 2px solid var(--line); border-radius: 1rem; background: var(--page); color: var(--ink); }
+
+    /* ---------- Botón redondo para cerrar la caja ---------- */
+    .cj-wrap:has(.cj-fab) { padding-bottom: 6.5rem; }   /* que lo último no quede tapado por el botón */
+    .cj-fab {
+        position: fixed; z-index: 35; right: max(1.25rem, env(safe-area-inset-right)); bottom: max(1.25rem, env(safe-area-inset-bottom));
+        display: grid; place-items: center; width: 4rem; height: 4rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+        color: #fff; background: #b91c1c;
+        box-shadow: 0 0 0 .3rem rgba(185, 28, 28, .18), 0 .9rem 1.8rem -.6rem rgba(127, 29, 29, .7);
+        transition: background-color .15s, transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .2s;
+        animation: cj-fab-sale .45s .15s cubic-bezier(.2, .8, .2, 1.2) both;
+    }
+    .dark .cj-fab { box-shadow: 0 0 0 .3rem rgba(239, 68, 68, .2), 0 .9rem 1.8rem -.6rem rgba(0, 0, 0, .8); }
+    .cj-fab svg { width: 1.5rem; height: 1.5rem; }
+    .cj-fab:hover { background: #991b1b; transform: translateY(-2px) scale(1.04); }
+    .cj-fab:active { transform: scale(.94); }
+    .cj-fab:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+    @keyframes cj-fab-sale { from { opacity: 0; transform: scale(.4) translateY(1rem); } to { opacity: 1; transform: none; } }
+    /* Etiqueta que aparece al lado: al pasar el mouse en PC, y un momento al entrar en el celular */
+    .cj-fab__t {
+        position: absolute; right: calc(100% + .7rem); top: 50%; padding: .45rem .8rem; white-space: nowrap;
+        font-size: .875rem; font-weight: 800; color: #fff; background: #1c1917; border-radius: 999px;
+        opacity: 0; transform: translate(.4rem, -50%); pointer-events: none; transition: opacity .15s, transform .15s;
+    }
+    .dark .cj-fab__t { color: #1c1917; background: #f5f5f4; }
+    .cj-fab:hover .cj-fab__t, .cj-fab:focus-visible .cj-fab__t { opacity: 1; transform: translate(0, -50%); }
+    @media (hover: none) { .cj-fab__t { animation: cj-fab-dice 3.8s .7s both; } }
+    @keyframes cj-fab-dice { 0% { opacity: 0; transform: translate(.4rem, -50%); } 10%, 82% { opacity: 1; transform: translate(0, -50%); } 100% { opacity: 0; transform: translate(.4rem, -50%); } }
+    @media (prefers-reduced-motion: reduce) { .cj-fab, .cj-fab__t, .cj-hoja[open] { animation: none !important; } }
+
+    /* ---------- Ventana de cierre: chiquita, sale del botón en PC y desde abajo en el celular ---------- */
+    html:has(.cj-hoja[open]) { overflow: hidden; }
+    .cj-hoja {
+        width: min(21.5rem, calc(100% - 2rem)); max-width: none; max-height: calc(100dvh - 2rem); margin: auto 1.25rem 6.25rem auto; padding: 0;
+        color: var(--ink); background: var(--card); border: 0; border-radius: 1.35rem; overflow: hidden;
+        box-shadow: 0 1.25rem 3rem -1rem rgba(0, 0, 0, .45);
+    }
+    .dark .cj-hoja { box-shadow: 0 0 0 1px var(--line), 0 1.25rem 3rem -1rem rgba(0, 0, 0, .8); }
+    @media (max-height: 520px) { .cj-hoja { margin-top: auto; margin-bottom: auto; } }   /* pantalla bajita: al centro */
+    .cj-hoja::backdrop { background: rgba(15, 15, 15, .45); }
+    .cj-hoja[open] { animation: cj-hoja-pc .22s cubic-bezier(.2, .8, .2, 1); transform-origin: 100% 100%; }
+    @keyframes cj-hoja-pc { from { opacity: 0; transform: scale(.9) translateY(.5rem); } to { opacity: 1; transform: none; } }
+    .cj-hoja__in {
+        display: grid; gap: .8rem; max-height: inherit; padding: 1rem 1.1rem 1.1rem;
+        overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    }
+    .cj-hoja__cab { display: flex; align-items: center; gap: .6rem; }
+    .cj-hoja__cab h2 { flex: 1; min-width: 0; margin: 0; font-size: 1.0625rem; font-weight: 800; }
+    .cj-hoja__ic { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .65rem; color: #fff; background: #b91c1c; }
+    .cj-hoja__ic svg { width: .95rem; height: .95rem; }
+    .cj-hoja__x {
+        flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 50%;
+        color: var(--muted); background: var(--board); cursor: pointer; transition: color .15s, background-color .15s;
+    }
+    .cj-hoja__x:hover { color: #fff; background: #b91c1c; }
+    .cj-hoja__x svg { width: .85rem; height: .85rem; }
+    .cj-hoja__campo { display: grid; gap: .3rem; }
+    .cj-hoja__campo label { font-size: .8125rem; font-weight: 800; }
+    .cj-hoja__campo label span { font-weight: 600; color: var(--muted); }
+    .cj-hoja__plata {
+        display: flex; align-items: center; gap: .3rem; height: 3.1rem; padding: 0 .9rem;
+        background: var(--page); border: 2px solid var(--line); border-radius: .9rem; transition: border-color .15s;
+    }
+    .cj-hoja__plata:focus-within { border-color: var(--red); }
+    .cj .cj-hoja__plata input:focus-visible, .cj .cj-hoja__campo > input:focus-visible { outline: none; }   /* el borde rojo ya lo pone la caja */
+    .cj-hoja__plata b { font-size: 1.125rem; font-weight: 800; color: var(--muted); }
+    .cj-hoja__plata input {
+        flex: 1; min-width: 0; width: 100%; height: 100%; padding: 0; font: inherit; font-size: 1.375rem; font-weight: 800;
+        font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: 0; outline: none;
+    }
+    .cj-hoja__plata input::placeholder { color: var(--muted); opacity: .6; }
+    .cj-hoja__campo.is-error .cj-hoja__plata { border-color: var(--bad); }
+    .cj-hoja__campo > input {
+        width: 100%; height: 2.6rem; padding: 0 .85rem; font: inherit; font-size: .9375rem; color: var(--ink);
+        background: var(--page); border: 2px solid var(--line); border-radius: .9rem; outline: none; transition: border-color .15s;
+    }
+    .cj-hoja__campo > input:focus { border-color: var(--red); }
+    .cj-hoja__campo > input::placeholder { color: var(--muted); opacity: .75; }
+    .cj-hoja .cj-err { font-size: .8125rem; }
+    .cj-hoja__info {
+        display: flex; align-items: flex-start; gap: .5rem; margin: 0; padding: .55rem .75rem; border-radius: .8rem;
+        font-size: .8125rem; line-height: 1.4; color: var(--ok-ink); background: var(--ok-soft);
+    }
+    .cj-hoja__info svg { flex: none; width: .95rem; height: .95rem; margin-top: .1rem; }
+    .cj-hoja__ir { width: 100%; min-height: 2.75rem; margin-top: .1rem; }
+    .cj-hoja__ir svg { width: 1rem; height: 1rem; }
+    @media (max-width: 639px) {
+        .cj-hoja { width: 100%; max-height: 90dvh; margin: auto 0 0; border-radius: 1.35rem 1.35rem 0 0; box-shadow: none; }
+        .cj-hoja[open] { animation-name: cj-hoja-cel; }
+        @keyframes cj-hoja-cel { from { transform: translateY(100%); } to { transform: none; } }
+        .cj-hoja__in { padding: 1.4rem 1.1rem max(1.1rem, env(safe-area-inset-bottom)); }
+        .cj-hoja__in::before {                       /* rayita de arriba, como las hojas del celular */
+            content: ""; position: absolute; top: .55rem; left: 50%; width: 2.25rem; height: .25rem; margin-left: -1.125rem;
+            border-radius: 999px; background: var(--line);
+        }
+    }
+
+    /* ---------- Caja cerrada ---------- */
+    .cj-res { display: grid; gap: 1rem; padding: 1.35rem 1.35rem 1.4rem; border-radius: 1.5rem; }
+    .cj-res--cuadra { color: var(--ok-ink); background: var(--ok-soft); }
+    .cj-res--sobrante { color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-res--faltante { color: var(--bad-ink); background: var(--bad-soft); }
+    .cj-res__cab { display: flex; align-items: center; gap: .9rem; }
+    .cj-res__ic { flex: none; display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%; color: #fff; }
+    .cj-res--cuadra .cj-res__ic { background: #15803d; }
+    .cj-res--sobrante .cj-res__ic { background: #ca8a04; }
+    .cj-res--faltante .cj-res__ic { background: #b91c1c; }
+    .cj-res__ic svg { width: 1.6rem; height: 1.6rem; }
+    .cj-res__t { margin: 0; font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+    .cj-res__s { margin: .25rem 0 0; font-size: .9375rem; font-weight: 600; opacity: .85; }
+    .cj-res__nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+    .cj-res__nums div { padding: .75rem .8rem; border-radius: 1rem; background: rgba(255, 255, 255, .55); }
+    .dark .cj-res__nums div { background: rgba(0, 0, 0, .25); }
+    .cj-res__nums span { display: block; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; opacity: .8; }
+    .cj-res__nums b { font-size: clamp(1rem, .9rem + .6vw, 1.35rem); font-weight: 800; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .cj-acc { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+    /* Modo de pruebas (CAJA_MODO_PRUEBAS = True): borrar la caja para volver a probar */
+    .cj-prueba { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; padding: .9rem 1.1rem; border: 2px dashed #d97706; border-radius: 1.25rem; color: var(--warn-ink); background: var(--warn-soft); }
+    .cj-prueba__t { flex: 1 1 16rem; margin: 0; font-size: .875rem; line-height: 1.45; }
+    .cj-prueba__t b { display: block; font-size: .9375rem; font-weight: 800; }
+    .cj-prueba details { max-width: 100%; }
+    .cj-prueba summary {
+        list-style: none; display: inline-flex; align-items: center; gap: .45rem; min-height: 2.5rem; padding: 0 1.1rem; cursor: pointer;
+        font-size: .875rem; font-weight: 800; color: #fff; background: #92400e; border-radius: 999px;
+    }
+    .cj-prueba summary::-webkit-details-marker { display: none; }
+    .cj-prueba summary svg { width: 1rem; height: 1rem; }
+    .cj-prueba summary:hover, .cj-prueba details[open] summary { background: #78350f; }
+    .cj-prueba summary:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+    .cj-prueba form { display: grid; gap: .6rem; width: min(18rem, 100%); margin-top: .6rem; padding: .9rem; color: var(--ink); background: var(--card); border-radius: 1rem; box-shadow: 0 0 0 1px var(--line); }
+    .cj-prueba form p { margin: 0; font-size: .875rem; font-weight: 600; line-height: 1.4; }
+    .cj-prueba form button { min-height: 2.5rem; padding: 0 1rem; font: inherit; font-size: .875rem; font-weight: 800; color: #fff; background: #b91c1c; border: 0; border-radius: 999px; cursor: pointer; }
+    .cj-prueba form button:hover { background: #7f1d1d; }
+    @media (max-width: 479px) { .cj-acc .cj-btn { flex: 1 1 100%; } .cj-res__nums { grid-template-columns: 1fr; } .cj-res__nums div { display: flex; justify-content: space-between; align-items: baseline; } }
+</style>
+
+<div class="cj{% if caja is None %} cj--pantalla{% endif %}">
+    <header class="cj-hero">
+        <div class="cj-hero__in">
+            <div class="cj-top">
+                <p class="cj-eti">Caja · {{ hoy|date:"l j \d\e F" }}</p>
+                {% if caja is not None %}
+                    <a class="cj-pill" href="{% url 'historial_cajas' %}" aria-label="Historial de cierres">
+                        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6M9 16h3"></path></svg></span>
+                        <b class="cj-pill__t">Historial de cierres</b>
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if caja is None and not pendiente %}
+                <svg class="cj-registradora" viewBox="0 0 120 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 58h92l6 30H8z"></path><path d="M24 58V30h50v28"></path><rect x="30" y="36" width="38" height="12" rx="2"></rect>
+                    <path d="M82 58V20h18v38"></path><path d="M86 12h10v8H86z"></path><path d="M24 70h10M42 70h10M60 70h10M78 70h10M24 79h10M42 79h10M60 79h10M78 79h10"></path>
+                </svg>
+            {% endif %}
+            <div class="cj-cab">
+                {% if caja is None %}
+                    <div>
+                        <div class="cj-titulo">
+                            <h1>{% if pendiente %}Hay una caja pendiente{% else %}Abre la caja{% endif %}</h1>
+                            <a class="cj-pill" href="{% url 'historial_cajas' %}" aria-label="Historial de cierres">
+                                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6M9 16h3"></path></svg></span>
+                                <b class="cj-pill__t">Historial</b>
+                            </a>
+                        </div>
+                        <p class="cj-sub">{% if pendiente %}Antes de abrir la de hoy hay que cerrar la anterior.{% else %}{{ saludo }}{% if nombre %}, {{ nombre }}{% endif %}.<span class="cj-sub__mas"> La caja de hoy todavía no se ha abierto.</span>{% endif %}</p>
+                    </div>
+                {% elif caja.esta_abierta %}
+                    <div>
+                        <h1>Caja abierta</h1>
+                        <p class="cj-sub">Desde las {{ caja.abierta_en|time:"g:i a" }} con ${{ caja.base_inicial|pesos }} de base.</p>
+                    </div>
+                    <div class="cj-cifra">
+                        <span><span class="cj-cifra__t">Vendido hoy</span><br><span class="cj-cifra__n">${{ r.ventas_total|pesos }}</span></span>
+                        <span class="cj-cifra__v">{{ r.ventas_cantidad }} venta{{ r.ventas_cantidad|pluralize }} · {{ r.ventas_unidades }} unidad{{ r.ventas_unidades|pluralize:"es" }}</span>
+                    </div>
+                {% else %}
+                    <div>
+                        <h1>Caja cerrada</h1>
+                        <p class="cj-sub">{{ caja.cerrada_por_nombre|default:"Alguien" }} la cerró a las {{ caja.cerrada_en|time:"g:i a" }}</p>
+                    </div>
+                    <div class="cj-cifra">
+                        <span><span class="cj-cifra__t">Se contó</span><br><span class="cj-cifra__n">${{ caja.contado|pesos }}</span></span>
+                        <span class="cj-cifra__v">de ${{ caja.ventas_total|pesos }} vendidos</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="cj-wrap">
+        <section class="cj-board">
+            {% if messages %}
+                <div class="cj-msgs" role="status" aria-live="polite">
+                    {% for m in messages %}
+                        <div class="cj-msg{% if m.tags == 'success' %} is-success{% elif m.tags == 'info' %} is-info{% endif %}" title="Tocar para cerrar">
+                            <span class="cj-msg__ic" aria-hidden="true">{% if m.tags == 'success' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>{% elif m.tags == 'info' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M12 11v6M12 7h.01"></path></svg>{% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M12 7v6M12 17h.01"></path></svg>{% endif %}</span>
+                            <span class="cj-msg__t">{{ m }}</span>
+                            <i class="cj-msg__barra" aria-hidden="true"></i>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if pendiente %}
+                <div class="cj-aviso" role="alert">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+                    <p>La caja del <strong>{{ pendiente.fecha|date:"l j \d\e F" }}</strong> quedó abierta. Ciérrala con el dinero que se contó ese día para poder abrir la de hoy.</p>
+                    <a class="cj-btn cj-btn--aviso" href="{% url 'cerrar_caja' pendiente.id %}">Cerrar esa caja</a>
+                </div>
+            {% endif %}
+
+            {% if caja is None %}
+                {# ================= HU_017: APERTURA ================= #}
+                {# Si quedó abierta la caja de otro día, solo se muestra ese aviso: primero hay que cerrarla #}
+                {% if not pendiente %}
+                <div class="cj-grid2 cj-apertura">
+                    <form class="cj-card cj-abrir" method="post" action="{% url 'abrir_caja' %}" novalidate>
+                        {% csrf_token %}
+                        <div class="cj-abrir__cab">
+                            <span class="cj-abrir__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle><path d="M6 12h.01M18 12h.01"></path></svg></span>
+                            <div>
+                                <h2>{{ form.base_inicial.label }}</h2>
+                                <p class="cj-ayuda">Cuenta billetes y monedas antes de la primera venta. Si está vacía, escribe 0.</p>
+                            </div>
+                        </div>
+
+                        {# El monto se escribe en una «pantallita» como la de una caja registradora #}
+                        <label class="cj-display{% if form.base_inicial.errors %} is-error{% endif %}" for="{{ form.base_inicial.id_for_label }}">
+                            <span class="cj-display__eti"><i aria-hidden="true"></i>Base en efectivo</span>
+                            <span class="cj-display__fila"><b aria-hidden="true">$</b>{{ form.base_inicial }}<small aria-hidden="true">COP</small></span>
+                        </label>
+                        {% for e in form.base_inicial.errors %}<p class="cj-err">{{ e }}</p>{% endfor %}
+
+                        {% if ultima and ultima.contado is not None %}
+                            <button type="button" class="cj-sug" data-poner="{{ ultima.contado }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v4h4"></path><path d="M12 8v4l3 2"></path></svg>
+                                <span><span class="cj-sug__largo">Usar lo del último cierre</span><span class="cj-sug__corto">Último cierre</span></span>
+                                <b>${{ ultima.contado|pesos }}</b>
+                            </button>
+                        {% endif %}
+
+                        <button class="cj-btn cj-btn--grande cj-abrir__btn" type="submit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path class="cj-candado" d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                            Abrir caja
+                        </button>
+                    </form>
+
+                    <div class="cj-col">
+                        {% if ventas_sin_caja %}
+                            <div class="cj-card cj-hoyva">
+                                <span class="cj-hoyva__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 15 4-4 3 3 5-6"></path></svg></span>
+                                <div>
+                                    <p class="cj-hoyva__n"><b>{{ ventas_sin_caja }}</b> venta{{ ventas_sin_caja|pluralize }} hoy · <span>${{ ventas_sin_caja_total|pesos }}</span></p>
+                                    <p class="cj-hoyva__d">Se van a sumar a esta caja cuando la abras.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <article class="cj-card cj-como">
+                            <h2>Así funciona el día</h2>
+                            <ol class="cj-linea">
+                                <li class="is-ahora"><span class="cj-linea__n">1</span><div><strong>Abre la caja <small>Estás aquí</small></strong><em>Con el dinero que hay al empezar.</em></div></li>
+                                <li><span class="cj-linea__n">2</span><div><strong>Vende normal</strong><em>Ventas, consumos y salidas se suman solos. Aquí solo anotas los pagos a proveedores.</em></div></li>
+                                <li><span class="cj-linea__n">3</span><div><strong>Cuenta y cierra</strong><em>Al final del día cuentas el dinero y el sistema te dice si cuadra.</em></div></li>
+                            </ol>
+                        </article>
+                    </div>
+                </div>
+                {% endif %}
+
+            {% elif caja.esta_abierta %}
+                {# ================= CAJA ABIERTA ================= #}
+                <div class="cj-estado">
+                    <span class="cj-estado__vivo">Abierta</span>
+                    <span class="cj-estado__quien" title="{{ caja.abierta_por_nombre }}">por <b>{{ caja.abierta_por_nombre|default:"—" }}</b></span>
+                    <span class="cj-estado__base">Base <b>${{ caja.base_inicial|pesos }}</b></span>
+                </div>
+
+                <div class="cj-tiles">
+                    <a class="cj-tile cj-tile--pagos" href="#pagos">
+                        <span class="cj-tile__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><path d="M16 8h4l3 3v5h-7z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>
+                        <span class="cj-tile__t">Pagos<span class="cj-tile__mas"> a proveedores</span></span>
+                        <span class="cj-tile__n">${{ r.pagos_proveedor_total|pesos }}</span>
+                        <span class="cj-tile__d">{{ r.pagos_proveedor_cantidad }} pago{{ r.pagos_proveedor_cantidad|pluralize }}</span>
+                    </a>
+                    <a class="cj-tile cj-tile--consumos" href="{% url 'ver_consumo' %}">
+                        <span class="cj-tile__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"></path><path d="M9 21v-7h6v7"></path></svg></span>
+                        <span class="cj-tile__t">Consumos</span>
+                        <span class="cj-tile__n">${{ r.consumos_total|pesos }}</span>
+                        <span class="cj-tile__d">{{ r.consumos_cantidad }} registro{{ r.consumos_cantidad|pluralize }}</span>
+                    </a>
+                    <a class="cj-tile cj-tile--salidas" href="{% url 'lista_salidas' %}?historial=1">
+                        <span class="cj-tile__ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M12 13v8M3 8l9 5 9-5"></path></svg></span>
+                        <span class="cj-tile__t">Salidas<span class="cj-tile__mas"> (pérdida)</span></span>
+                        <span class="cj-tile__n">${{ r.salidas_perdida_total|pesos }}</span>
+                        <span class="cj-tile__d">{% if r.salidas_cambio_total %}+ ${{ r.salidas_cambio_total|pesos }} con cambio{% else %}{{ r.salidas_cantidad }} salida{{ r.salidas_cantidad|pluralize }}{% endif %}</span>
+                    </a>
+                </div>
+
+                <div class="cj-grid2">
+                    <div class="cj-col cj-col--celu">
+                        <article class="cj-card cj-orden-4 cj-ventas" id="ventas">
+                            {% url 'caja_hoy' as url_hoy %}
+                            <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="m7 15 4-4 3 3 5-6"></path></svg></span>Ventas de hoy</h2>
+                            {% if ventas_pagina.paginator.count %}
+                                <ul class="cj-lista">
+                                    {% for v in ventas_pagina %}
+                                        <li>
+                                            <span class="cj-lista__n">{{ v.nom_producto }}</span>
+                                            <span class="cj-lista__d">{{ v.fecha_hora|time:"g:i a" }} · {{ v.cantidad }} × ${{ v.precio|pesos }}{% if v.cobro_item %} · <span class="cj-metodo cj-metodo--{{ v.cobro_item.cobro.metodo }}">{{ v.cobro_item.cobro.get_metodo_display }}</span>{% endif %}</span>
+                                            <span class="cj-lista__v">${{ v.total|pesos }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                                {% if ventas_pagina.paginator.num_pages > 1 %}
+                                    <nav class="cj-pag" aria-label="Páginas de ventas">
+                                        <p class="cj-pag__info">Del <b>{{ ventas_pagina.start_index }}</b> al <b>{{ ventas_pagina.end_index }}</b> de <b>{{ ventas_pagina.paginator.count }}</b></p>
+                                        <ul class="cj-pag__nums">
+                                            <li>
+                                                {% if ventas_pagina.has_previous %}
+                                                    <a href="{{ url_hoy }}?ventas={{ ventas_pagina.previous_page_number }}#ventas" aria-label="Ventas más nuevas" data-pag="antes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+                                                {% else %}
+                                                    <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+                                                {% endif %}
+                                            </li>
+                                            {% for n in ventas_rango %}
+                                                <li class="cj-pag__num">
+                                                    {% if n == ventas_pagina.number %}<span aria-current="page" tabindex="-1">{{ n }}</span>
+                                                    {% elif n == ventas_pagina.paginator.ELLIPSIS %}<span class="gap">…</span>
+                                                    {% else %}<a href="{{ url_hoy }}?ventas={{ n }}#ventas" aria-label="Página {{ n }}">{{ n }}</a>{% endif %}
+                                                </li>
+                                            {% endfor %}
+                                            <li class="cj-pag__yo" aria-hidden="true">{{ ventas_pagina.number }} de {{ ventas_pagina.paginator.num_pages }}</li>
+                                            <li>
+                                                {% if ventas_pagina.has_next %}
+                                                    <a href="{{ url_hoy }}?ventas={{ ventas_pagina.next_page_number }}#ventas" aria-label="Ventas más viejas" data-pag="despues"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
+                                                {% else %}
+                                                    <span class="off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+                                                {% endif %}
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                {% endif %}
+                            {% else %}
+                                <p class="cj-vacio">Todavía no hay ventas hoy.</p>
+                            {% endif %}
+                        </article>
+                    </div>
+
+                    <div class="cj-col cj-col--celu">
+                        <article class="cj-card cj-orden-2" id="pagos">
+                            <h2><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><path d="M16 8h4l3 3v5h-7z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></span>Pagos a proveedores</h2>
+                            {% if pagos %}
+                                <ul class="cj-lista">
+                                    {% for p in pagos %}
+                                        <li>
+                                            <span class="cj-lista__n">{{ p.proveedor_nombre }}</span>
+                                            <span class="cj-lista__d">{{ p.creado_en|time:"g:i a" }}{% if p.concepto %} · {{ p.concepto }}{% endif %}</span>
+                                            <span class="cj-lista__v">
+                                                ${{ p.valor|pesos }}
+                                                <details class="cj-quitar">
+                                                    <summary aria-label="Quitar el pago a {{ p.proveedor_nombre }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg></summary>
+                                                    <form method="post" action="{% url 'eliminar_pago' p.id %}">
+                                                        {% csrf_token %}
+                                                        <p>¿Quitar este pago?</p>
+                                                        <button class="cj-btn" type="submit">Sí, quitar</button>
+                                                    </form>
+                                                </details>
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="cj-vacio">Hoy no se le ha pagado a ningún proveedor.</p>
+                            {% endif %}
+
+                            <details class="cj-desp"{% if abrir_pago %} open{% endif %}>
+                                <summary>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                                    <span class="cj-desp__abrir">Anotar un pago<span class="cj-desp__mas"> a proveedor</span></span><span class="cj-desp__cerrar">Cancelar</span>
+                                </summary>
+                            <form class="cj-pago" method="post" action="{% url 'registrar_pago' caja.id %}" novalidate id="form-pago" data-enfocar="{{ abrir_pago|yesno:'1,0' }}">
+                                {% csrf_token %}
+                                <div class="cj-campo{% if pago_form.proveedor.errors %} is-error{% endif %}">
+                                    <label class="cj-lab" for="id_proveedor">Proveedor</label>
+                                    <div class="cj-drop" data-drop>
+                                        <select name="proveedor" id="id_proveedor">
+                                            <option value="">Elige el proveedor</option>
+                                            {% for prov in proveedores %}
+                                                <option value="{{ prov.id }}"{% if pago_form.data.proveedor == prov.id|stringformat:"d" %} selected{% endif %}>{{ prov.nombre_empresa }}</option>
+                                            {% endfor %}
+                                            <option value="otro" data-otro{% if pago_form.data.proveedor == "otro" %} selected{% endif %}>Otro (escribir el nombre)</option>
+                                        </select>
+                                    </div>
+                                    {% for e in pago_form.proveedor.errors %}<p class="cj-err">{{ e }}</p>{% endfor %}
+                                </div>
+                                <div class="cj-campo{% if pago_form.otro_nombre.errors %} is-error{% endif %}" id="campo-otro"{% if pago_form.data.proveedor != "otro" %} hidden{% endif %}>
+                                    <label for="id_otro_nombre">{{ pago_form.otro_nombre.label }}</label>
+                                    <input type="text" name="otro_nombre" id="id_otro_nombre" maxlength="200" value="{{ pago_form.data.otro_nombre|default:'' }}" placeholder="Ej: Distribuidora del barrio">
+                                    {% for e in pago_form.otro_nombre.errors %}<p class="cj-err">{{ e }}</p>{% endfor %}
+                                </div>
+                                <div class="cj-fila2">
+                                    <div class="cj-campo{% if pago_form.valor.errors %} is-error{% endif %}">
+                                        <label for="id_valor">{{ pago_form.valor.label }}</label>
+                                        <div class="cj-plata cj-plata--chica"><b aria-hidden="true">$</b><input type="text" name="valor" id="id_valor" inputmode="numeric" autocomplete="off" data-pesos value="{{ pago_form.data.valor|default:'' }}" placeholder="0"></div>
+                                        {% for e in pago_form.valor.errors %}<p class="cj-err">{{ e }}</p>{% endfor %}
+                                    </div>
+                                    <div class="cj-campo">
+                                        <label for="id_concepto">Concepto <span style="font-weight:600;color:var(--muted)">(opcional)</span></label>
+                                        <input type="text" name="concepto" id="id_concepto" maxlength="200" value="{{ pago_form.data.concepto|default:'' }}" placeholder="Ej: pedido de gaseosas">
+                                    </div>
+                                </div>
+                                {% if not proveedores %}
+                                    <p class="cj-nota" style="margin:0 0 .9rem">{% if proveedores_inactivos %}Hay {{ proveedores_inactivos }} proveedor{{ proveedores_inactivos|pluralize:"es" }} pero está{{ proveedores_inactivos|pluralize:"n" }} inactivo{{ proveedores_inactivos|pluralize }}: actívalo{{ proveedores_inactivos|pluralize }} en <a href="{% url 'proveedores' %}" style="color:var(--link);font-weight:700">Proveedores</a> o elige «Otro».{% else %}No hay proveedores registrados. Elige «Otro» o <a href="{% url 'nuevo_proveedor' %}" style="color:var(--link);font-weight:700">registra uno</a>.{% endif %}</p>
+                                {% endif %}
+                                <button class="cj-btn" type="submit" style="width:100%">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                    Guardar pago
+                                </button>
+                            </form>
+                            </details>
+                        </article>
+
+                    </div>
+                </div>
+
+                {# Botón redondo abajo a la derecha: abre la ventana para cerrar la caja #}
+                <button type="button" class="cj-fab" id="abrir-cierre" aria-haspopup="dialog" aria-controls="cierre" aria-label="Cerrar la caja" data-url="{% url 'cerrar_caja' caja.id %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span class="cj-fab__t" aria-hidden="true">Cerrar caja</span>
+                </button>
+
+                <dialog class="cj-hoja" id="cierre" aria-labelledby="cierre-titulo">
+                    <form class="cj-hoja__in" method="post" action="{% url 'cerrar_caja' caja.id %}" novalidate id="form-cierre-rapido">
+                        {% csrf_token %}
+                        <header class="cj-hoja__cab">
+                            <span class="cj-hoja__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+                            <h2 id="cierre-titulo">Cerrar la caja</h2>
+                            <button type="button" class="cj-hoja__x" id="cerrar-hoja" aria-label="Cancelar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                            </button>
+                        </header>
+
+                        <div class="cj-hoja__campo" id="campo-contado">
+                            <label for="cierre-contado">¿Cuánto efectivo hay en la caja?</label>
+                            <div class="cj-hoja__plata"><b aria-hidden="true">$</b><input type="text" name="contado" id="cierre-contado" inputmode="numeric" autocomplete="off" placeholder="0" data-pesos></div>
+                            <p class="cj-err" id="err-contado" hidden>Escribe cuánto contaste (puede ser 0).</p>
+                        </div>
+
+                        {% if r.cobros_transferencia %}
+                            <p class="cj-hoja__info">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                <span>Transferencias del carrito: <b>${{ r.cobros_transferencia|pesos }}</b>. Se descuentan solas.</span>
+                            </p>
+                        {% endif %}
+
+                        <div class="cj-hoja__campo">
+                            <label for="cierre-obs">Nota <span>(opcional)</span></label>
+                            <input type="text" name="observacion" id="cierre-obs" maxlength="1000" autocomplete="off" placeholder="Si no cuadra, cuenta por qué">
+                        </div>
+
+                        <button class="cj-btn cj-hoja__ir" type="submit">
+                            Revisar el cierre
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+                        </button>
+                    </form>
+                </dialog>
+
+            {% else %}
+                {# ================= CAJA DE HOY YA CERRADA ================= #}
+                <div class="cj-res cj-res--{{ caja.resultado }}">
+                    <div class="cj-res__cab">
+                        <span class="cj-res__ic" aria-hidden="true">
+                            {% if caja.resultado == 'cuadra' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                            {% elif caja.resultado == 'sobrante' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                            {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"></path></svg>{% endif %}
+                        </span>
+                        <div>
+                            <p class="cj-res__t">{% if caja.resultado == 'cuadra' %}La caja cuadró{% elif caja.resultado == 'sobrante' %}Sobraron ${{ caja.diferencia_abs|pesos }}{% else %}Faltaron ${{ caja.diferencia_abs|pesos }}{% endif %}</p>
+                            <p class="cj-res__s">Cerrada por {{ caja.cerrada_por_nombre|default:"—" }} a las {{ caja.cerrada_en|time:"g:i a" }}</p>
+                        </div>
+                    </div>
+                    <div class="cj-res__nums">
+                        <div><span>Vendido</span><b>${{ caja.ventas_total|pesos }}</b></div>
+                        <div><span>Debería haber</span><b>{{ caja.esperado|plata }}</b></div>
+                        <div><span>Se contó</span><b>${{ caja.contado|pesos }}</b></div>
+                    </div>
+                    <div class="cj-acc">
+                        <a class="cj-btn" href="{% url 'detalle_caja' caja.id %}">Ver el detalle del cierre</a>
+                        <a class="cj-btn cj-btn--linea" href="{% url 'historial_cajas' %}">Historial</a>
+                    </div>
+                </div>
+
+                {% if despues %}
+                    <div class="cj-aviso" role="status">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+                        <p>Después del cierre se registr{{ despues.ventas|add:despues.consumos|add:despues.salidas|pluralize:"ó,aron" }}
+                            {% if despues.ventas %}<strong>{{ despues.ventas }} venta{{ despues.ventas|pluralize }} por ${{ despues.ventas_total|pesos }}</strong>{% endif %}{% if despues.ventas and despues.consumos or despues.ventas and despues.salidas %}, {% endif %}{% if despues.consumos %}<strong>{{ despues.consumos }} consumo{{ despues.consumos|pluralize }}</strong>{% endif %}{% if despues.consumos and despues.salidas %} y {% endif %}{% if despues.salidas %}<strong>{{ despues.salidas }} salida{{ despues.salidas|pluralize }}</strong>{% endif %}.
+                            No están en este cierre.</p>
+                    </div>
+                {% endif %}
+
+                <p class="cj-nota" style="margin:0;text-align:center">Mañana se abre una caja nueva.</p>
+            {% endif %}
+
+            {% if modo_pruebas and caja %}
+                <div class="cj-prueba cj-no-print">
+                    <p class="cj-prueba__t"><b>Modo de pruebas</b>Puedes borrar esta caja y volver a abrirla y cerrarla. Las ventas y los cobros del día no se borran.</p>
+                    <details>
+                        <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>Borrar la caja de hoy</summary>
+                        <form method="post" action="{% url 'borrar_caja_prueba' caja.id %}">
+                            {% csrf_token %}
+                            <p>¿Seguro? Se borra la caja de hoy (y sus pagos a proveedores) para empezar de nuevo.</p>
+                            <button type="submit">Sí, borrar para probar</button>
+                        </form>
+                    </details>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+(function () {
+    // Los avisos se van solos a los 5 segundos, o antes si se tocan
+    document.querySelectorAll('.cj-msg').forEach(function (aviso) {
+        var irse = function () {
+            if (aviso.classList.contains('se-va')) return;
+            aviso.classList.add('se-va');
+            setTimeout(function () { aviso.remove(); }, 350);
+        };
+        aviso.addEventListener('click', irse);
+        setTimeout(irse, 5000);
+    });
+
+    // Pesos con puntos de miles mientras se escribe: 150000 -> 150.000
+    function formatear(input) {
+        var digitos = input.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 10);
+        input.value = digitos.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    function luz(input) {
+        var display = input.closest('.cj-display');
+        if (display) display.classList.toggle('tiene', input.value !== '');
+    }
+    document.querySelectorAll('.cj [data-pesos]').forEach(function (input) {
+        if (input.value) formatear(input);
+        luz(input);
+        input.addEventListener('input', function () { formatear(input); luz(input); });
+    });
+
+    // Botones de valores rápidos para la base
+    document.querySelectorAll('.cj [data-poner]').forEach(function (boton) {
+        boton.addEventListener('click', function () {
+            var input = document.getElementById('id_base_inicial');
+            if (!input) return;
+            input.value = boton.getAttribute('data-poner');
+            formatear(input);
+            luz(input);
+            input.focus();
+        });
+    });
+
+    // Ventas de 5 en 5: cambia la página sin recargar todo (si algo falla, el enlace normal funciona igual)
+    var ventas = document.getElementById('ventas');
+    if (ventas && window.fetch && window.DOMParser) {
+        ventas.addEventListener('click', function (e) {
+            var enlace = e.target.closest('.cj-pag a');
+            if (!enlace || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
+            var cual = enlace.getAttribute('data-pag');
+            var teniaFoco = document.activeElement === enlace;
+            ventas.setAttribute('aria-busy', 'true');
+            fetch(enlace.href, { credentials: 'same-origin' })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+                .then(function (html) {
+                    var nueva = new DOMParser().parseFromString(html, 'text/html').getElementById('ventas');
+                    if (!nueva) throw new Error('sin ventas');
+                    ventas.innerHTML = nueva.innerHTML;
+                    ventas.removeAttribute('aria-busy');
+                    var lista = ventas.querySelector('.cj-lista');
+                    if (lista) lista.classList.add('entra');
+                    history.replaceState(null, '', enlace.href.split('#')[0]);
+                    if (ventas.getBoundingClientRect().top < 64) ventas.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                    // el foco se queda en el mismo botón (o en la página actual) para quien usa teclado
+                    var foco = (cual && ventas.querySelector('[data-pag="' + cual + '"]')) || ventas.querySelector('.cj-pag [aria-current="page"]');
+                    if (foco && teniaFoco) foco.focus({ preventScroll: true });
+                })
+                .catch(function () { location.href = enlace.href; });
+        });
+    }
+
+    // Ventana para cerrar la caja (botón redondo)
+    var hoja = document.getElementById('cierre');
+    var fab = document.getElementById('abrir-cierre');
+    if (hoja && fab && typeof hoja.showModal === 'function') {
+        var contado = document.getElementById('cierre-contado');
+        var errContado = document.getElementById('err-contado');
+        fab.addEventListener('click', function () {
+            hoja.showModal();
+            contado.focus();
+        });
+        document.getElementById('cerrar-hoja').addEventListener('click', function () { hoja.close(); });
+        hoja.addEventListener('click', function (e) { if (e.target === hoja) hoja.close(); });   // tocar afuera cierra
+        hoja.addEventListener('close', function () { fab.focus({ preventScroll: true }); });
+        contado.addEventListener('input', function () {
+            errContado.hidden = true;
+            contado.closest('.cj-hoja__campo').classList.remove('is-error');
+        });
+        document.getElementById('form-cierre-rapido').addEventListener('submit', function (e) {
+            if (contado.value.trim() === '') {
+                e.preventDefault();
+                errContado.hidden = false;
+                contado.closest('.cj-hoja__campo').classList.add('is-error');
+                contado.focus();
+            }
+        });
+    } else if (fab) {
+        // Navegador muy viejo sin <dialog>: el botón lleva a la página de cierre
+        fab.addEventListener('click', function () { location.href = fab.dataset.url; });
+    }
+
+    // Solo un «¿Quitar?» abierto a la vez; se cierra al tocar afuera
+    var quitar = document.querySelectorAll('.cj-quitar');
+    quitar.forEach(function (d) {
+        d.addEventListener('toggle', function () {
+            if (d.open) quitar.forEach(function (o) { if (o !== d) o.open = false; });
+        });
+    });
+    document.addEventListener('click', function (e) {
+        quitar.forEach(function (d) { if (d.open && !d.contains(e.target)) d.open = false; });
+    });
+
+    // Lista desplegable propia: el <select> queda escondido y es el que se envía
+    document.querySelectorAll('.cj [data-drop]').forEach(function (caja) {
+        var select = caja.querySelector('select');
+        var opciones = Array.prototype.slice.call(select.options);
+        var boton = document.createElement('button');
+        boton.type = 'button';
+        boton.className = 'cj-drop__btn';
+        boton.setAttribute('aria-haspopup', 'listbox');
+        boton.setAttribute('aria-expanded', 'false');
+        var etiqueta = caja.parentNode.querySelector('label');
+        if (etiqueta) { boton.id = select.id + '_btn'; etiqueta.setAttribute('for', boton.id); }
+        boton.innerHTML = '<span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>';
+        var lista = document.createElement('ul');
+        lista.className = 'cj-drop__list';
+        lista.setAttribute('role', 'listbox');
+        lista.id = select.id + '_lista';
+        lista.hidden = true;
+        boton.setAttribute('aria-controls', lista.id);
+        opciones.forEach(function (op, i) {
+            if (i === 0 && op.value === '') return;   // el «Elige…» no va en la lista
+            var li = document.createElement('li');
+            li.setAttribute('role', 'option');
+            li.id = lista.id + '_' + i;
+            li.dataset.indice = i;
+            li.textContent = op.textContent;
+            if (op.hasAttribute('data-otro')) li.className = 'is-otro';
+            lista.appendChild(li);
+        });
+        select.hidden = true;
+        select.tabIndex = -1;
+        caja.appendChild(boton);
+        caja.appendChild(lista);
+        var items = Array.prototype.slice.call(lista.children);
+        var activo = -1;
+
+        function pintar() {
+            var op = select.options[select.selectedIndex];
+            var span = boton.querySelector('span');
+            span.textContent = op ? op.textContent : '';
+            span.className = select.value ? '' : 'is-vacio';
+            items.forEach(function (li) { li.setAttribute('aria-selected', String(+li.dataset.indice === select.selectedIndex)); });
+        }
+        function marcar(i) {
+            items.forEach(function (li) { li.classList.remove('is-activa'); });
+            activo = Math.max(0, Math.min(items.length - 1, i));
+            if (!items[activo]) return;
+            items[activo].classList.add('is-activa');
+            items[activo].scrollIntoView({ block: 'nearest' });
+            boton.setAttribute('aria-activedescendant', items[activo].id);
+        }
+        function abrir() {
+            lista.hidden = false;
+            boton.setAttribute('aria-expanded', 'true');
+            var actual = items.findIndex(function (li) { return +li.dataset.indice === select.selectedIndex; });
+            marcar(actual < 0 ? 0 : actual);
+        }
+        function cerrar() {
+            lista.hidden = true;
+            boton.setAttribute('aria-expanded', 'false');
+            boton.removeAttribute('aria-activedescendant');
+        }
+        function elegir(i) {
+            if (!items[i]) return;
+            select.selectedIndex = +items[i].dataset.indice;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            pintar();
+            cerrar();
+            boton.focus();
+        }
+        boton.addEventListener('click', function () { lista.hidden ? abrir() : cerrar(); });
+        boton.addEventListener('keydown', function (e) {
+            var abierto = !lista.hidden;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!abierto) { abrir(); return; }
+                marcar(activo + (e.key === 'ArrowDown' ? 1 : -1));
+            } else if (e.key === 'Home' && abierto) { e.preventDefault(); marcar(0); }
+            else if (e.key === 'End' && abierto) { e.preventDefault(); marcar(items.length - 1); }
+            else if ((e.key === 'Enter' || e.key === ' ') && abierto) { e.preventDefault(); elegir(activo); }
+            else if (e.key === 'Escape' && abierto) { e.preventDefault(); e.stopPropagation(); cerrar(); }
+            else if (e.key === 'Tab' && abierto) { cerrar(); }
+        });
+        lista.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        lista.addEventListener('click', function (e) {
+            var li = e.target.closest('li');
+            if (li) elegir(items.indexOf(li));
+        });
+        lista.addEventListener('mousemove', function (e) {
+            var li = e.target.closest('li');
+            if (li && items.indexOf(li) !== activo) marcar(items.indexOf(li));
+        });
+        document.addEventListener('click', function (e) { if (!caja.contains(e.target)) cerrar(); });
+        pintar();
+    });
+
+    // «Otro»: aparece el campo para escribir el nombre
+    var selProv = document.getElementById('id_proveedor');
+    var campoOtro = document.getElementById('campo-otro');
+    if (selProv && campoOtro) {
+        selProv.addEventListener('change', function () {
+            var esOtro = selProv.value === 'otro';
+            campoOtro.hidden = !esOtro;
+            if (esOtro) document.getElementById('id_otro_nombre').focus();
+        });
+    }
+
+    // Si el pago tuvo errores, se baja directo al formulario
+    var formPago = document.getElementById('form-pago');
+    if (formPago && formPago.dataset.enfocar === '1') formPago.scrollIntoView({ block: 'center' });
+})();
+</script>
+{% endblock %}
