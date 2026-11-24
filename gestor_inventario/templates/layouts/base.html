@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Información - Tienda Nueva</title>
+    <title>{% block title %}Tienda Nueva - Información{% endblock %}</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640'><path fill='rgb(185, 28, 28)' d='M94.7 136.3C101.6 112.4 123.5 96 148.4 96L492.4 96C517.3 96 539.2 112.4 546.2 136.3L569.6 216.5C582.4 260.2 549.5 304 504 304C477.7 304 454.6 289.1 443.2 266.9C431.6 288.8 408.6 304 381.8 304C355.2 304 332.1 289 320.5 267C308.9 289 285.8 304 259.2 304C232.4 304 209.4 288.9 197.8 266.9C186.4 289 163.3 304 137 304C91.4 304 58.6 260.3 71.4 216.5L94.7 136.3zM160.4 416L480.4 416L480.4 349.6C488 351.2 495.9 352 503.9 352C518.2 352 531.9 349.4 544.4 344.8L544.4 496C544.4 522.5 522.9 544 496.4 544L144.4 544C117.9 544 96.4 522.5 96.4 496L96.4 344.8C108.9 349.4 122.5 352 136.9 352C145 352 152.8 351.2 160.4 349.6L160.4 416z'/></svg>">
 
@@ -90,28 +90,9 @@
             max-height: 200px; /* Aumentado para acomodar el rol */
             opacity: 1;
         }
-
-        /* Portada: la foto se va desvaneciendo sola hasta quedar transparente, así se funde con el
-           fondo de la página (claro u oscuro) sin dejar líneas ni bloques de otro color. */
-        .hero-foto {
-            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, rgba(0, 0, 0, .75) 72%, rgba(0, 0, 0, .4) 85%, rgba(0, 0, 0, .12) 95%, transparent 100%);
-                    mask-image: linear-gradient(to bottom, #000 0%, #000 58%, rgba(0, 0, 0, .75) 72%, rgba(0, 0, 0, .4) 85%, rgba(0, 0, 0, .12) 95%, transparent 100%);
-        }
-        @media (min-width: 768px) {
-            .hero-foto {
-                -webkit-mask-image:
-                    linear-gradient(to right, #000 0%, #000 45%, rgba(0, 0, 0, .85) 58%, rgba(0, 0, 0, .55) 72%, rgba(0, 0, 0, .25) 86%, rgba(0, 0, 0, .07) 95%, transparent 100%),
-                    linear-gradient(to bottom, #000 0%, #000 62%, rgba(0, 0, 0, .7) 77%, rgba(0, 0, 0, .3) 90%, transparent 100%);
-                -webkit-mask-composite: source-in;
-                        mask-image:
-                    linear-gradient(to right, #000 0%, #000 45%, rgba(0, 0, 0, .85) 58%, rgba(0, 0, 0, .55) 72%, rgba(0, 0, 0, .25) 86%, rgba(0, 0, 0, .07) 95%, transparent 100%),
-                    linear-gradient(to bottom, #000 0%, #000 62%, rgba(0, 0, 0, .7) 77%, rgba(0, 0, 0, .3) 90%, transparent 100%);
-                        mask-composite: intersect;
-            }
-        }
     </style>
 </head>
-<body class="bg-zinc-100 text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
+<body class="bg-zinc-100 text-gray-800 dark:bg-brand-darkbg dark:text-gray-200 transition-colors duration-500 min-h-screen flex flex-col font-sans relative overflow-x-hidden" data-admin="{% if user.is_authenticated and user.is_staff %}1{% else %}0{% endif %}">
 
     <!-- FONDO OSCURO PARA MÓVIL -->
     <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity backdrop-blur-sm"></div>
@@ -151,9 +132,6 @@
             </a>
             <a href="{% url 'ver_consumo' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
                 <i class="fa-solid fa-chart-pie w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Consumos
-            </a>
-            <a href="{% url 'lista_salidas' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
-                <i class="fa-solid fa-box w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Salida de productos
             </a>
             <a href="{% url 'proveedores' %}" class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-brand-red hover:text-white text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 font-semibold transition-all duration-200 group">
                 <i class="fa-solid fa-truck-field w-5 text-center text-brand-red group-hover:text-white transition-colors"></i> Proveedores
@@ -314,211 +292,7 @@
     </header>
 
     <main class="w-full flex-1 bg-zinc-100 dark:bg-brand-darkbg transition-colors duration-500">
-
-        <!-- ============================================================ -->
-        <!-- CONTENIDO DE LA PÁGINA DE INFORMACIÓN (integrado)            -->
-        <!-- ============================================================ -->
-
-        <section class="relative w-full mb-8 md:mb-12 overflow-hidden">
-            <div class="relative w-full grid grid-cols-1 md:grid-cols-[1.6fr_1fr] min-h-[60vh] md:min-h-[70vh] transition-all duration-500 ease-in-out">
-                <div class="hero-foto relative w-full h-[45vh] md:h-full min-h-[300px] md:min-h-full overflow-hidden">
-                    {% if imagenes %}
-                        <div id="carruselHero" class="relative w-full h-full">
-                            {% for imagen in imagenes %}
-                                <img src="{{ imagen.imagen.url }}"
-                                    alt="Imagen de la tienda"
-                                    class="carrusel-hero-img absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out {% if forloop.first %}opacity-100{% else %}opacity-0{% endif %}"
-                                    data-index="{{ forloop.counter0 }}">
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="w-full h-full bg-gray-200 dark:bg-[#1a1a1a] transition-colors duration-500 ease-in-out"></div>
-                    {% endif %}
-
-                    <!-- Oscurece un poco la foto para que no compita con el texto -->
-                    <div class="absolute inset-0 bg-black/10 dark:bg-black/35 transition-colors duration-500 ease-in-out"></div>
-                </div>
-
-                <!-- Sin fondo propio: usa el mismo de la página, por eso no se nota ningún corte -->
-                <div class="relative w-full flex items-center justify-start md:justify-end px-6 md:px-10 lg:px-14 py-4 md:py-16">
-                    <div class="w-full max-w-lg text-left md:text-right transition-colors duration-500 ease-in-out">
-                        <h1 class="text-5xl md:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight font-sans mb-6 transition-colors duration-500 ease-in-out">
-                            Bienvenido a <br class="hidden md:block">
-                            <span class="text-brand-red">Tienda Nueva</span>
-                        </h1>
-                        <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed font-medium transition-colors duration-500 ease-in-out">
-                            Tu destino de confianza para alimentos, aseo y papelería. Calidad y servicio en un solo lugar.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <div class="max-w-3xl mx-auto px-4">
-            <!-- PANEL DE ADMINISTRACIÓN -->
-            {% if user.is_authenticated and user.is_staff %}
-            <section id="adminPanel" class="mb-12 p-5 sm:p-6 rounded-3xl border border-gray-200 dark:border-[#1e1e1e] bg-white dark:bg-[#1a1a1a] shadow-sm transition-colors duration-500 ease-in-out scroll-mt-24">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 transition-colors duration-500 ease-in-out">
-                            <i class="fa-solid fa-shield-halved text-brand-red"></i> Imágenes del Carrusel
-                        </h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-500 ease-in-out">Sube fotos para la portada de la tienda.</p>
-                    </div>
-                    <button id="btnMostrarFormularioCarrusel" type="button" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-brand-red text-white font-bold hover:bg-red-700 transition shadow-md active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-plus"></i> Agregar Imagen
-                    </button>
-                </div>
-
-                <div id="formularioCarrusel" class="hidden mb-8 p-5 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#0f0f0f] transition-all duration-500 ease-in-out">
-                    <form method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
-                        {% csrf_token %}
-                        <input type="hidden" name="accion" value="agregar">
-                        
-                        <label for="imagenes" class="flex flex-col items-center justify-center w-full h-40 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1a1a1a] rounded-xl transition-colors">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <div class="w-12 h-12 mb-3 rounded-full bg-brand-red/10 text-brand-red flex items-center justify-center">
-                                    <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
-                                </div>
-                                <p class="mb-1 text-sm font-bold text-gray-700 dark:text-gray-300">Toca para buscar una foto</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG o JPG (Máx. 5MB)</p>
-                            </div>
-                            <input id="imagenes" name="imagenes" type="file" accept="image/png, image/jpeg" multiple required class="hidden">
-                        </label>
-                        <p id="nombreArchivo" class="text-sm font-semibold text-center text-brand-red dark:text-red-400 hidden"></p>
-
-                        <div class="flex gap-3">
-                            <button type="submit" class="flex-1 py-3 bg-brand-red text-white font-bold rounded-xl hover:bg-red-700 transition shadow-md active:scale-95">Subir Imágenes</button>
-                            <button type="button" id="btnCancelarFormularioCarrusel" class="flex-1 py-3 bg-gray-200 dark:bg-[#2a2a2a] text-gray-800 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-300 dark:hover:bg-[#333] transition active:scale-95">Cancelar</button>
-                        </div>
-                    </form>
-                </div>
-
-                {% if imagenes %}
-                <div class="relative mt-2">
-                    <button id="btnScrollLeft" type="button" class="absolute -left-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-md text-brand-red dark:text-red-400 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-
-                    <div id="adminGallery" class="flex overflow-x-auto gap-3 py-2 px-10 scroll-smooth snap-x snap-mandatory no-scrollbar">
-                        {% for imagen in imagenes %}
-                        <div class="snap-center shrink-0 relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 w-32 h-24 sm:w-40 sm:h-28 bg-gray-100 dark:bg-gray-800">
-                            <img src="{{ imagen.imagen.url }}" class="w-full h-full object-cover" alt="Imagen del carrusel">
-                            <div class="absolute inset-0 bg-black/60 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                                <div class="flex gap-2">
-                                    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="izquierda"><button type="submit" class="w-8 h-8 rounded-lg bg-white/90 text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center transition" {% if forloop.first %}disabled{% endif %}><i class="fa-solid fa-arrow-left text-xs"></i></button></form>
-                                    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="mover"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><input type="hidden" name="direccion" value="derecha"><button type="submit" class="w-8 h-8 rounded-lg bg-white/90 text-gray-900 hover:bg-brand-red hover:text-white flex items-center justify-center transition" {% if forloop.last %}disabled{% endif %}><i class="fa-solid fa-arrow-right text-xs"></i></button></form>
-                                </div>
-                                <form method="post" class="inline" onsubmit="return confirm('¿Eliminar esta imagen?');">{% csrf_token %}<input type="hidden" name="accion" value="eliminar"><input type="hidden" name="imagen_id" value="{{ imagen.id }}"><button type="submit" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Eliminar</button></form>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <button id="btnScrollRight" type="button" class="absolute -right-2 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-md text-brand-red dark:text-red-400 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
-                {% else %}
-                <div class="text-center py-8 bg-gray-50 dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800">
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">No hay imágenes en el carrusel todavía.</p>
-                </div>
-                {% endif %}
-            </section>
-            {% endif %}
-
-            <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-8 md:mt-16 mb-8 md:mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
-
-            <section class="mb-20">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3 transition-colors duration-500 ease-in-out">
-                    <span class="w-8 h-1 bg-brand-red inline-block"></span> ¿Qué encuentras aquí?
-                </h2>
-                <div id="bookContainer" class="bg-white dark:bg-[#0f0f0f] rounded-xl shadow-inset-lg border border-gray-200 dark:border-[#1e1e1e] overflow-hidden transition-colors duration-500 ease-in-out">
-                    <div id="bookHeader" class="bg-brand-red px-6 py-4 shadow-inset-sm">
-                        <h3 id="bookPageTitle" class="text-xl font-bold text-white text-center transition-all duration-300">Abarrotes</h3>
-                    </div>
-                    <div class="p-6 md:p-8 flex flex-col">
-                        <div id="bookPageContent" class="flex-1 transition-all duration-300"></div>
-                        <div class="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-[#1e1e1e] transition-colors duration-500 ease-in-out">
-                            <div class="flex gap-2">
-                                <button id="btnFirst" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition disabled:opacity-40" disabled>Primera</button>
-                                <button id="btnPrev" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition disabled:opacity-40" disabled>Volver</button>
-                            </div>
-                            <span id="pageIndicator" class="text-sm text-gray-500 dark:text-gray-400 font-medium order-first w-full text-center sm:order-none sm:w-auto transition-colors duration-500 ease-in-out">Página 1 de 7</span>
-                            <div class="flex gap-2">
-                                <button id="btnNext" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand-red text-white hover:bg-red-700 transition disabled:opacity-40">Siguiente</button>
-                                <button id="btnLast" class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 dark:bg-[#1e1e1e] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition disabled:opacity-40">Última</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="mb-0">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3 transition-colors duration-500 ease-in-out">
-                    <span class="w-8 h-1 bg-brand-red inline-block"></span> Medios de Pago
-                </h2>
-                <ul class="space-y-4">
-                    <li class="group flex items-center gap-4 p-5 bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl border border-gray-200 dark:border-[#1e1e1e] transition-all duration-300 hover:shadow-lg hover:border-brand-red/50">
-                        <div class="w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full group-hover:scale-110 transition-transform"><i class="fa-solid fa-money-bill-wave text-lg"></i></div>
-                        <div><h3 class="font-bold text-gray-900 dark:text-white transition-colors duration-300">Efectivo</h3><p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">Pago en tienda física</p></div>
-                    </li>
-                    <li class="group flex items-center gap-4 p-5 bg-gray-50 dark:bg-[#1e1e1e] rounded-2xl border border-gray-200 dark:border-[#1e1e1e] transition-all duration-300 hover:shadow-lg hover:border-brand-red/50">
-                        <div class="w-12 h-12 flex items-center justify-center bg-brand-red text-white rounded-full group-hover:scale-110 transition-transform"><i class="fa-solid fa-mobile-screen text-lg"></i></div>
-                        <div><h3 class="font-bold text-gray-900 dark:text-white transition-colors duration-300">Nequi</h3><p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">316 318 0459</p></div>
-                    </li>
-                </ul>
-            </section>
-
-            {% if not user.is_authenticated %}
-            <section class="mb-0">
-                <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-16 mb-10 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
-                <div class="relative overflow-hidden bg-brand-red rounded-3xl p-8 md:p-10 text-center shadow-xl">
-                    <div class="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-                        <div class="absolute -top-20 -left-20 w-80 h-80 bg-red-900 rounded-full opacity-40 blur-3xl"></div>
-                        <div class="absolute -bottom-24 -right-16 w-72 h-72 bg-red-800 rounded-full opacity-40 blur-3xl"></div>
-                        <div class="absolute top-4 right-12 w-40 h-40 bg-white rounded-full opacity-20 blur-2xl"></div>
-                        <div class="absolute top-1/2 left-1/3 w-48 h-48 bg-pink-300 rounded-full opacity-20 blur-3xl"></div>
-                    </div>
-                    <div class="relative z-10">
-                        <h3 class="text-2xl md:text-3xl font-bold text-white mb-3">Descubre todo lo que tenemos para ti</h3>
-                        <p class="text-white/90 text-lg mb-8">Inicia sesión para ver el catálogo de los productos</p>
-                        <a href="{% url 'login' %}" class="inline-flex items-center gap-3 bg-white text-brand-red font-bold py-4 px-10 rounded-full shadow-lg hover:-translate-y-1 transition"><i class="fa-regular fa-user"></i> Iniciar Sesión</a>
-                    </div>
-                </div>
-            </section>
-            {% endif %}
-
-            <section id="nosotros" class="scroll-mt-24 mb-20">
-                <div class="w-[70%] sm:w-64 md:w-80 lg:w-96 h-1 bg-brand-red mx-auto mt-16 mb-16 transition-all duration-500 hover:w-[80%] md:hover:w-[26rem] hover:bg-red-700"></div>
-                <div class="text-center md:text-left mb-10">
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 transition-colors duration-500 ease-in-out">Sobre <span class="text-brand-red">Nosotros</span></h2>
-                </div>
-                <div class="space-y-12">
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3 transition-colors duration-500 ease-in-out"><span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Historia</h3>
-                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg transition-colors duration-500 ease-in-out">Fundada el <strong class="text-gray-900 dark:text-white">19 de enero de 1998</strong> bajo el nombre de <strong class="text-gray-900 dark:text-white">Tienda FEMA</strong>, hoy en día somos conocidos como <strong class="text-gray-900 dark:text-white">Tienda Nueva</strong>. Mantenemos siempre nuestro compromiso con la calidad y el buen servicio.</p>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3 transition-colors duration-500 ease-in-out"><span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestro Equipo</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div class="border-l-2 border-gray-200 dark:border-[#1e1e1e] pl-4 transition-colors duration-500 ease-in-out"><h4 class="text-sm font-bold text-gray-500 uppercase mb-2 transition-colors duration-500 ease-in-out">Fundadores</h4><p class="text-lg text-gray-900 dark:text-white transition-colors duration-500 ease-in-out">Carlos Fernando Andrade & Luz Marina Rodríguez</p></div>
-                            <div class="border-l-2 border-gray-200 dark:border-[#1e1e1e] pl-4 transition-colors duration-500 ease-in-out"><h4 class="text-sm font-bold text-gray-500 uppercase mb-2 transition-colors duration-500 ease-in-out">Dueño Actual</h4><p class="text-lg text-gray-900 dark:text-white transition-colors duration-500 ease-in-out">Oscar Daniel Andrade</p></div>
-                        </div>
-                        <p class="mt-6 text-gray-600 dark:text-gray-400 italic text-lg transition-colors duration-500 ease-in-out">"Agradecemos a cada persona que ha confiado en nosotros a lo largo de estos años."</p>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3 transition-colors duration-500 ease-in-out"><span class="w-8 h-1 bg-brand-red inline-block"></span> Nuestra Misión</h3>
-                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg transition-colors duration-500 ease-in-out">Proveer productos de calidad a precios justos, sirviendo a nuestra comunidad con la calidez de siempre.</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- FIN CONTENIDO INFORMACIÓN                                    -->
-        <!-- ============================================================ -->
-
+        {% block content %}{% endblock %}
     </main>
 
 <!-- FOOTER -->
@@ -547,6 +321,9 @@
         &copy; 1998 - 2026 Tienda Nueva. Todos los derechos reservados.
     </div>
 </footer>
+
+    {# Mensajes de Django para la campanita: van aquí en HTML y no dentro del JavaScript, así VS Code no marca errores #}
+    <div id="mensajes-django" hidden>{% for message in messages %}<span data-tags="{{ message.tags }}">{{ message }}</span>{% endfor %}</div>
 
     <!-- LÓGICA JAVASCRIPT DEL LAYOUT BASE -->
     <script>
@@ -596,18 +373,23 @@
 
         const MAX_VISIBLE_NOTIFS = 3;
         const EXPIRATION_MS = 5 * 60 * 1000;
-        const isAdmin = {% if user.is_authenticated and user.is_staff %}true{% else %}false{% endif %};
+        const isAdmin = document.body.dataset.admin === '1';
 
         let allNotifs = [];
         try {
             allNotifs = JSON.parse(localStorage.getItem('tienda_notifs') || '[]');
         } catch (e) {}
 
-        const djangoMessages = [
-            {% for message in messages %}
-                { text: "{{ message|escapejs }}", tags: "{{ message.tags|escapejs }}", timestamp: Date.now() },
-            {% endfor %}
-        ];
+        const djangoMessages = Array.from(document.querySelectorAll('#mensajes-django span')).map(el => ({
+            text: el.textContent,
+            tags: el.dataset.tags || '',
+            timestamp: Date.now()
+        }));
+
+        // El texto de un aviso puede traer el nombre de un producto: se escapa para que no se ejecute como HTML
+        function escaparHTML(texto) {
+            return String(texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        }
 
         let validNewMessages = djangoMessages.filter(msg => {
             if (isAdmin) return true;
@@ -668,7 +450,7 @@
                             <i class="fa-solid ${icon} ${iconColor} text-sm"></i>
                         </div>
                         <div class="flex-1 min-w-0 pr-1">
-                            <p class="text-[13px] font-medium leading-snug text-gray-800 dark:text-gray-200">${notif.text}</p>
+                            <p class="text-[13px] font-medium leading-snug text-gray-800 dark:text-gray-200">${escaparHTML(notif.text)}</p>
                             <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
                                 <i class="fa-regular fa-clock"></i> Hace un momento
                             </p>
@@ -725,258 +507,5 @@
         applyThemeIcons();
     </script>
 
-    <!-- LÓGICA JAVASCRIPT DE LA PÁGINA DE INFORMACIÓN -->
-    <script>
-        // 1. Animación de entrada del Hero
-        (function animarEntrada() {
-            const hero = document.querySelector('section.relative.w-full');
-            if (!hero) return;
-            hero.style.opacity = '0';
-            hero.style.transform = 'translateY(20px)';
-            void hero.offsetWidth;
-            hero.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
-            requestAnimationFrame(() => {
-                hero.style.opacity = '1';
-                hero.style.transform = 'translateY(0)';
-            });
-        })();
-
-        // 2. Scroll al panel de admin si hay mensajes
-        (function mantenerScrollAdmin() {
-            const tieneMensajes = document.querySelector('.mb-6 .p-4.rounded-lg');
-            if (tieneMensajes) {
-                const adminPanel = document.getElementById('adminPanel');
-                if (adminPanel) {
-                    setTimeout(() => {
-                        adminPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
-                }
-            }
-        })();
-
-        // 3. Scroll Horizontal de la Galería de Imágenes
-        (function configurarScrollAdmin() {
-            const gallery = document.getElementById('adminGallery');
-            const btnLeft = document.getElementById('btnScrollLeft');
-            const btnRight = document.getElementById('btnScrollRight');
-
-            if (gallery && btnLeft && btnRight) {
-                btnLeft.addEventListener('click', () => {
-                    gallery.scrollBy({ left: -200, behavior: 'smooth' });
-                });
-                btnRight.addEventListener('click', () => {
-                    gallery.scrollBy({ left: 200, behavior: 'smooth' });
-                });
-            }
-        })();
-
-        // 4. Estilos dinámicos para el contenedor del libro
-        (function aplicarEstilosLibro() {
-            const content = document.getElementById('bookPageContent');
-            if (!content) return;
-            content.style.maxHeight = '340px';
-            content.style.overflowY = 'auto';
-            content.style.paddingRight = '0.5rem';
-            content.style.scrollBehavior = 'smooth';
-            content.style.scrollbarWidth = 'thin';
-            content.style.scrollbarColor = '#b91c1c #f3f4f6';
-
-            const sheet = document.createElement('style');
-            sheet.textContent = `
-                #bookPageContent::-webkit-scrollbar { width: 6px; }
-                #bookPageContent::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
-                #bookPageContent::-webkit-scrollbar-thumb { background: #b91c1c; border-radius: 8px; }
-                .dark #bookPageContent::-webkit-scrollbar-track { background: #2a2a2a; }
-                .dark #bookPageContent { scrollbar-color: #b91c1c #2a2a2a; }
-            `;
-            document.head.appendChild(sheet);
-
-            const ajustarResponsive = () => {
-                if (window.innerWidth <= 640) {
-                    content.style.maxHeight = '280px';
-                } else {
-                    content.style.maxHeight = '340px';
-                }
-            };
-            ajustarResponsive();
-            window.addEventListener('resize', ajustarResponsive);
-        })();
-
-        // 5. Sombras dinámicas para el libro (modo claro/oscuro)
-        (function aplicarSombrasInset() {
-            const bookContainer = document.getElementById('bookContainer');
-            const bookHeader = document.getElementById('bookHeader');
-            if (bookContainer) {
-                const aplicar = () => {
-                    const esDark = document.documentElement.classList.contains('dark');
-                    bookContainer.style.boxShadow = esDark
-                        ? 'inset 0 4px 12px rgba(0, 0, 0, 0.35)'
-                        : 'inset 0 4px 12px rgba(0, 0, 0, 0.08)';
-                };
-                aplicar();
-                new MutationObserver(aplicar).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-            }
-            if (bookHeader) {
-                const aplicar = () => {
-                    const esDark = document.documentElement.classList.contains('dark');
-                    bookHeader.style.boxShadow = esDark
-                        ? 'inset 0 2px 6px rgba(0, 0, 0, 0.4)'
-                        : 'inset 0 2px 6px rgba(0, 0, 0, 0.2)';
-                };
-                aplicar();
-                new MutationObserver(aplicar).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-            }
-        })();
-
-        function animarCambioPagina(elemento) {
-            elemento.style.opacity = '0';
-            elemento.style.transform = 'translateX(12px)';
-            void elemento.offsetWidth;
-            elemento.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
-            requestAnimationFrame(() => {
-                elemento.style.opacity = '1';
-                elemento.style.transform = 'translateX(0)';
-            });
-        }
-
-        // 6. Carrusel Automático del Hero
-        (function iniciarHeroCarrusel() {
-            const imagenes = document.querySelectorAll('.carrusel-hero-img');
-            if (imagenes.length <= 1) return;
-
-            let currentIndex = 0;
-            const INTERVALO_MS = 6000;
-
-            setInterval(() => {
-                imagenes[currentIndex].classList.remove('opacity-100');
-                imagenes[currentIndex].classList.add('opacity-0');
-                currentIndex = (currentIndex + 1) % imagenes.length;
-                imagenes[currentIndex].classList.remove('opacity-0');
-                imagenes[currentIndex].classList.add('opacity-100');
-            }, INTERVALO_MS);
-        })();
-
-        // 7. Datos del Libro de Productos (LISTA COMPLETA)
-        const bookPages = [
-            { title: "Abarrotes", items: ["Aceites", "Granos", "Azúcar", "Sal", "Panela", "Mantequilla", "Galletas", "Enlatados", "Papel higiénico", "Toallas de cocina", "Servilletas", "Café instantáneo y molido", "Condimentos", "Kelloggs", "Dulcería", "Harina para arepas", "Harina de trigo", "Avena en hojuelas", "Chocolate", "Milo", "Mermeladas", "Aderezos", "Miel de abejas", "Vinagre", "Cremas de leche", "Papel aluminio", "Papel vinipel", "Veladoras", "Pañales desechables", "Refrescos en polvo", "Conservas", "Fósforos", "Mecheras", "Pastillas raid", "Raid aerosoles"] },
-            { title: "Aseo Personal", items: ["Jabones", "Crema dental", "Shampoo", "Cepillos", "Desodorante", "Gel para el cabello", "Bloqueador solar", "Listerine", "Toallas higiénicas", "Afeitadoras", "Seda dental", "Pañitos húmedos", "Pañuelos faciales", "Copitos"] },
-            { title: "Aseo General", items: ["Jabones en polvo", "Jabones en barra", "Jabón líquido", "Límpido", "Aromatizantes para baño", "Aromatizantes para piso", "Varsol", "Ácido muriático", "Guantes", "Esponjas", "Escobas", "Traperos", "Recogedores", "Cepillos de lavar ropa", "Bolsas para la basura", "Pastas de cloro", "Productos de plaza", "Productos de panadería", "Concentrado para animales"] },
-            { title: "Bebidas", items: ["Gaseosas", "Whisky", "Crema de Whisky", "Vinos", "Aguardiente", "Ron", "Tequila", "Sabajón", "Piña colada", "Cervezas", "Cócteles", "Bebidas energizantes", "Sueros", "Jugos", "Yogur", "Kumis"] },
-            { title: "Medicamentos", items: ["Para la gripe", "Dolores en general", "Malestar estomacal", "Reflujo gástrico", "Para la tos", "Diarrea", "Cólicos menstruales", "Curas", "Crema yodora", "Piedra alumbre", "Aceite de almendra", "Vaselina", "Talcos", "Preservativos", "Suero en sobres"] },
-            { title: "Cacharrería y Papelería", items: ["Metros de modistería", "Cortaúñas", "Ganchos para el cabello", "Nodriza", "Guantes de látex", "Lluvia de sobres", "Bombillos", "Cinta dorada", "Canicas", "Caucho olla exprés", "Cartas españolas", "Dominó", "Ajedrez", "Parqués", "Fichas para parqués", "Tapa bocas", "Memorias USB", "Agujas", "Hilos", "Cinta de enmascarar", "Cinta aislante", "Cinta teflón", "Tarritos para muestra médica", "Algodón", "Gasa", "Micropore", "Esparadrapo", "Jeringas", "Pilas", "Medias para colegio", "Medias para fútbol", "Talonario de rifas", "Recibo de caja", "Factureros", "Silicona barra", "Silicona líquida", "Palo pincho", "Gancho legajador", "Cordones", "Bolas de icopor", "Vasos de icopor", "Vasos plásticos", "Platos de icopor", "Bandejas de icopor", "Cubiertos plásticos", "Bandejas para lasaña", "Alcancías", "Lupas", "Velas de parafina", "Velas de cebo", "Vela volcán", "Platillas para zapatos", "Toallas para cocina", "Bolsas de regalo", "Limas", "Cauchitos para el cabello", "Bombas", "Peinetas", "Palo para helado", "Esmaltes", "Removedor", "Tiras para brasieres"] },
-            { title: "Papelería", items: ["Papel calcante", "Cuadernos", "Lapiceros", "Borradores", "Taja lápiz", "Marcadores", "Crayones", "Forros para cuadernos", "Clips", "Correctores", "Pegantes en barra", "Pegantes líquidos", "Reglas", "Grapadoras", "Bisturí", "Cartón paja", "Fomi", "Block carta", "Carpeta de presentación", "Resma oficio", "Resma carta", "Cartulinas", "Papel crepé", "Papel seda", "Témperas", "Sobre de manila", "Sobre de carta"] }
-        ];
-
-        let currentPage = 0;
-        const totalPages = bookPages.length;
-        const pageTitleEl = document.getElementById('bookPageTitle');
-        const pageContentEl = document.getElementById('bookPageContent');
-        const pageIndicatorEl = document.getElementById('pageIndicator');
-        const btnFirst = document.getElementById('btnFirst');
-        const btnPrev = document.getElementById('btnPrev');
-        const btnNext = document.getElementById('btnNext');
-        const btnLast = document.getElementById('btnLast');
-        const bookHeaderEl = document.getElementById('bookHeader');
-
-        function renderPage(scrollToBook = false) {
-            const page = bookPages[currentPage];
-            pageTitleEl.textContent = page.title;
-
-            const ul = document.createElement('ul');
-            ul.style.columns = window.innerWidth <= 640 ? '1' : '2';
-            ul.style.columnGap = '1.5rem';
-            ul.style.listStyle = 'none';
-            ul.style.padding = '0';
-            ul.style.margin = '0';
-
-            const esDark = document.documentElement.classList.contains('dark');
-
-            page.items.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = item;
-                li.style.breakInside = 'avoid';
-                li.style.padding = '0.2rem 0';
-                li.style.color = esDark ? '#f3f4f6' : '#4b5563';
-                li.style.fontSize = '0.95rem';
-                li.style.display = 'flex';
-                li.style.alignItems = 'baseline';
-                li.style.gap = '0.4rem';
-
-                const punto = document.createElement('span');
-                punto.textContent = '•';
-                punto.style.color = '#b91c1c';
-                punto.style.fontWeight = 'bold';
-                punto.style.fontSize = '1.2rem';
-                punto.style.lineHeight = '1';
-                li.prepend(punto);
-                ul.appendChild(li);
-            });
-
-            pageContentEl.innerHTML = '';
-            pageContentEl.appendChild(ul);
-            animarCambioPagina(pageContentEl);
-            pageContentEl.scrollTop = 0;
-
-            pageIndicatorEl.textContent = `Página ${currentPage + 1} de ${totalPages}`;
-            btnFirst.disabled = currentPage === 0;
-            btnPrev.disabled = currentPage === 0;
-            btnNext.disabled = currentPage === totalPages - 1;
-            btnLast.disabled = currentPage === totalPages - 1;
-
-            if (scrollToBook) {
-                const HEADER_OFFSET = 90;
-                const headerRect = bookHeaderEl.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                window.scrollTo({ top: headerRect.top + scrollTop - HEADER_OFFSET, behavior: 'smooth' });
-            }
-        }
-
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => renderPage(false), 200);
-        });
-
-        new MutationObserver(() => renderPage(false)).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-        btnFirst.addEventListener('click', () => { if (currentPage > 0) { currentPage = 0; renderPage(true); } });
-        btnPrev.addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderPage(true); } });
-        btnNext.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage++; renderPage(true); } });
-        btnLast.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage = totalPages - 1; renderPage(true); } });
-        renderPage(false);
-
-        // 8. Formulario de subida de imágenes
-        const btnMostrarForm = document.getElementById('btnMostrarFormularioCarrusel');
-        const formulario = document.getElementById('formularioCarrusel');
-        const btnCancelarForm = document.getElementById('btnCancelarFormularioCarrusel');
-        const inputImg = document.getElementById('imagenes');
-        const nombreArchivo = document.getElementById('nombreArchivo');
-
-        if (btnMostrarForm && formulario) {
-            btnMostrarForm.addEventListener('click', () => {
-                formulario.classList.toggle('hidden');
-            });
-            if (btnCancelarForm) {
-                btnCancelarForm.addEventListener('click', () => {
-                    formulario.classList.add('hidden');
-                });
-            }
-        }
-
-        if (inputImg) {
-            inputImg.addEventListener('change', function() {
-                if (this.files && this.files.length > 0) {
-                    if (this.files.length === 1) {
-                        nombreArchivo.textContent = 'Seleccionado: ' + this.files[0].name;
-                    } else {
-                        nombreArchivo.textContent = `Seleccionadas ${this.files.length} imágenes`;
-                    }
-                    nombreArchivo.classList.remove('hidden');
-                } else {
-                    nombreArchivo.classList.add('hidden');
-                }
-            });
-        }
-    </script>
 </body>
 </html>
