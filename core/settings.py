@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'productos',
     'salidas',
     'reportes',
+    'caja',
 ]
 
 MIDDLEWARE = [
@@ -201,3 +202,5 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # que no se cierre al cerrar el navegad
 
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+
+CAJA_MODO_PRUEBAS = True
