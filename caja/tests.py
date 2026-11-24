@@ -3,7 +3,7 @@ from datetime import datetime, time, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -121,7 +121,7 @@ class AperturaTests(Base):
     def test_avisa_ventas_de_hoy_antes_de_abrir(self):
         self.vender(2)
         r = self.client.get(reverse('caja_hoy'))
-        self.assertContains(r, '1 venta</strong>')
+        self.assertContains(r, '<b>1</b> venta hoy')
 
 
 class PagosTests(Base):
@@ -159,6 +159,21 @@ class PagosTests(Base):
             self.assertEqual(r.status_code, 200, datos)
             self.assertContains(r, 'cj-err')
         self.assertFalse(PagoProveedor.objects.exists())
+
+    def test_el_formulario_esta_recogido_hasta_que_se_abre(self):
+        r = self.client.get(reverse('caja_hoy'))
+        self.assertContains(r, '<details class="cj-desp">')
+        self.assertContains(r, 'Anotar un pago')
+        r = self.client.post(self.url, {'proveedor': '', 'valor': '1000'})   # con error queda abierto
+        self.assertContains(r, '<details class="cj-desp" open>')
+
+    def test_avisa_si_los_proveedores_estan_inactivos(self):
+        Proveedor.objects.filter(pk=self.proveedor.pk).update(activo=False)
+        r = self.client.get(reverse('caja_hoy'))
+        self.assertContains(r, 'Hay 2 proveedores pero están inactivos')
+        Proveedor.objects.all().delete()
+        r = self.client.get(reverse('caja_hoy'))
+        self.assertContains(r, 'No hay proveedores registrados')
 
     def test_el_tope_cuenta_las_ventas(self):
         self.vender(10)   # $30.000 más en la caja
@@ -208,6 +223,49 @@ class CierreTests(Base):
         self.client.post(reverse('registrar_pago', args=[self.caja.id]), {'proveedor': self.proveedor.id, 'valor': '7.000'})
         # esperado sin transferencias = 50.000 + 19.000 - 7.000 = 62.000
 
+    def test_boton_redondo_abre_el_cierre_desde_la_caja(self):
+        self.preparar_dia()
+        h = self.client.get(reverse('caja_hoy'))
+        self.assertContains(h, 'id="abrir-cierre"')
+        self.assertContains(h, f'action="{reverse("cerrar_caja", args=[self.caja.id])}"')
+        self.assertContains(h, 'name="contado"')
+        self.assertNotContains(h, 'name="transferencias"')          # las transferencias no se escriben
+        self.assertNotContains(h, '$62.000')                       # la ventana no dice cuánto debería haber
+        # Lo que se manda desde la ventana lleva al paso de revisar (todavía no cierra)
+        r = self.client.post(reverse('cerrar_caja', args=[self.caja.id]),
+                             {'contado': '62.000', 'transferencias': '', 'observacion': ''})
+        self.assertEqual(r.context['paso'], 'confirmar')
+        self.assertTrue(CajaDiaria.objects.get(pk=self.caja.pk).esta_abierta)
+
+    def test_ventas_de_hoy_de_5_en_5(self):
+        self.abrir('50.000')
+        ahora = timezone.now()
+        for i in range(12):                                    # la venta 11 es la más reciente
+            self.vender(1, precio=1000 + i, cuando=ahora - timedelta(seconds=12 - i))
+        h = self.client.get(reverse('caja_hoy'))
+        pagina = h.context['ventas_pagina']
+        self.assertEqual((pagina.paginator.count, pagina.paginator.num_pages, len(pagina)), (12, 3, 5))
+        self.assertEqual(int(pagina[0].precio), 1011)
+        self.assertContains(h, 'Del <b>1</b> al <b>5</b> de <b>12</b>')
+        self.assertContains(h, f'href="{reverse("caja_hoy")}?ventas=2#ventas"')
+        h = self.client.get(reverse('caja_hoy') + '?ventas=3')
+        self.assertEqual([int(v.precio) for v in h.context['ventas_pagina']], [1001, 1000])
+        h = self.client.get(reverse('caja_hoy') + '?ventas=99')   # página que no existe: la última
+        self.assertEqual(h.context['ventas_pagina'].number, 3)
+        h = self.client.get(reverse('caja_hoy') + '?ventas=abc')  # basura: la primera
+        self.assertEqual(h.context['ventas_pagina'].number, 1)
+
+    def test_con_5_ventas_o_menos_no_hay_paginas(self):
+        self.abrir('50.000')
+        for _ in range(5):
+            self.vender(1)
+        h = self.client.get(reverse('caja_hoy'))
+        self.assertNotContains(h, 'aria-label="Páginas de ventas"')
+
+    def test_sin_caja_abierta_no_hay_boton_redondo(self):
+        h = self.client.get(reverse('caja_hoy'))
+        self.assertNotContains(h, 'id="abrir-cierre"')
+
     def test_resumen_en_la_pagina_de_cierre(self):
         self.preparar_dia()
         r = self.client.get(reverse('cerrar_caja', args=[self.caja.id]))
@@ -241,16 +299,14 @@ class CierreTests(Base):
         self.assertEqual(c.cerrada_por, self.admin)
         self.assertIsNotNone(c.cerrada_en)
 
-    def test_transferencias_bajan_lo_esperado(self):
+    def test_no_se_pueden_escribir_transferencias(self):
         self.preparar_dia()
-        self.cerrar(self.caja, '52.000', transferencias='10.000', esperado=52000)
+        r = self.client.get(reverse('cerrar_caja', args=[self.caja.id]))
+        self.assertNotContains(r, 'name="transferencias"')
+        # Aunque alguien mande el campo a mano, se ignora: sin carrito todo cuenta como efectivo
+        self.cerrar(self.caja, '62.000', transferencias='10.000', esperado=62000)
         c = CajaDiaria.objects.get(pk=self.caja.pk)
-        self.assertEqual((c.transferencias, c.esperado, c.diferencia), (10000, 52000, 0))
-
-    def test_transferencias_no_pueden_pasar_lo_vendido(self):
-        self.preparar_dia()
-        r = self.cerrar(self.caja, '0', transferencias='19.001', confirmado=False)
-        self.assertContains(r, 'No puede ser más de lo vendido')
+        self.assertEqual((c.transferencias, c.esperado, c.diferencia, c.resultado), (0, 62000, 0, 'cuadra'))
 
     def test_faltante_exige_observacion(self):
         self.preparar_dia()
@@ -342,7 +398,26 @@ class CierreTests(Base):
         self.preparar_dia()
         r = self.client.post(reverse('cerrar_caja', args=[self.caja.id]), {'contado': '60000', 'transferencias': '0', 'observacion': 'hola mundo', 'corregir': '1'})
         self.assertContains(r, 'Revisar cierre')
-        self.assertContains(r, 'value="60000"')
+        # Vuelve con lo contado fijo: solo se puede cambiar la observación
+        self.assertContains(r, '<input type="hidden" name="contado" id="id_contado" value="60000">')
+        self.assertNotContains(r, 'type="text" name="contado"')
+        self.assertContains(r, 'hola mundo')
+
+    def test_lo_contado_no_se_puede_editar_despues_de_escribirlo(self):
+        self.preparar_dia()
+        # Al entrar por primera vez sí se escribe
+        r = self.client.get(reverse('cerrar_caja', args=[self.caja.id]))
+        self.assertContains(r, 'type="text" name="contado"')
+        # Si falta la observación vuelve con el dinero fijo
+        r = self.cerrar(self.caja, '60.000', confirmado=False)
+        self.assertContains(r, 'Hay sobrante o faltante')
+        self.assertContains(r, 'Ya quedó escrito y no se puede cambiar')
+        self.assertEqual(r.context['contado_fijo'], 60000)
+        self.assertNotContains(r, 'type="text" name="contado"')
+        # Si lo escrito no sirve, sigue abierto para escribirlo bien
+        r = self.cerrar(self.caja, 'abc', confirmado=False)
+        self.assertIsNone(r.context['contado_fijo'])
+        self.assertContains(r, 'type="text" name="contado"')
 
 
 class HistorialTests(Base):
@@ -365,15 +440,21 @@ class HistorialTests(Base):
     def test_lista_mas_reciente_primero(self):
         r = self.client.get(reverse('historial_cajas'))
         self.assertEqual(list(r.context['cajas']), [self.a, self.b, self.c])
-        self.assertEqual(r.context['suma']['vendido'], 6000)
-        self.assertEqual(r.context['suma']['diferencias'], -500)
-        self.assertEqual(r.context['suma']['perdidas'], 300)
+        self.assertNotContains(r, 'Resumen de')          # ya no hay resumen, solo la lista
+        self.assertContains(r, 'Elige un mes')           # sin mes, el filtro de día está apagado
+        self.assertContains(r, 'name="dia" id="id_dia" disabled')
 
-    def test_filtro_por_resultado(self):
-        r = self.client.get(reverse('historial_cajas'), {'resultado': 'faltante'})
-        self.assertEqual(list(r.context['cajas']), [self.c])
-        # El resumen sigue siendo de todo el período
-        self.assertEqual(r.context['suma']['dias'], 3)
+    def test_filtro_por_dia(self):
+        dia = f'{self.b.fecha:%Y-%m-%d}'
+        r = self.client.get(reverse('historial_cajas'), {'mes': f'{self.b.fecha:%Y-%m}', 'dia': dia})
+        self.assertEqual(list(r.context['cajas']), [self.b])
+        self.assertIn(dia, [d['valor'] for d in r.context['dias']])
+        # Solo con el día también sirve: el mes sale de ahí
+        r = self.client.get(reverse('historial_cajas'), {'dia': dia})
+        self.assertEqual((list(r.context['cajas']), r.context['mes']), ([self.b], f'{self.b.fecha:%Y-%m}'))
+        # Un día sin cierre no filtra nada raro: se ignora
+        r = self.client.get(reverse('historial_cajas'), {'dia': f'{self.hoy:%Y-%m-%d}'})
+        self.assertEqual(len(r.context['cajas']), 3)
 
     def test_filtro_por_mes(self):
         mes = f'{self.c.fecha:%Y-%m}'
@@ -382,16 +463,17 @@ class HistorialTests(Base):
         self.assertTrue(all(f'{x.fecha:%Y-%m}' == mes for x in r.context['cajas']))
 
     def test_parametros_raros_no_rompen(self):
-        for params in ({'mes': '2026-99'}, {'mes': '<script>'}, {'resultado': 'x'}, {'por': '999'}, {'pagina': 'abc'}, {'pagina': '-1'}):
+        for params in ({'mes': '2026-99'}, {'mes': '<script>'}, {'dia': '2026-02-30'}, {'dia': 'x'}, {'dia': '1999-01-01'},
+                       {'pagina': 'abc'}, {'pagina': '-1'}):
             r = self.client.get(reverse('historial_cajas'), params)
             self.assertEqual(r.status_code, 200, params)
 
     def test_paginacion(self):
         for i in range(3, 25):
             self.crear_cerrada(i + 50, 10, 10, CajaDiaria.CUADRA)
-        r = self.client.get(reverse('historial_cajas'), {'por': '20'})
-        self.assertEqual(len(r.context['cajas']), 20)
-        r = self.client.get(reverse('historial_cajas'), {'por': '20', 'pagina': '2'})
+        r = self.client.get(reverse('historial_cajas'))
+        self.assertEqual(len(r.context['cajas']), 10)                 # de 10 en 10
+        r = self.client.get(reverse('historial_cajas'), {'pagina': '3'})
         self.assertEqual(len(r.context['cajas']), 5)
 
     def test_csv(self):
@@ -400,6 +482,8 @@ class HistorialTests(Base):
         texto = r.content.decode('utf-8-sig')
         self.assertEqual(len(texto.strip().splitlines()), 4)   # encabezado + 3 cierres
         self.assertIn("'=HYPERLINK", texto)
+        r = self.client.get(reverse('historial_cajas'), {'dia': f'{self.b.fecha:%Y-%m-%d}', 'formato': 'csv'})
+        self.assertEqual(len(r.content.decode('utf-8-sig').strip().splitlines()), 2)   # encabezado + ese día
 
     def test_detalle_y_caja_abierta(self):
         r = self.client.get(reverse('detalle_caja', args=[self.b.id]))
@@ -575,29 +659,31 @@ class CajaConCobrosTests(Base):
         self.assertEqual((r['sin_cobro_cantidad'], r['sin_cobro_total']), (1, 3000))
         self.assertEqual(r['esperado_ahora'], 63000)
         h = self.client.get(reverse('caja_hoy'))
-        self.assertContains(h, '$63.000')
+        self.assertContains(h, '$24.500')               # arriba sale lo vendido
+        self.assertNotContains(h, '$63.000')            # pero no cuánto debería haber en el cajón
+        self.assertNotContains(h, 'Debería haber')
         self.assertContains(h, 'cj-metodo--mixto')
 
-    def test_cierre_suma_las_transferencias_del_carrito(self):
+    def test_transferencias_salen_solas_de_los_cobros(self):
         self.dia_mezclado()
-        # De la venta sin cobro (3.000) entraron 1.000 por transferencia: debería haber 62.000
-        r = self.cerrar(self.caja, '62.000', transferencias='1.000', esperado=62000)
+        h = self.client.get(reverse('caja_hoy'))
+        self.assertContains(h, 'Transferencias del carrito: <b>$11.500</b>')
+        r = self.client.get(reverse('cerrar_caja', args=[self.caja.id]))
+        self.assertContains(r, 'Las transferencias salen solas de los cobros del carrito')
+        self.assertContains(r, 'La venta que no pasó por el carrito se cuenta como efectivo')
+        # Lo escrito a mano no cuenta: solo los 11.500 del carrito, la venta sin cobro va como efectivo
+        r = self.cerrar(self.caja, '63.000', transferencias='1.000', esperado=63000)
         self.assertRedirects(r, reverse('detalle_caja', args=[self.caja.id]))
         c = CajaDiaria.objects.get(pk=self.caja.pk)
-        self.assertEqual((c.transferencias, c.esperado, c.diferencia, c.resultado), (12500, 62000, 0, 'cuadra'))
+        self.assertEqual((c.transferencias, c.esperado, c.diferencia, c.resultado), (11500, 63000, 0, 'cuadra'))
         d = self.client.get(reverse('detalle_caja', args=[c.id]))
         self.assertContains(d, '3 cobros con el carrito')
 
-    def test_lo_escrito_no_pasa_de_lo_vendido_sin_cobro(self):
-        self.dia_mezclado()
-        r = self.cerrar(self.caja, '0', transferencias='3.001', confirmado=False)
-        self.assertContains(r, 'No puede ser más de lo vendido sin cobro ($3.000)')
-
-    def test_todo_por_carrito_no_pregunta_transferencias(self):
+    def test_todo_por_carrito(self):
         self.cobrar([{'id': self.pan.id, 'cantidad': 2}], 'transferencia')   # 13.000
         r = self.client.get(reverse('cerrar_caja', args=[self.caja.id]))
-        self.assertContains(r, 'Todo lo de hoy se cobró con el carrito')
-        self.assertNotContains(r, 'id="linea-transf"')
+        self.assertContains(r, 'Las transferencias salen solas de los cobros del carrito: <b>$13.000</b>')
+        self.assertNotContains(r, 'como efectivo')
         self.cerrar(self.caja, '50.000', esperado=50000)
         c = CajaDiaria.objects.get(pk=self.caja.pk)
         self.assertEqual((c.transferencias, c.esperado, c.resultado), (13000, 50000, 'cuadra'))
@@ -606,6 +692,56 @@ class CajaConCobrosTests(Base):
         self.cobrar([{'id': self.pan.id, 'cantidad': 2}], 'transferencia')   # entra 13.000 pero no al cajón
         url = reverse('registrar_pago', args=[self.caja.id])
         r = self.client.post(url, {'proveedor': self.proveedor.id, 'valor': '50.001'})
-        self.assertContains(r, 'solo debería haber $50.000')
+        self.assertContains(r, 'más de lo que hay en efectivo')
+        self.assertNotContains(r, 'solo debería haber')   # el error ya no dice cuánta plata hay
         r = self.client.post(url, {'proveedor': self.proveedor.id, 'valor': '50.000'})
         self.assertRedirects(r, reverse('caja_hoy'))
+
+
+class ModoPruebasTests(Base):
+    """Con CAJA_MODO_PRUEBAS = True se puede borrar un cierre para probar varias veces el mismo día."""
+
+    def setUp(self):
+        super().setUp()
+        self.abrir('50.000')
+        self.caja = self.caja_hoy()
+        self.client.post(reverse('registrar_pago', args=[self.caja.id]), {'proveedor': self.proveedor.id, 'valor': '1000'})
+        self.vender(2)   # 6.000
+        self.cerrar(self.caja, '55.000', esperado=55000)
+        self.url = reverse('borrar_caja_prueba', args=[self.caja.id])
+
+    @override_settings(CAJA_MODO_PRUEBAS=False)
+    def test_apagado_no_se_puede_borrar(self):
+        self.assertNotContains(self.client.get(reverse('caja_hoy')), 'Borrar la caja de hoy')
+        self.assertEqual(self.client.post(self.url).status_code, 404)
+        self.assertTrue(CajaDiaria.objects.filter(pk=self.caja.pk).exists())
+
+    @override_settings(CAJA_MODO_PRUEBAS=True)
+    def test_borrar_y_volver_a_cerrar(self):
+        self.assertContains(self.client.get(reverse('caja_hoy')), 'Borrar la caja de hoy')
+        self.assertContains(self.client.get(reverse('detalle_caja', args=[self.caja.id])), 'Borrar este cierre')
+        r = self.client.post(self.url)
+        self.assertRedirects(r, reverse('caja_hoy'))
+        self.assertFalse(CajaDiaria.objects.exists())
+        self.assertFalse(PagoProveedor.objects.exists())
+        self.assertEqual(Transaccion.objects.count(), 1)   # la venta sigue ahí
+        # Se abre y se cierra otra vez, ahora con faltante
+        self.abrir('10.000')
+        caja = self.caja_hoy()
+        self.cerrar(caja, '15.000', observacion='Prueba de faltante', esperado=16000)
+        c = CajaDiaria.objects.get(pk=caja.pk)
+        self.assertEqual((c.base_inicial, c.esperado, c.diferencia, c.resultado), (10000, 16000, -1000, 'faltante'))
+
+    @override_settings(CAJA_MODO_PRUEBAS=True)
+    def test_solo_admin_y_solo_post(self):
+        self.assertEqual(self.client.get(self.url).status_code, 405)
+        self.client.force_login(self.normal)
+        self.client.post(self.url)
+        self.assertTrue(CajaDiaria.objects.filter(pk=self.caja.pk).exists())
+
+    @override_settings(CAJA_MODO_PRUEBAS=True)
+    def test_borrar_una_de_otro_dia_vuelve_al_historial(self):
+        vieja = CajaDiaria.objects.create(fecha=self.hoy - timedelta(days=3), base_inicial=0)
+        r = self.client.post(reverse('borrar_caja_prueba', args=[vieja.id]))
+        self.assertRedirects(r, reverse('historial_cajas'))
+        self.assertFalse(CajaDiaria.objects.filter(pk=vieja.pk).exists())
