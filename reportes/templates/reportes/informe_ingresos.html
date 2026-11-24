@@ -1,191 +1,465 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
 {% block title %}Informe de ingresos - Tienda Nueva{% endblock %}
 
 {% block content %}
-<!-- Fondo con degradado suave y manchas de luz difuminadas -->
-<div class="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-zinc-100 via-zinc-200/80 to-red-100 text-zinc-900 dark:from-[#161616] dark:via-[#1a1414] dark:to-[#2a1214] dark:text-zinc-100">
-  <div class="pointer-events-none absolute -left-24 top-1/3 h-96 w-96 rounded-full bg-zinc-400/30 blur-3xl dark:bg-zinc-700/20"></div>
-  <div class="pointer-events-none absolute -right-24 top-10 h-[28rem] w-[28rem] rounded-full bg-red-300/30 blur-3xl dark:bg-red-900/25"></div>
-  <div class="pointer-events-none absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-red-200/40 blur-3xl dark:bg-red-950/40"></div>
 
-  <div class="relative z-10">
-
-  <!-- Hero rojo -->
-  <div class="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6">
-  <header class="relative overflow-hidden rounded-[2rem] border-2 border-white/70 bg-gradient-to-br from-red-700 via-red-600 to-red-500 shadow-2xl shadow-red-900/25 dark:border-white/10">
-    <div class="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-black/15 blur-xl"></div>
-    <div class="pointer-events-none absolute -top-20 left-1/3 h-48 w-48 rounded-full bg-white/10 blur-md"></div>
-    <div class="pointer-events-none absolute bottom-6 left-1/4 h-14 w-14 rounded-full bg-white/10"></div>
-    <div class="pointer-events-none absolute -right-10 top-1/2 hidden h-56 w-56 -translate-y-1/2 rounded-full opacity-90 blur-[2px] sm:block"
-      style="background: radial-gradient(circle at 30% 28%, #fff1f2 0%, #fca5a5 28%, #ef4444 62%, rgba(185,28,28,0) 100%);"></div>
-
-    <div class="relative px-6 pb-10 pt-10 sm:px-10 sm:pb-12 sm:pt-12">
-      <h1 class="text-5xl font-black tracking-tight text-white sm:text-6xl">Informe de ingresos</h1>
-      <p class="mt-3 max-w-xl text-sm text-red-50 sm:text-base">
-        Consulta cuánto entró y cuánto te quedó en el período que elijas.
-      </p>
-    </div>
-  </header>
-  </div>
-
-  <div class="mx-auto mt-8 w-full max-w-6xl space-y-8 px-4 pb-14 sm:px-6">
-
-    <!-- ===================== FILTRO ===================== -->
-    <section class="rounded-[2rem] border-2 border-white/80 bg-white/45 p-5 shadow-[0_24px_60px_-24px_rgba(127,29,29,.3)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[.04] dark:shadow-black/40 sm:p-8">
-      <h2 class="text-2xl font-black tracking-tight text-red-600 dark:text-red-400">Rango de fechas.</h2>
-
-      <form method="GET" action="{% url 'informe_ingresos' %}" novalidate class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3 sm:items-end">
-        <div>
-          <label for="fecha_inicio" class="mb-2 block text-sm font-semibold">Fecha de inicio</label>
-          <div class="relative">
-            <i class="fa-regular fa-calendar pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-            <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}"
-              class="h-12 w-full rounded-full border-2 border-white/80 bg-white/70 pl-11 pr-4 text-sm text-zinc-900 shadow-inner shadow-zinc-900/5 backdrop-blur focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-white/10 dark:bg-white/5 dark:text-white">
-          </div>
-        </div>
-
-        <div>
-          <label for="fecha_fin" class="mb-2 block text-sm font-semibold">Fecha de fin</label>
-          <div class="relative">
-            <i class="fa-regular fa-calendar-check pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-            <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}"
-              class="h-12 w-full rounded-full border-2 border-white/80 bg-white/70 pl-11 pr-4 text-sm text-zinc-900 shadow-inner shadow-zinc-900/5 backdrop-blur focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-white/10 dark:bg-white/5 dark:text-white">
-          </div>
-        </div>
-
-        <button type="submit" name="generar" value="1"
-          class="inline-flex h-12 items-center justify-center gap-2 rounded-full border-2 border-white/80 bg-red-600 px-6 text-sm font-bold text-white shadow-lg shadow-red-600/30 transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-white/10">
-          <i class="fa-solid fa-chart-column"></i>
-          Generar reportes
-        </button>
-      </form>
-
-      {% if error %}
-        <div role="alert" class="mt-5 flex items-start gap-3 rounded-3xl border-2 border-red-200/80 bg-red-50/70 p-4 text-sm text-red-800 backdrop-blur dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
-          <div>
-            <p class="font-bold">No se puede generar el reporte</p>
-            <p class="mt-1 leading-5">{{ error }}</p>
-          </div>
-        </div>
-      {% endif %}
-    </section>
-
-    <!-- ===================== SIN VENTAS ===================== -->
-    {% if sin_ventas %}
-      <section class="rounded-[2rem] border-2 border-dashed border-zinc-300/80 bg-white/40 px-6 py-14 text-center backdrop-blur dark:border-zinc-700 dark:bg-white/[.03]">
-        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg shadow-red-500/30"
-          style="background: radial-gradient(circle at 30% 28%, #fecaca 0%, #f87171 32%, #dc2626 68%, #991b1b 100%);">
-          <i class="fa-solid fa-receipt text-xl"></i>
-        </div>
-        <h3 class="text-lg font-bold">No se encuentran ventas en el período que se ha seleccionado</h3>
-        <p class="mx-auto mt-2 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
-          Del {{ inicio|date:"d/m/Y" }} al {{ fin|date:"d/m/Y" }}. Prueba con otro rango de fechas.
-        </p>
-      </section>
-    {% endif %}
-
-    <!-- ===================== RESULTADOS ===================== -->
-    {% if generado and not sin_ventas %}
-      <section class="rounded-[2rem] border-2 border-white/80 bg-white/45 p-5 shadow-[0_24px_60px_-24px_rgba(127,29,29,.3)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[.04] dark:shadow-black/40 sm:p-8">
-        <h2 class="text-3xl font-black tracking-tight text-red-600 dark:text-red-400">Resultados.</h2>
-        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Del {{ inicio|date:"d/m/Y" }} al {{ fin|date:"d/m/Y" }}
-        </p>
-
-        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-
-          <div class="rounded-[2rem] border-2 border-white/90 bg-red-100/60 p-5 shadow-sm backdrop-blur dark:border-red-400/15 dark:bg-red-950/30">
-            <div class="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-              <i class="fa-solid fa-sack-dollar text-red-500 dark:text-red-400"></i> Total de las ventas
-            </div>
-            <p class="mt-3 break-words text-3xl font-black text-zinc-900 dark:text-white">$ {{ total_ventas|floatformat:"0g" }}</p>
-          </div>
-
-          <div class="rounded-[2rem] border-2 border-white/90 bg-red-100/60 p-5 shadow-sm backdrop-blur dark:border-red-400/15 dark:bg-red-950/30">
-            <div class="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-              <i class="fa-solid fa-user-tag text-red-500 dark:text-red-400"></i> Total de consumos personales
-            </div>
-            <p class="mt-3 break-words text-3xl font-black text-zinc-900 dark:text-white">$ {{ total_consumos|floatformat:"0g" }}</p>
-          </div>
-
-          <div class="rounded-[2rem] border-2 border-white/90 bg-white/70 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[.06]">
-            <div class="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-              <i class="fa-solid fa-scale-balanced text-red-500 dark:text-red-400"></i> Total neto
-            </div>
-            <p class="mt-3 break-words text-3xl font-black {% if total_neto < 0 %}text-red-600 dark:text-red-400{% else %}text-emerald-600 dark:text-emerald-400{% endif %}">
-              $ {{ total_neto|floatformat:"0g" }}
-            </p>
-            <p class="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">Ventas − consumos</p>
-          </div>
-
-          <div class="rounded-[2rem] border-2 border-white/90 bg-white/70 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[.06]">
-            <div class="flex items-center gap-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-              <i class="fa-solid fa-circle-check text-red-500 dark:text-red-400"></i> Pedidos completados
-            </div>
-            <p class="mt-3 text-3xl font-black text-zinc-900 dark:text-white">{{ cantidad_pedidos }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Top 5 -->
-      <section class="rounded-[2rem] border-2 border-white/80 bg-white/45 p-5 shadow-[0_24px_60px_-24px_rgba(127,29,29,.3)] backdrop-blur-2xl dark:border-white/10 dark:bg-white/[.04] dark:shadow-black/40 sm:p-8">
-        <h2 class="text-3xl font-black tracking-tight text-red-600 dark:text-red-400">Los 5 más vendidos.</h2>
-        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Ordenados por unidades vendidas</p>
-
-        <ol class="rk-list mt-6 space-y-3">
-          {% for p in top_productos %}
-            <li class="rk-item flex items-center gap-4 rounded-3xl border-2 border-white/90 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[.06]"
-              {% if forloop.counter <= 3 %}data-top="1"{% endif %}>
-              <div class="rk-num flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black
-                {% if forloop.counter <= 3 %}bg-red-600 text-white{% else %}bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300{% endif %}">
-                {{ forloop.counter }}
-              </div>
-              <p class="min-w-0 flex-1 break-words font-bold text-zinc-900 dark:text-white">{{ p.producto__nombre }}</p>
-              <div class="text-right">
-                <p class="text-sm font-bold text-zinc-900 dark:text-white">{{ p.unidades }} unidad{{ p.unidades|pluralize:"es" }}</p>
-                <p class="rk-total text-xs text-zinc-500 dark:text-zinc-400">$ {{ p.total|floatformat:"0g" }}</p>
-              </div>
-            </li>
-          {% endfor %}
-        </ol>
-      </section>
-    {% endif %}
-
-  </div>
-  </div>
-</div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
 
 <style>
-  /* Top 5: cambia de color al pasar el mouse o tocar */
-  .rk-list .rk-item { position: relative; transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease; }
-  .rk-list .rk-num { transition: background-color .3s ease, color .3s ease; }
-  .rk-list .rk-item:is(:hover, .is-tapped) { background-color: #b91c1c; border-color: rgba(255, 255, 255, .85); box-shadow: 0 14px 28px -14px rgba(185, 28, 28, .6); }
-  .rk-list .rk-item:is(:hover, .is-tapped) :is(p) { color: #fff; }
-  .rk-list .rk-item:is(:hover, .is-tapped) .rk-total { color: rgba(255, 255, 255, .8); }
-  .rk-list .rk-item:is(:hover, .is-tapped) .rk-num { background-color: #fff; color: #b91c1c; }
+    .cat, .cat * { box-sizing: border-box; }
 
-  /* Rebote del top 3 */
-  @keyframes rk-bounce {
-    0%   { transform: translateY(0) scale(1); }
-    20%  { transform: translateY(-14px) scale(1.02); }
-    40%  { transform: translateY(0) scale(1); }
-    58%  { transform: translateY(-7px); }
-    74%  { transform: translateY(0); }
-    86%  { transform: translateY(-3px); }
-    100% { transform: translateY(0); }
-  }
-  .rk-bounce { animation: rk-bounce .9s cubic-bezier(.28, .84, .42, 1) both; }
+    .cat {
+        --page: #ffffff;
+        --board: #fbf6f5;
+        --ink: #1c1917;
+        --muted: #6b645e;
+        --borde-ui: #e3d7d3;
+        --red: #b91c1c;
+        --red-hero: #b91c1c;
+        --red-deep: #7f1d1d;
+        --price: #b91c1c;
+        --link: #b91c1c;
+        --ok: #15803d;
 
-  /* Partículas de confeti */
-  .rk-confetti { position: absolute; pointer-events: none; z-index: 20; }
+        --ta-soft: #ffe8e5;  --ta-strong: #ffc7c0;
+        --tb-soft: #fff0e6;  --tb-strong: #ffd3b8;
+        --tc-soft: #f4f1ef;  --tc-strong: #e3ddd9;
+        --td-soft: #fde7ec;  --td-strong: #f8b9c9;
 
-  @media (prefers-reduced-motion: reduce) {
-    .rk-list .rk-item, .rk-list .rk-num { transition: none; }
-    .rk-bounce { animation: none; }
-  }
+        --soft: var(--tc-soft);
+        --strong: var(--tc-strong);
+
+        font-family: "Archivo", Verdana, Tahoma, sans-serif;
+        color: var(--ink);
+    }
+    .dark .cat {
+        --page: #0f0f0f;
+        --board: #151515;
+        --ink: #f5f5f4;
+        --muted: #a8a29e;
+        --borde-ui: #4a4440;
+        --price: #f87171;
+        --link: #f87171;
+        --ok: #4ade80;
+
+        --ta-soft: #2b1816;  --ta-strong: #45221f;
+        --tb-soft: #2b1d15;  --tb-strong: #47291a;
+        --tc-soft: #242221;  --tc-strong: #373331;
+        --td-soft: #2b1720;  --td-strong: #46212f;
+    }
+
+    .cat [data-tono="a"] { --soft: var(--ta-soft); --strong: var(--ta-strong); }
+    .cat [data-tono="b"] { --soft: var(--tb-soft); --strong: var(--tb-strong); }
+    .cat [data-tono="c"] { --soft: var(--tc-soft); --strong: var(--tc-strong); }
+    .cat [data-tono="d"] { --soft: var(--td-soft); --strong: var(--td-strong); }
+
+    .cat-sr {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ---------- Banner ---------- */
+    .cat-hero {
+        position: relative;
+        color: #fff;
+        background: var(--red-hero);
+        padding: 2.25rem 1.25rem 4.75rem;
+    }
+    .cat-hero__bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .cat-hero__bg::before {
+        content: "";
+        position: absolute; inset: 0;
+        --claro-1: rgba(254, 205, 205, .17);
+        --claro-2: rgba(254, 205, 205, .1);
+        --vino:    rgba(69, 10, 10, .28);
+        --granate: rgba(127, 29, 29, .55);
+        background:
+            radial-gradient(circle 2.25rem at 84% 35%, var(--claro-1) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 8rem at 96% -3%, var(--claro-2) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 5rem at 93% 76%, var(--vino) calc(100% - 1px), transparent 100%),
+            radial-gradient(circle 9rem at -8% 66%, var(--granate) calc(100% - 1px), transparent 100%);
+    }
+    .cat-hero__in { position: relative; z-index: 1; max-width: 96rem; margin: 0 auto; }
+    .cat-hero__txt { width: 100%; min-width: 0; max-width: 40rem; }
+    .cat-hero h1 {
+        margin: 0;
+        font-size: clamp(2.25rem, 1.2rem + 3.6vw, 3.5rem);
+        line-height: .95;
+        font-weight: 800; font-stretch: 110%;
+        letter-spacing: -.035em;
+        text-wrap: balance;
+    }
+    .cat-hero p { margin: 1rem 0 0; max-width: 34rem; font-size: 1.125rem; line-height: 1.45; color: #fff; }
+
+    .cat-hero__photo {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 8.5rem;
+        pointer-events: none;
+        background:
+            linear-gradient(0deg, rgba(127, 29, 29, .12), rgba(185, 28, 28, .45)),
+            var(--foto) 50% 40% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+                mask-image: linear-gradient(to top, #000 30%, transparent 100%);
+    }
+    @media (min-width: 900px) {
+        .cat-hero { padding: 2.75rem 2.5rem 4.25rem; }
+        .cat-hero__in { min-height: 11.5rem; display: flex; align-items: center; }
+        .cat-hero__photo {
+            left: auto; top: 0; height: auto; width: min(62%, 64rem);
+            background:
+                linear-gradient(90deg, rgba(185, 28, 28, .6) 0%, rgba(127, 29, 29, .22) 55%, rgba(127, 29, 29, .08) 100%),
+                var(--foto) 50% 22% / cover no-repeat;
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+                    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, .5) 30%, #000 65%);
+        }
+        .cat-hero__bg::before {
+            --izq: max(2.5rem, calc(50% - 48rem));
+            background:
+                radial-gradient(circle 2.75rem at calc(var(--izq) + 26rem) 26%, var(--claro-1) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 9.5rem at calc(var(--izq) + 30rem) -20%, var(--claro-2) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 5rem at calc(var(--izq) + 20rem) 100%, var(--vino) calc(100% - 1px), transparent 100%),
+                radial-gradient(circle 12rem at calc(var(--izq) - 3rem) 120%, var(--granate) calc(100% - 1px), transparent 100%);
+        }
+    }
+
+    /* ---------- Filtro de fechas: píldora sobre el borde del banner ---------- */
+    .cat-filtro { position: relative; z-index: 4; max-width: 96rem; margin: -2.5rem auto 0; padding: 0 .75rem; }
+    @media (min-width: 640px)  { .cat-filtro { padding: 0 1.5rem; } }
+    @media (min-width: 900px)  { .cat-filtro { margin-top: -1.875rem; } }
+    @media (min-width: 1024px) { .cat-filtro { padding: 0 2.5rem; } }
+
+    .inf-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: .5rem;
+        align-items: center;
+        max-width: 54rem; margin: 0 auto;
+        padding: .625rem;
+        color: #1c1917;
+        background: #fff;
+        border-radius: 1.75rem;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(69, 10, 10, .7), 0 0 0 1px rgba(127, 29, 29, .08);
+    }
+    .dark .inf-form {
+        color: #f5f5f4; background: #211f1e;
+        box-shadow: 0 1.5rem 2.25rem -1.25rem rgba(0, 0, 0, .9), 0 0 0 1px #3a3532;
+    }
+    @media (min-width: 720px) {
+        .inf-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; border-radius: 999px; }
+    }
+    .inf-campo {
+        display: flex; align-items: center; gap: .65rem; min-width: 0;
+        padding: .25rem .75rem .25rem .4rem;
+        border-radius: 999px;
+        transition: box-shadow .15s;
+    }
+    .inf-campo:focus-within { box-shadow: 0 0 0 3px var(--red); }
+    .dark .inf-campo:focus-within { box-shadow: 0 0 0 3px #f87171; }
+    .inf-campo__ico {
+        flex: none; width: 2.5rem; height: 2.5rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: var(--red); background: var(--ta-soft);
+    }
+    .dark .inf-campo__ico { color: #f87171; }
+    .inf-campo__txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+    .inf-campo label { font-size: .6875rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .inf-campo input {
+        width: 100%; min-width: 0; height: 1.75rem; padding: 0;
+        font: inherit; font-size: 1rem; font-weight: 600;
+        color: inherit; background: transparent;
+        border: 0; outline: 0;
+    }
+    .dark .inf-campo input { color-scheme: dark; }
+
+    .cat-new {
+        flex: none;
+        display: inline-flex; align-items: center; justify-content: center; gap: .65rem;
+        height: 3rem; padding: 0 1.4rem 0 .5rem;
+        font: inherit; font-size: .9375rem; font-weight: 800; letter-spacing: .005em;
+        color: #fff; background: var(--red);
+        border: 0; border-radius: 999px; cursor: pointer;
+        transition: background-color .15s, transform .15s;
+    }
+    .cat-new__mas {
+        width: 2rem; height: 2rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: var(--red); background: #fff;
+        transition: transform .25s;
+    }
+    .cat-new:hover { background: #450a0a; transform: translateY(-2px); }
+    .cat-new:hover .cat-new__mas { transform: rotate(90deg); color: #450a0a; }
+    .cat-new:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+
+    /* ---------- Tablero ---------- */
+    .cat-wrap { max-width: 96rem; margin: 0 auto; padding: 1.25rem .75rem 2.5rem; }
+    @media (min-width: 640px)  { .cat-wrap { padding: 1.5rem 1.5rem 3rem; } }
+    @media (min-width: 1024px) { .cat-wrap { padding: 1.75rem 2.5rem 3.5rem; } }
+
+    .cat-board { padding: 1.25rem .875rem 1.5rem; background: var(--board); border-radius: 1.75rem; }
+    .cat-board + .cat-board { margin-top: 1.25rem; }
+    @media (min-width: 640px) { .cat-board { padding: 2rem 1.75rem 2.25rem; border-radius: 2.5rem; } }
+
+    .cat-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .35rem 1.5rem; margin-bottom: 1.25rem; }
+    .cat-head h2 {
+        margin: 0;
+        font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.375rem);
+        font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.1;
+        color: var(--link);
+    }
+    .cat-head__sub { margin: 0; font-size: .9375rem; font-weight: 600; color: var(--muted); }
+
+    /* ---------- Tarjetas de cifras ---------- */
+    .inf-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+    @media (min-width: 560px)  { .inf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1024px) { .inf-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; } }
+
+    .inf-card {
+        display: flex; flex-direction: column; gap: .35rem;
+        padding: 1.1rem 1.25rem 1.25rem;
+        background: var(--soft);
+        border-radius: 1.5rem;
+        box-shadow: inset 0 0 0 1px var(--strong);
+    }
+    .inf-card__top { display: flex; align-items: center; gap: .7rem; }
+    .inf-card__ico {
+        flex: none; width: 2.5rem; height: 2.5rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: var(--price); background: var(--strong);
+    }
+    .inf-card__lbl { font-size: .875rem; font-weight: 700; line-height: 1.2; color: var(--muted); }
+    .inf-card__val {
+        margin: .5rem 0 0;
+        font-size: clamp(1.75rem, 1.3rem + 1.2vw, 2.25rem);
+        font-weight: 800; font-stretch: 105%; letter-spacing: -.02em; line-height: 1.05;
+        overflow-wrap: anywhere;
+    }
+    .inf-card__val.is-neg { color: var(--price); }
+    .inf-card__val.is-pos { color: var(--ok); }
+    .inf-card__nota { margin: 0; font-size: .75rem; font-weight: 600; color: var(--muted); }
+
+    /* ---------- Top 5 (filas como las del catálogo) ---------- */
+    .cat-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+    .cat-fila {
+        --f-linea: #efe4e0;
+        position: relative;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: .875rem;
+        padding: .7rem .875rem .7rem .7rem;
+        background: var(--page);
+        border-radius: 1.1rem;
+        box-shadow: inset 0 0 0 1px var(--f-linea);
+        cursor: default;
+        transition: background-color .15s, box-shadow .15s;
+    }
+    .dark .cat-fila { --f-linea: #2a2623; }
+    .cat-fila:hover, .cat-fila.is-tapped { background: var(--soft); box-shadow: inset 0 0 0 1px var(--strong); }
+    .cat-fila__foto {
+        width: 2.75rem; height: 2.75rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        font-size: 1.05rem; font-weight: 800; color: var(--price);
+        background: var(--strong);
+    }
+    .cat-fila[data-top] .cat-fila__foto { color: #fff; background: var(--red); }
+    .cat-fila__name {
+        margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.2;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden; overflow-wrap: anywhere;
+    }
+    .cat-fila__der { text-align: right; }
+    .cat-fila__uni { margin: 0; font-size: .9375rem; font-weight: 800; }
+    .cat-fila__tot { margin: 0; font-size: .8125rem; font-weight: 600; color: var(--muted); }
+
+    .rk-bounce { animation: rk-bounce .9s cubic-bezier(.28, .84, .42, 1) both; }
+    @keyframes rk-bounce {
+        0%   { transform: translateY(0) scale(1); }
+        20%  { transform: translateY(-10px) scale(1.015); }
+        40%  { transform: translateY(0) scale(1); }
+        58%  { transform: translateY(-5px); }
+        74%  { transform: translateY(0); }
+        86%  { transform: translateY(-2px); }
+        100% { transform: translateY(0); }
+    }
+    .rk-confetti { position: absolute; pointer-events: none; z-index: 20; }
+
+    /* ---------- Avisos y estados vacíos ---------- */
+    .cat-msg {
+        display: flex; align-items: flex-start; gap: .75rem; margin-top: .75rem; padding: .85rem 1.1rem;
+        font-size: .9375rem; font-weight: 600; line-height: 1.4;
+        color: var(--ink); background: var(--ta-soft);
+        border-radius: 1.1rem 1.1rem 1.1rem .3rem;
+    }
+    .cat-msg::before { content: ""; flex: none; width: .7rem; height: .7rem; margin-top: .3rem; border-radius: 50%; background: var(--red); }
+    .dark .cat-msg::before { background: #f87171; }
+    .cat-msg strong { display: block; }
+
+    .cat-empty { padding: 3.5rem 1.5rem 3.75rem; text-align: center; background: var(--tc-soft); border-radius: 4.5rem 1.25rem 1.25rem 1.25rem; }
+    .cat-empty__disc {
+        width: 5rem; height: 5rem; margin: 0 auto;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; background: var(--tc-strong); color: var(--muted); font-size: 1.75rem;
+    }
+    .cat-empty h3 { margin: 1.25rem 0 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -.01em; }
+    .cat-empty p { margin: .5rem auto 0; max-width: 34ch; color: var(--muted); line-height: 1.5; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cat *, .cat *::before, .cat *::after { transition: none !important; animation: none !important; }
+    }
 </style>
+
+<div class="cat">
+
+    <header class="cat-hero">
+        <div class="cat-hero__bg" aria-hidden="true">
+            <div class="cat-hero__photo" style="--foto: url('{% static 'img/tienda.jpg' %}')"></div>
+        </div>
+        <div class="cat-hero__in">
+            <div class="cat-hero__txt">
+                <h1>Informe de ingresos</h1>
+                <p>Consulta cuánto entró y cuánto te quedó en el período que elijas.</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="cat-filtro">
+        <form class="inf-form" method="get" action="{% url 'informe_ingresos' %}" novalidate>
+            <div class="inf-campo">
+                <span class="inf-campo__ico" aria-hidden="true"><i class="fa-regular fa-calendar"></i></span>
+                <div class="inf-campo__txt">
+                    <label for="fecha_inicio">Fecha de inicio</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+                </div>
+            </div>
+
+            <div class="inf-campo">
+                <span class="inf-campo__ico" aria-hidden="true"><i class="fa-regular fa-calendar-check"></i></span>
+                <div class="inf-campo__txt">
+                    <label for="fecha_fin">Fecha de fin</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+                </div>
+            </div>
+
+            <button type="submit" name="generar" value="1" class="cat-new">
+                <span class="cat-new__mas" aria-hidden="true"><i class="fa-solid fa-chart-column"></i></span>
+                Generar reportes
+            </button>
+        </form>
+
+        {% if error %}
+            <div class="cat-msg" role="alert" style="max-width: 54rem; margin-left: auto; margin-right: auto;">
+                <div>
+                    <strong>No se puede generar el reporte</strong>
+                    {{ error }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="cat-wrap">
+
+        {% if sin_ventas %}
+            <section class="cat-board">
+                <div class="cat-empty">
+                    <div class="cat-empty__disc" aria-hidden="true"><i class="fa-solid fa-receipt"></i></div>
+                    <h3>No se encuentran ventas en el período seleccionado</h3>
+                    <p>Del {{ inicio|date:"d/m/Y" }} al {{ fin|date:"d/m/Y" }}. Prueba con otro rango de fechas.</p>
+                </div>
+            </section>
+        {% endif %}
+
+        {% if generado and not sin_ventas %}
+
+            <section class="cat-board" aria-labelledby="res-titulo">
+                <div class="cat-head">
+                    <h2 id="res-titulo">Resultados.</h2>
+                    <p class="cat-head__sub">Del {{ inicio|date:"d/m/Y" }} al {{ fin|date:"d/m/Y" }}</p>
+                </div>
+
+                <div class="inf-grid">
+
+                    <div class="inf-card" data-tono="a">
+                        <div class="inf-card__top">
+                            <span class="inf-card__ico" aria-hidden="true"><i class="fa-solid fa-sack-dollar"></i></span>
+                            <span class="inf-card__lbl">Total de las ventas</span>
+                        </div>
+                        <p class="inf-card__val">$ {{ total_ventas|floatformat:"0g" }}</p>
+                    </div>
+
+                    <div class="inf-card" data-tono="b">
+                        <div class="inf-card__top">
+                            <span class="inf-card__ico" aria-hidden="true"><i class="fa-solid fa-user-tag"></i></span>
+                            <span class="inf-card__lbl">Consumos personales</span>
+                        </div>
+                        <p class="inf-card__val">$ {{ total_consumos|floatformat:"0g" }}</p>
+                    </div>
+
+                    <div class="inf-card" data-tono="d">
+                        <div class="inf-card__top">
+                            <span class="inf-card__ico" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                            <span class="inf-card__lbl">Pérdidas por salidas</span>
+                        </div>
+                        <p class="inf-card__val">$ {{ total_perdidas|floatformat:"0g" }}</p>
+                        <p class="inf-card__nota">Sin cambio del proveedor</p>
+                    </div>
+
+                    <div class="inf-card" data-tono="c">
+                        <div class="inf-card__top">
+                            <span class="inf-card__ico" aria-hidden="true"><i class="fa-solid fa-rotate-left"></i></span>
+                            <span class="inf-card__lbl">Por recuperar</span>
+                        </div>
+                        <p class="inf-card__val">$ {{ por_recuperar|floatformat:"0g" }}</p>
+                        <p class="inf-card__nota">Con cambio del proveedor</p>
+                    </div>
+
+                    <div class="inf-card" data-tono="c">
+                        <div class="inf-card__top">
+                            <span class="inf-card__ico" aria-hidden="true"><i class="fa-solid fa-scale-balanced"></i></span>
+                            <span class="inf-card__lbl">Total neto</span>
+                        </div>
+                        <p class="inf-card__val {% if total_neto < 0 %}is-neg{% else %}is-pos{% endif %}">$ {{ total_neto|floatformat:"0g" }}</p>
+                        <p class="inf-card__nota">Ventas − consumos − pérdidas</p>
+                    </div>
+
+                    <div class="inf-card" data-tono="c">
+                        <div class="inf-card__top">
+                            <span class="inf-card__ico" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+                            <span class="inf-card__lbl">Ventas realizadas</span>
+                        </div>
+                        <p class="inf-card__val">{{ cantidad_pedidos }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cat-board" aria-labelledby="top-titulo">
+                <div class="cat-head">
+                    <h2 id="top-titulo">Los 5 más vendidos.</h2>
+                    <p class="cat-head__sub">Ordenados por unidades vendidas</p>
+                </div>
+
+                <ol class="cat-lista rk-list">
+                    {% for p in top_productos %}
+                        <li class="cat-fila rk-item"
+                            data-tono="{% cycle 'a' 'b' 'd' 'c' 'a' %}"
+                            {% if forloop.counter <= 3 %}data-top="1"{% endif %}>
+                            <span class="cat-fila__foto rk-num" aria-hidden="true">{{ forloop.counter }}</span>
+                            <h3 class="cat-fila__name">{{ p.nom_producto }}</h3>
+                            <div class="cat-fila__der">
+                                <p class="cat-fila__uni">{{ p.unidades }} unidad{{ p.unidades|pluralize:"es" }}</p>
+                                <p class="cat-fila__tot">$ {{ p.total|floatformat:"0g" }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </section>
+
+        {% endif %}
+    </div>
+</div>
 
 <script>
   (function () {
@@ -200,7 +474,7 @@
       var x0 = n.left - caja.left + n.width / 2;
       var y0 = n.top - caja.top + n.height / 2;
 
-      for (var i = 0; i < 30; i++) {
+      for (var i = 0; i < 26; i++) {
         var p = document.createElement('i');
         var tam = 5 + Math.random() * 5;
         p.className = 'rk-confetti';
@@ -244,7 +518,6 @@
 
       li.addEventListener('click', function () {
         if (sinMouse) {
-          // En móvil: el toque activa o desactiva el color
           items.forEach(function (o) { if (o !== li) o.classList.remove('is-tapped'); });
           li.classList.toggle('is-tapped');
           if (li.classList.contains('is-tapped')) celebrar(li);

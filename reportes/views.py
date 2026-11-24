@@ -1,13 +1,16 @@
+from datetime import datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import DecimalField, ExpressionWrapper, F, Sum
+from django.db.models import Count, DecimalField, ExpressionWrapper, F, Sum
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from accounts.views import es_superadmin as es_admin
-
-from .models import Consumo, DetallePedido, Pedido
+from productos.models import Transaccion
+from salidas.models import SalidaProducto
+from gestor_inventario.models import ConsumoPersonal  # confirma que esta sea la ruta
 
 CERO = Decimal('0')
 
@@ -34,11 +37,10 @@ def informe_ingresos(request):
         'sin_ventas': False,
     }
 
-    # Primera visita: solo se muestra el formulario.
+    # Primera visita: solo se muestra el formulario (no se consulta nada).
     if 'generar' not in request.GET:
         return render(request, 'reportes/informe_ingresos.html', contexto)
 
-    # ---- Validaciones ----
     if not fecha_inicio or not fecha_fin:
         contexto['error'] = 'Selecciona la fecha de inicio y la fecha de fin.'
         return render(request, 'reportes/informe_ingresos.html', contexto)
@@ -54,44 +56,56 @@ def informe_ingresos(request):
         contexto['error'] = 'La fecha de inicio no puede ser posterior a la fecha de fin.'
         return render(request, 'reportes/informe_ingresos.html', contexto)
 
-    # ---- Cálculos ----
     contexto.update({'generado': True, 'inicio': inicio, 'fin': fin})
 
-    pedidos = Pedido.objects.filter(
-        estado='completado',
-        fecha__date__range=(inicio, fin),
-    )
-    cantidad_pedidos = pedidos.count()
+    # Rango por fecha_hora (usa el índice, a diferencia de __date): [inicio 00:00, fin+1 00:00)
+    zona = timezone.get_current_timezone()
+    desde = timezone.make_aware(datetime.combine(inicio, time.min), zona)
+    hasta = timezone.make_aware(datetime.combine(fin + timedelta(days=1), time.min), zona)
 
-    if cantidad_pedidos == 0:
+    # ---- Ventas (una sola consulta agregada) ----
+    ventas = Transaccion.objects.filter(fecha_hora__gte=desde, fecha_hora__lt=hasta)
+    resumen = ventas.aggregate(total=Sum('total'), n=Count('pk'))
+    cantidad_ventas = resumen['n']
+
+    if cantidad_ventas == 0:
         contexto['sin_ventas'] = True
         return render(request, 'reportes/informe_ingresos.html', contexto)
 
-    linea = ExpressionWrapper(
+    total_ventas = resumen['total'] or CERO
+
+    top_productos = (
+        ventas.values('nom_producto')
+        .annotate(unidades=Sum('cantidad'), total=Sum('total'))
+        .order_by('-unidades', '-total')[:5]
+    )
+
+    # ---- Consumos personales ----
+    total_consumos = ConsumoPersonal.objects.filter(
+        activo=True, fecha__range=(inicio, fin)
+    ).aggregate(t=Sum('total'))['t'] or CERO
+
+    # ---- Salidas (vencidos, dañados, pérdidas) ----
+    valor_salida = ExpressionWrapper(
         F('cantidad') * F('precio_unitario'),
         output_field=DecimalField(max_digits=14, decimal_places=2),
     )
-
-    detalles = DetallePedido.objects.filter(pedido__in=pedidos)
-
-    total_ventas = detalles.aggregate(t=Sum(linea))['t'] or CERO
-
-    total_consumos = Consumo.objects.filter(
-        fecha__date__range=(inicio, fin)
-    ).aggregate(t=Sum('valor'))['t'] or CERO
-
-    top_productos = (
-        detalles.values('producto__nombre')
-        .annotate(unidades=Sum('cantidad'), total=Sum(linea))
-        .order_by('-unidades', '-total')[:5]
-    )
+    salidas = SalidaProducto.objects.filter(fecha__range=(inicio, fin))
+    por_cambio = {
+        fila['aplica_cambio']: fila['t']
+        for fila in salidas.values('aplica_cambio').annotate(t=Sum(valor_salida))
+    }
+    total_perdidas = por_cambio.get(False) or CERO
+    por_recuperar = por_cambio.get(True) or CERO
 
     contexto.update({
         'total_ventas': total_ventas,
         'total_consumos': total_consumos,
-        'total_neto': total_ventas - total_consumos,
-        'cantidad_pedidos': cantidad_pedidos,
-        'top_productos': top_productos,
+        'total_perdidas': total_perdidas,
+        'por_recuperar': por_recuperar,
+        'total_neto': total_ventas - total_consumos - total_perdidas,
+        'cantidad_pedidos': cantidad_ventas,
+        'top_productos': list(top_productos),
     })
 
     return render(request, 'reportes/informe_ingresos.html', contexto)
